@@ -28,7 +28,7 @@ if uploaded_file:
         return_periods = df.columns[1:]
         idf_result = {rp: df[rp].astype(float).to_numpy() for rp in return_periods}
 
-        # Plot IDF curves with human-readable ticks
+        # Plot IDF curves with human-readable and explicit ticks
         st.subheader("📊 IDF Curves")
         fig, ax = plt.subplots(figsize=(8, 5))
         for rp in return_periods:
@@ -36,8 +36,17 @@ if uploaded_file:
 
         ax.set_xscale("log")
         ax.set_yscale("log")
-        ax.xaxis.set_major_formatter(ScalarFormatter())
-        ax.yaxis.set_major_formatter(ScalarFormatter())
+
+        # Explicit tick values
+        x_ticks = [5, 10, 15, 20, 30, 60, 120, 360, 720, 1440]
+        y_ticks = [1, 5, 10, 20, 30, 50, 100, 150]
+
+        ax.set_xticks(x_ticks)
+        ax.set_yticks(y_ticks)
+
+        ax.get_xaxis().set_major_formatter(ScalarFormatter())
+        ax.get_yaxis().set_major_formatter(ScalarFormatter())
+
         ax.set_xlabel("Duration (min)")
         ax.set_ylabel("Intensity (mm/hr)")
         ax.set_title("IDF Curves")
