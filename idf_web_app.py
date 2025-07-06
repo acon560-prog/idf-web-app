@@ -1,18 +1,17 @@
 
 import streamlit as st
-import numpy as np
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 from io import BytesIO
+from matplotlib.ticker import ScalarFormatter
 
 st.set_page_config(page_title="IDF Curve Analyzer", layout="centered")
-
 st.title("🌧️ IDF Curve Analyzer")
-st.markdown("Upload rainfall data, visualize IDF curves, and get intensity values for any duration & return period.")
+st.markdown("Upload rainfall data with durations in the first column and return periods as headers.")
 
-# Upload CSV or Excel
-uploaded_file = st.file_uploader("📤 Upload CSV or Excel with durations as columns", type=["csv", "xlsx"])
+uploaded_file = st.file_uploader("📤 Upload CSV or Excel (Duration column + T-year columns)", type=["csv", "xlsx"])
 
 if uploaded_file:
     try:
@@ -22,45 +21,23 @@ if uploaded_file:
             df = pd.read_excel(uploaded_file)
 
         st.success("File uploaded successfully!")
-        st.dataframe(df.head())
+        st.dataframe(df)
 
-        # Assume first column is Year, rest are durations
-        duration_labels = df.columns[1:]
-        durations_min = []
-        for label in duration_labels:
-            val = label.lower().replace("min", "").replace("h", "")
-            try:
-                if "h" in label.lower():
-                    val = float(val) * 60
-                durations_min.append(int(float(val)))
-            except:
-                durations_min.append(0)
+        # Extract durations and return periods
+        durations = df.iloc[:, 0].to_numpy(dtype=float)
+        return_periods = df.columns[1:]
+        idf_result = {rp: df[rp].astype(float).to_numpy() for rp in return_periods}
 
-        return_periods = [2, 5, 10, 25, 50, 100]
-
-        def gumbel_K(T):
-            γ = 0.5772
-            return (np.sqrt(6) / np.pi) * (np.log(np.log(T / (T - 1))) + γ)
-
-        idf_result = {}
-        for i, label in enumerate(duration_labels):
-            values = df[label].dropna().to_numpy()
-            μ = np.mean(values)
-            σ = np.std(values, ddof=1)
-            K = gumbel_K(return_periods)
-            P_T = μ + K * σ
-            intensity = P_T / (durations_min[i] / 60)
-            intensity[intensity <= 0] = np.nan
-            idf_result[durations_min[i]] = intensity
-
-        # Plotting
+        # Plot IDF curves with human-readable ticks
         st.subheader("📊 IDF Curves")
         fig, ax = plt.subplots(figsize=(8, 5))
-        for i, T in enumerate(return_periods):
-            curve = [idf_result[d][i] for d in durations_min]
-            ax.plot(durations_min, curve, marker='o', label=f"T = {T} yrs")
+        for rp in return_periods:
+            ax.plot(durations, idf_result[rp], marker='o', label=rp)
+
         ax.set_xscale("log")
         ax.set_yscale("log")
+        ax.xaxis.set_major_formatter(ScalarFormatter())
+        ax.yaxis.set_major_formatter(ScalarFormatter())
         ax.set_xlabel("Duration (min)")
         ax.set_ylabel("Intensity (mm/hr)")
         ax.set_title("IDF Curves")
@@ -73,26 +50,20 @@ if uploaded_file:
         fig.savefig(pdf_buffer, format="pdf")
         st.download_button("📥 Download PDF", data=pdf_buffer.getvalue(), file_name="idf_curve.pdf", mime="application/pdf")
 
-        # Interpolation section
+        # Interpolation lookup
         st.subheader("🔍 Intensity Lookup")
         duration_input = st.number_input("Enter duration (minutes)", min_value=1, max_value=2000, value=10)
-        T_input = st.selectbox("Select return period (years)", return_periods)
+        rp_input = st.selectbox("Select return period", return_periods)
 
-        interpolators = {}
-        for i, T in enumerate(return_periods):
-            intensities = [idf_result[d][i] for d in durations_min]
-            interpolators[T] = interp1d(durations_min, intensities, kind='linear', fill_value='extrapolate')
-        interpolated = float(interpolators[T_input](duration_input))
-        st.success(f"Estimated intensity for {duration_input} min & T={T_input} yrs: **{interpolated:.2f} mm/hr**")
+        interp_func = interp1d(durations, df[rp_input].astype(float), kind='linear', fill_value='extrapolate')
+        estimated = float(interp_func(float(duration_input)))
+        st.success(f"Estimated intensity at {duration_input} min for {rp_input}: **{estimated:.2f} mm/hr**")
 
-        # Export CSV
-        out_df = pd.DataFrame({"Duration (min)": durations_min})
-        for i, T in enumerate(return_periods):
-            out_df[f"T = {T} yrs"] = [idf_result[d][i] for d in durations_min]
-        csv_data = out_df.to_csv(index=False).encode("utf-8")
+        # CSV Export
+        csv_data = df.to_csv(index=False).encode("utf-8")
         st.download_button("📄 Download Intensity Table (CSV)", data=csv_data, file_name="idf_intensity_table.csv", mime="text/csv")
 
     except Exception as e:
         st.error(f"Error processing file: {e}")
 else:
-    st.info("Please upload a CSV or Excel file with rainfall intensities.")
+    st.info("Please upload a properly formatted file.")
