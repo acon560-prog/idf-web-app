@@ -1,0 +1,378 @@
+[
+  {
+    "stationId": "101HFNE",
+    "name": "VICTORIA PORTAGE INLET",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1010960",
+    "name": "BRENTWOOD BAY 2",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1011500",
+    "name": "CHEMAINUS",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1012707",
+    "name": "ESQUIMALT LAGOON",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1013051",
+    "name": "GANGES MANSELL RD",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1014930",
+    "name": "MAYNE ISLAND",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1015150",
+    "name": "MILLSTREAM",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1016335",
+    "name": "PORT RENFREW",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1016940",
+    "name": "SAANICHTON CDA",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1016941",
+    "name": "SAANICH CAMOSUN COLLEGE",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1017230",
+    "name": "SHAWNIGAN LAKE",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1017556",
+    "name": "SOOKE",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1017575",
+    "name": "SOOKE SASEENOS",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1021480",
+    "name": "CHATHAM POINT",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1024592",
+    "name": "LAZO",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1025970",
+    "name": "PARKSVILLE",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1025975",
+    "name": "PARKSVILLE NORTHWEST",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1027060",
+    "name": "SANDWICK",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1031316",
+    "name": "CAPE BEALE LIGHT",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1031844",
+    "name": "CONUMA RIVER HATCHERY",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1033230",
+    "name": "GOLD RIVER",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1034440",
+    "name": "KYUQUOT",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1035940",
+    "name": "PACHENA POINT",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1036205",
+    "name": "PORT ALBERNI",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1036240",
+    "name": "PORT ALICE",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1036570",
+    "name": "QUATSINO",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1038207",
+    "name": "TOFINO VILLAGE",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "104090R",
+    "name": "BOWEN ISLAND BOWEN BAY",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1041490",
+    "name": "CHEEKYE",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1043504",
+    "name": "HOLLYBURN",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1043582",
+    "name": "HOPKINS LANDING",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1045960",
+    "name": "PARADISE VALLEY",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1046791",
+    "name": "ROBERTS CREEK",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1048816",
+    "name": "WEST REDONDA ISLAND",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1051350",
+    "name": "CAPE ST JAMES",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1054920",
+    "name": "MASSET AIRPORT",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1056590",
+    "name": "QUEEN CHARLOTTE CITY",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1060080",
+    "name": "ADDENBROKE ISLAND",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1060810",
+    "name": "BELLA BELLA",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1064290",
+    "name": "KITIMAT MISSION",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1066202",
+    "name": "POINTER ISLAND",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1066420",
+    "name": "PREMIER",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1072075",
+    "name": "CRANBERRY RIVER",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1073612",
+    "name": "HOUSTON",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "1075202",
+    "name": "MORICETOWN",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "BC",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "8403448",
+    "name": "ST GEORGES",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "NL",
+    "note": "Using official provinceCode"
+  },
+  {
+    "stationId": "8403450",
+    "name": "ST GEORGES",
+    "field": "provinceCode",
+    "masterValue": "QC",
+    "officialValue": "NL",
+    "note": "Using official provinceCode"
+  }
+]

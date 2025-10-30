@@ -1,0 +1,18 @@
+[
+  {
+    "id": "7044453_QC_MANIC_2_LB1",
+    "name": "MANIC 2 LB1",
+    "province": "Quebec",
+    "lat": 49.30,
+    "lon": -68.40,
+    "txt_file": "7044453_QC_MANIC_2_LB1.txt"
+  },
+  {
+    "id": "6112070_ON_LONDON_CS",
+    "name": "LONDON CS",
+    "province": "Ontario",
+    "lat": 42.98,
+    "lon": -81.25,
+    "txt_file": "6112070_ON_LONDON_CS.txt"
+  }
+]

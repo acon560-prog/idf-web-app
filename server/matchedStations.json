@@ -1,0 +1,866 @@
+[
+  {
+    "entryName": "LONDON CS txt",
+    "matchedName": "Toronto City",
+    "province": "ON",
+    "lat": 43.65,
+    "lon": -79.38,
+    "file": "6144478_ON_LONDON_CS_2002-2016_RAIN.txt"
+  },
+  {
+    "entryName": "614 LONDON CS txt",
+    "matchedName": "Toronto City",
+    "province": "ON",
+    "lat": 43.65,
+    "lon": -79.38,
+    "file": "idf_v3-30_2022_10_31_614_ON_6144478_LONDON_CS.txt"
+  },
+  {
+    "entryName": "701 BEAUPORT txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_701_QC_7010565_BEAUPORT.txt"
+  },
+  {
+    "entryName": "701 DUCHESNAY txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_701_QC_7012240_DUCHESNAY.txt"
+  },
+  {
+    "entryName": "701 JOLIETTE VILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_701_QC_7013362_JOLIETTE_VILLE.txt"
+  },
+  {
+    "entryName": "701 OKA txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_701_QC_7015730_OKA.txt"
+  },
+  {
+    "entryName": "701 ST ALBAN txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_701_QC_7016800_ST_ALBAN.txt"
+  },
+  {
+    "entryName": "701 SHAWINIGAN txt",
+    "matchedName": "Saint-Jean-sur-Richelieu",
+    "province": "QC",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "file": "idf_v3-30_2022_10_31_701_QC_7018001_SHAWINIGAN.txt"
+  },
+  {
+    "entryName": "702 ARTHABASKA txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_702_QC_7020305_ARTHABASKA.txt"
+  },
+  {
+    "entryName": "702 BROME txt",
+    "matchedName": "Sherbrooke",
+    "province": "QC",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "file": "idf_v3-30_2022_10_31_702_QC_7020840_BROME.txt"
+  },
+  {
+    "entryName": "702 DANVILLE txt",
+    "matchedName": "Drummondville",
+    "province": "QC",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "file": "idf_v3-30_2022_10_31_702_QC_7021954_DANVILLE.txt"
+  },
+  {
+    "entryName": "702 DRUMMONDVILLE txt",
+    "matchedName": "Drummondville",
+    "province": "QC",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "file": "idf_v3-30_2022_10_31_702_QC_7022160_DRUMMONDVILLE.txt"
+  },
+  {
+    "entryName": "702 FORTIERVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7022494_FORTIERVILLE.txt"
+  },
+  {
+    "entryName": "702 GEORGEVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7022720_GEORGEVILLE.txt"
+  },
+  {
+    "entryName": "702 GRANBY txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7022802_GRANBY.txt"
+  },
+  {
+    "entryName": "702 ISLAND BROOK txt",
+    "matchedName": "Sherbrooke",
+    "province": "QC",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "file": "idf_v3-30_2022_10_31_702_QC_7023312_ISLAND_BROOK.txt"
+  },
+  {
+    "entryName": "702 LAUZON txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7024254_LAUZON.txt"
+  },
+  {
+    "entryName": "702 LENNOXVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7024280_LENNOXVILLE.txt"
+  },
+  {
+    "entryName": "702 MONTREAL JAR BOT txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7025257_MONTREAL_JAR_BOT.txt"
+  },
+  {
+    "entryName": "702 MONTREAL JEAN BREBEUF txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7025260_MONTREAL_JEAN_BREBEUF.txt"
+  },
+  {
+    "entryName": "702 MONTREAL LAFONTAINE txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7025267_MONTREAL_LAFONTAINE.txt"
+  },
+  {
+    "entryName": "702 STE CLOTILDE txt",
+    "matchedName": "Sept-Iles",
+    "province": "QC",
+    "lat": 50.2015,
+    "lon": -66.3821,
+    "file": "idf_v3-30_2022_10_31_702_QC_7027039_STE-CLOTILDE.txt"
+  },
+  {
+    "entryName": "702 MONTREAL ST HUBERT A txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7027320_MONTREAL_ST-HUBERT_A.txt"
+  },
+  {
+    "entryName": "702 ST PIERRE DE BROUGHTON txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7027656_ST_PIERRE_DE_BROUGHTON.txt"
+  },
+  {
+    "entryName": "702 ST THEOPHILE txt",
+    "matchedName": "Sept-Iles",
+    "province": "QC",
+    "lat": 50.2015,
+    "lon": -66.3821,
+    "file": "idf_v3-30_2022_10_31_702_QC_7027750_ST_THEOPHILE.txt"
+  },
+  {
+    "entryName": "702 SHERBROOKE txt",
+    "matchedName": "Sherbrooke",
+    "province": "QC",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "file": "idf_v3-30_2022_10_31_702_QC_7028120_SHERBROOKE.txt"
+  },
+  {
+    "entryName": "702 SHERBROOKE A txt",
+    "matchedName": "Sherbrooke",
+    "province": "QC",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "file": "idf_v3-30_2022_10_31_702_QC_7028124_SHERBROOKE_A.txt"
+  },
+  {
+    "entryName": "702 BEAUCEVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7028754_BEAUCEVILLE.txt"
+  },
+  {
+    "entryName": "703 ANGERS txt",
+    "matchedName": "Saint-Jean-sur-Richelieu",
+    "province": "QC",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "file": "idf_v3-30_2022_10_31_703_QC_7030170_ANGERS.txt"
+  },
+  {
+    "entryName": "703 CHENEVILLE txt",
+    "matchedName": "Drummondville",
+    "province": "QC",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "file": "idf_v3-30_2022_10_31_703_QC_7031375_CHENEVILLE.txt"
+  },
+  {
+    "entryName": "703 MONTREAL MIRABEL INT L A txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_703_QC_7035290_MONTREAL_MIRABEL_INT_L_A.txt"
+  },
+  {
+    "entryName": "703 SHAWVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_703_QC_7038040_SHAWVILLE.txt"
+  },
+  {
+    "entryName": "704 FORESTVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_704_QC_7042378_FORESTVILLE.txt"
+  },
+  {
+    "entryName": "704 GAGNON A txt",
+    "matchedName": "Gatineau",
+    "province": "QC",
+    "lat": 45.4765,
+    "lon": -75.7013,
+    "file": "idf_v3-30_2022_10_31_704_QC_7042590_GAGNON_A.txt"
+  },
+  {
+    "entryName": "704 HAVRE SAINT PIERRE A txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_704_QC_7043018_HAVRE-SAINT-PIERRE_A.txt"
+  },
+  {
+    "entryName": "704 SEPT ILES txt",
+    "matchedName": "Sept-Iles",
+    "province": "QC",
+    "lat": 50.2015,
+    "lon": -66.3821,
+    "file": "idf_v3-30_2022_10_31_704_QC_7047914_SEPT-ILES.txt"
+  },
+  {
+    "entryName": "705 GRANDE RIVIERE txt",
+    "matchedName": "Trois-Rivieres",
+    "province": "QC",
+    "lat": 46.343,
+    "lon": -72.544,
+    "file": "idf_v3-30_2022_10_31_705_QC_7052820_GRANDE_RIVIERE.txt"
+  },
+  {
+    "entryName": "705 HEATH POINT txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_705_QC_7053038_HEATH_POINT.txt"
+  },
+  {
+    "entryName": "705 LA POCATIERE txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_705_QC_7054096_LA_POCATIERE.txt"
+  },
+  {
+    "entryName": "705 MATANE txt",
+    "matchedName": "Gatineau",
+    "province": "QC",
+    "lat": 45.4765,
+    "lon": -75.7013,
+    "file": "idf_v3-30_2022_10_31_705_QC_7054640_MATANE.txt"
+  },
+  {
+    "entryName": "705 MONT JOLI txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_705_QC_7055122_MONT-JOLI.txt"
+  },
+  {
+    "entryName": "705 MURDOCHVILLE txt",
+    "matchedName": "Drummondville",
+    "province": "QC",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "file": "idf_v3-30_2022_10_31_705_QC_7055380_MURDOCHVILLE.txt"
+  },
+  {
+    "entryName": "705 NOUVELLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_705_QC_7055705_NOUVELLE.txt"
+  },
+  {
+    "entryName": "705 RIMOUSKI txt",
+    "matchedName": "Trois-Rivieres",
+    "province": "QC",
+    "lat": 46.343,
+    "lon": -72.544,
+    "file": "idf_v3-30_2022_10_31_705_QC_7056480_RIMOUSKI.txt"
+  },
+  {
+    "entryName": "706 BAGOTVILLE A txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_706_QC_7060400_BAGOTVILLE_A.txt"
+  },
+  {
+    "entryName": "706 MONT APICA txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_706_QC_7065100_MONT_APICA.txt"
+  },
+  {
+    "entryName": "706 ROBERVAL A txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_706_QC_7066685_ROBERVAL_A.txt"
+  },
+  {
+    "entryName": "707 PARENT txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_707_QC_7075800_PARENT.txt"
+  },
+  {
+    "entryName": "709 AMOS txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_709_QC_7090120_AMOS.txt"
+  },
+  {
+    "entryName": "709 CHAPAIS txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_709_QC_7091299_CHAPAIS.txt"
+  },
+  {
+    "entryName": "709 LA SARRE txt",
+    "matchedName": "Saint-Jean-sur-Richelieu",
+    "province": "QC",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "file": "idf_v3-30_2022_10_31_709_QC_7094120_LA_SARRE.txt"
+  },
+  {
+    "entryName": "709 RIVIERE HEVA txt",
+    "matchedName": "Trois-Rivieres",
+    "province": "QC",
+    "lat": 46.343,
+    "lon": -72.544,
+    "file": "idf_v3-30_2022_10_31_709_QC_7096621_RIVIERE_HEVA.txt"
+  },
+  {
+    "entryName": "709 VAL D OR txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_709_QC_7098603_VAL-D_OR.txt"
+  },
+  {
+    "entryName": "710 INUKJUAK txt",
+    "matchedName": "Saint-Jean-sur-Richelieu",
+    "province": "QC",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "file": "idf_v3-30_2022_10_31_710_QC_710S005_INUKJUAK.txt"
+  },
+  {
+    "entryName": "LONDON CS txt",
+    "matchedName": "Toronto City",
+    "province": "ON",
+    "lat": 43.65,
+    "lon": -79.38,
+    "file": "6144478_ON_LONDON_CS_2002-2016_RAIN.txt"
+  },
+  {
+    "entryName": "614 LONDON CS txt",
+    "matchedName": "Toronto City",
+    "province": "ON",
+    "lat": 43.65,
+    "lon": -79.38,
+    "file": "idf_v3-30_2022_10_31_614_ON_6144478_LONDON_CS.txt"
+  },
+  {
+    "entryName": "701 BEAUPORT txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_701_QC_7010565_BEAUPORT.txt"
+  },
+  {
+    "entryName": "701 DUCHESNAY txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_701_QC_7012240_DUCHESNAY.txt"
+  },
+  {
+    "entryName": "701 JOLIETTE VILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_701_QC_7013362_JOLIETTE_VILLE.txt"
+  },
+  {
+    "entryName": "701 OKA txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_701_QC_7015730_OKA.txt"
+  },
+  {
+    "entryName": "701 ST ALBAN txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_701_QC_7016800_ST_ALBAN.txt"
+  },
+  {
+    "entryName": "701 SHAWINIGAN txt",
+    "matchedName": "Saint-Jean-sur-Richelieu",
+    "province": "QC",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "file": "idf_v3-30_2022_10_31_701_QC_7018001_SHAWINIGAN.txt"
+  },
+  {
+    "entryName": "702 ARTHABASKA txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_702_QC_7020305_ARTHABASKA.txt"
+  },
+  {
+    "entryName": "702 BROME txt",
+    "matchedName": "Sherbrooke",
+    "province": "QC",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "file": "idf_v3-30_2022_10_31_702_QC_7020840_BROME.txt"
+  },
+  {
+    "entryName": "702 DANVILLE txt",
+    "matchedName": "Drummondville",
+    "province": "QC",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "file": "idf_v3-30_2022_10_31_702_QC_7021954_DANVILLE.txt"
+  },
+  {
+    "entryName": "702 DRUMMONDVILLE txt",
+    "matchedName": "Drummondville",
+    "province": "QC",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "file": "idf_v3-30_2022_10_31_702_QC_7022160_DRUMMONDVILLE.txt"
+  },
+  {
+    "entryName": "702 FORTIERVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7022494_FORTIERVILLE.txt"
+  },
+  {
+    "entryName": "702 GEORGEVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7022720_GEORGEVILLE.txt"
+  },
+  {
+    "entryName": "702 GRANBY txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7022802_GRANBY.txt"
+  },
+  {
+    "entryName": "702 ISLAND BROOK txt",
+    "matchedName": "Sherbrooke",
+    "province": "QC",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "file": "idf_v3-30_2022_10_31_702_QC_7023312_ISLAND_BROOK.txt"
+  },
+  {
+    "entryName": "702 LAUZON txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7024254_LAUZON.txt"
+  },
+  {
+    "entryName": "702 LENNOXVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7024280_LENNOXVILLE.txt"
+  },
+  {
+    "entryName": "702 MONTREAL JAR BOT txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7025257_MONTREAL_JAR_BOT.txt"
+  },
+  {
+    "entryName": "702 MONTREAL JEAN BREBEUF txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7025260_MONTREAL_JEAN_BREBEUF.txt"
+  },
+  {
+    "entryName": "702 MONTREAL LAFONTAINE txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7025267_MONTREAL_LAFONTAINE.txt"
+  },
+  {
+    "entryName": "702 STE CLOTILDE txt",
+    "matchedName": "Sept-Iles",
+    "province": "QC",
+    "lat": 50.2015,
+    "lon": -66.3821,
+    "file": "idf_v3-30_2022_10_31_702_QC_7027039_STE-CLOTILDE.txt"
+  },
+  {
+    "entryName": "702 MONTREAL ST HUBERT A txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7027320_MONTREAL_ST-HUBERT_A.txt"
+  },
+  {
+    "entryName": "702 ST PIERRE DE BROUGHTON txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_702_QC_7027656_ST_PIERRE_DE_BROUGHTON.txt"
+  },
+  {
+    "entryName": "702 ST THEOPHILE txt",
+    "matchedName": "Sept-Iles",
+    "province": "QC",
+    "lat": 50.2015,
+    "lon": -66.3821,
+    "file": "idf_v3-30_2022_10_31_702_QC_7027750_ST_THEOPHILE.txt"
+  },
+  {
+    "entryName": "702 SHERBROOKE txt",
+    "matchedName": "Sherbrooke",
+    "province": "QC",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "file": "idf_v3-30_2022_10_31_702_QC_7028120_SHERBROOKE.txt"
+  },
+  {
+    "entryName": "702 SHERBROOKE A txt",
+    "matchedName": "Sherbrooke",
+    "province": "QC",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "file": "idf_v3-30_2022_10_31_702_QC_7028124_SHERBROOKE_A.txt"
+  },
+  {
+    "entryName": "702 BEAUCEVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_702_QC_7028754_BEAUCEVILLE.txt"
+  },
+  {
+    "entryName": "703 ANGERS txt",
+    "matchedName": "Saint-Jean-sur-Richelieu",
+    "province": "QC",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "file": "idf_v3-30_2022_10_31_703_QC_7030170_ANGERS.txt"
+  },
+  {
+    "entryName": "703 CHENEVILLE txt",
+    "matchedName": "Drummondville",
+    "province": "QC",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "file": "idf_v3-30_2022_10_31_703_QC_7031375_CHENEVILLE.txt"
+  },
+  {
+    "entryName": "703 MONTREAL MIRABEL INT L A txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_703_QC_7035290_MONTREAL_MIRABEL_INT_L_A.txt"
+  },
+  {
+    "entryName": "703 SHAWVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_703_QC_7038040_SHAWVILLE.txt"
+  },
+  {
+    "entryName": "704 FORESTVILLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_704_QC_7042378_FORESTVILLE.txt"
+  },
+  {
+    "entryName": "704 GAGNON A txt",
+    "matchedName": "Gatineau",
+    "province": "QC",
+    "lat": 45.4765,
+    "lon": -75.7013,
+    "file": "idf_v3-30_2022_10_31_704_QC_7042590_GAGNON_A.txt"
+  },
+  {
+    "entryName": "704 HAVRE SAINT PIERRE A txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_704_QC_7043018_HAVRE-SAINT-PIERRE_A.txt"
+  },
+  {
+    "entryName": "704 SEPT ILES txt",
+    "matchedName": "Sept-Iles",
+    "province": "QC",
+    "lat": 50.2015,
+    "lon": -66.3821,
+    "file": "idf_v3-30_2022_10_31_704_QC_7047914_SEPT-ILES.txt"
+  },
+  {
+    "entryName": "705 GRANDE RIVIERE txt",
+    "matchedName": "Trois-Rivieres",
+    "province": "QC",
+    "lat": 46.343,
+    "lon": -72.544,
+    "file": "idf_v3-30_2022_10_31_705_QC_7052820_GRANDE_RIVIERE.txt"
+  },
+  {
+    "entryName": "705 HEATH POINT txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_705_QC_7053038_HEATH_POINT.txt"
+  },
+  {
+    "entryName": "705 LA POCATIERE txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_705_QC_7054096_LA_POCATIERE.txt"
+  },
+  {
+    "entryName": "705 MATANE txt",
+    "matchedName": "Gatineau",
+    "province": "QC",
+    "lat": 45.4765,
+    "lon": -75.7013,
+    "file": "idf_v3-30_2022_10_31_705_QC_7054640_MATANE.txt"
+  },
+  {
+    "entryName": "705 MONT JOLI txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_705_QC_7055122_MONT-JOLI.txt"
+  },
+  {
+    "entryName": "705 MURDOCHVILLE txt",
+    "matchedName": "Drummondville",
+    "province": "QC",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "file": "idf_v3-30_2022_10_31_705_QC_7055380_MURDOCHVILLE.txt"
+  },
+  {
+    "entryName": "705 NOUVELLE txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_705_QC_7055705_NOUVELLE.txt"
+  },
+  {
+    "entryName": "705 RIMOUSKI txt",
+    "matchedName": "Trois-Rivieres",
+    "province": "QC",
+    "lat": 46.343,
+    "lon": -72.544,
+    "file": "idf_v3-30_2022_10_31_705_QC_7056480_RIMOUSKI.txt"
+  },
+  {
+    "entryName": "706 BAGOTVILLE A txt",
+    "matchedName": "Saguenay/Bagotville",
+    "province": "QC",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "file": "idf_v3-30_2022_10_31_706_QC_7060400_BAGOTVILLE_A.txt"
+  },
+  {
+    "entryName": "706 MONT APICA txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_706_QC_7065100_MONT_APICA.txt"
+  },
+  {
+    "entryName": "706 ROBERVAL A txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_706_QC_7066685_ROBERVAL_A.txt"
+  },
+  {
+    "entryName": "707 PARENT txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_707_QC_7075800_PARENT.txt"
+  },
+  {
+    "entryName": "709 AMOS txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_709_QC_7090120_AMOS.txt"
+  },
+  {
+    "entryName": "709 CHAPAIS txt",
+    "matchedName": "Arthabaska",
+    "province": "QC",
+    "lat": 46.08,
+    "lon": -71.95,
+    "file": "idf_v3-30_2022_10_31_709_QC_7091299_CHAPAIS.txt"
+  },
+  {
+    "entryName": "709 LA SARRE txt",
+    "matchedName": "Saint-Jean-sur-Richelieu",
+    "province": "QC",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "file": "idf_v3-30_2022_10_31_709_QC_7094120_LA_SARRE.txt"
+  },
+  {
+    "entryName": "709 RIVIERE HEVA txt",
+    "matchedName": "Trois-Rivieres",
+    "province": "QC",
+    "lat": 46.343,
+    "lon": -72.544,
+    "file": "idf_v3-30_2022_10_31_709_QC_7096621_RIVIERE_HEVA.txt"
+  },
+  {
+    "entryName": "709 VAL D OR txt",
+    "matchedName": "Montreal Pierre Elliott Trudeau Intl",
+    "province": "QC",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "file": "idf_v3-30_2022_10_31_709_QC_7098603_VAL-D_OR.txt"
+  },
+  {
+    "entryName": "710 INUKJUAK txt",
+    "matchedName": "Saint-Jean-sur-Richelieu",
+    "province": "QC",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "file": "idf_v3-30_2022_10_31_710_QC_710S005_INUKJUAK.txt"
+  }
+]

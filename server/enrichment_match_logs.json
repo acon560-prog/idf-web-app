@@ -1,0 +1,952 @@
+[
+  {
+    "stationName": "Calgary Int'l A",
+    "matchedName": "CALGARY INT'L A",
+    "distanceKm": "0.68",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "Vancouver Int'l A",
+    "matchedName": "VANCOUVER INT'L A",
+    "distanceKm": "1.88",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "Winnipeg Int'l A",
+    "matchedName": "WINNIPEG INTL A",
+    "distanceKm": "0.72",
+    "note": "Accepted fuzzy match with geo proximity"
+  },
+  {
+    "stationName": "Fredericton A",
+    "matchedName": "FREDERICTON A",
+    "distanceKm": "0.29",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "St. John's A",
+    "matchedName": "ST JOHN'S",
+    "distanceKm": "7.02",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "Halifax Int'l A",
+    "matchedName": null,
+    "distanceKm": null,
+    "note": "No match found"
+  },
+  {
+    "stationName": "Toronto City",
+    "matchedName": "TORONTO CITY",
+    "distanceKm": "2.45",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "Charlottetown A",
+    "matchedName": "CHARLOTTETOWN",
+    "distanceKm": "6.90",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "Arthabaska",
+    "matchedName": "ARTHABASKA",
+    "distanceKm": "7.04",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "Regina Int'l A",
+    "matchedName": "REGINA INT'L A",
+    "distanceKm": "0.60",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "beauport",
+    "matchedName": "BEAUPORT",
+    "distanceKm": "6227.96",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "charlesbourg parc orlean",
+    "matchedName": "CHARLESBOURG PARC ORLEAN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "deschambault",
+    "matchedName": "DESCHAMBAULT",
+    "distanceKm": "4.98",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "duberger",
+    "matchedName": "DUBERGER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "duchesnay",
+    "matchedName": "DUCHESNAY",
+    "distanceKm": "5395.34",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "joliette ville",
+    "matchedName": "JOLIETTE VILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "l'assomption",
+    "matchedName": "L'ASSOMPTION",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "oka",
+    "matchedName": "OKA",
+    "distanceKm": "6366.99",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "quebec",
+    "matchedName": "QUEBEC",
+    "distanceKm": "4378.73",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st alban",
+    "matchedName": "ST ALBAN",
+    "distanceKm": "6162.47",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st augustin",
+    "matchedName": "ST AUGUSTIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste beatrix",
+    "matchedName": "STE BEATRIX",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st benoit",
+    "matchedName": "ST BENOIT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste catherine",
+    "matchedName": "STE CATHERINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st donat",
+    "matchedName": "ST DONAT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste foy matapedia",
+    "matchedName": "STE FOY MATAPEDIA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "7017bfn ste foy (pie xii)",
+    "matchedName": null,
+    "distanceKm": null,
+    "note": "No match found"
+  },
+  {
+    "stationName": "shawinigan",
+    "matchedName": "SHAWINIGAN",
+    "distanceKm": "6349.87",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "courville de poissy",
+    "matchedName": "COURVILLE DE POISSY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "trois rivieres aqueduc",
+    "matchedName": "TROIS RIVIERES AQUEDUC",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "quebec jean lesage intl",
+    "matchedName": "QUEBEC/JEAN LESAGE INTL A",
+    "distanceKm": "0.42",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "asbestos",
+    "matchedName": "ASBESTOS",
+    "distanceKm": "6266.13",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "brome",
+    "matchedName": "BROME",
+    "distanceKm": "5455.01",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "chartierville",
+    "matchedName": "CHARTIERVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "danville",
+    "matchedName": "DANVILLE",
+    "distanceKm": "6425.35",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "drummondville",
+    "matchedName": "DRUMMONDVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "fortierville",
+    "matchedName": "FORTIERVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "frelighsburg",
+    "matchedName": "FRELIGHSBURG",
+    "distanceKm": "2.27",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "georgeville",
+    "matchedName": "GEORGEVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "granby",
+    "matchedName": "GRANBY",
+    "distanceKm": "8281.57",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "island brook",
+    "matchedName": "ISLAND BROOK",
+    "distanceKm": "7002.72",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "7023677 lac megantic 2",
+    "matchedName": null,
+    "distanceKm": null,
+    "note": "No match found"
+  },
+  {
+    "stationName": "lauzon",
+    "matchedName": "LAUZON",
+    "distanceKm": "6244.75",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "lennoxville",
+    "matchedName": "LENNOXVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "lingwick",
+    "matchedName": "LINGWICK",
+    "distanceKm": "6018.61",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "maple leaf east",
+    "matchedName": "MAPLE LEAF EAST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "mctavish",
+    "matchedName": "MCTAVISH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "mont megantic",
+    "matchedName": "MONT MEGANTIC",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "montreal jar bot",
+    "matchedName": "MONTREAL JAR BOT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "montreal jean brebeuf",
+    "matchedName": "MONTREAL JEAN BREBEUF",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "montreal lafontaine",
+    "matchedName": "MONTREAL LAFONTAINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "nicolet",
+    "matchedName": "NICOLET",
+    "distanceKm": "8705.17",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ormstown",
+    "matchedName": "ORMSTOWN",
+    "distanceKm": "8623.01",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste-clotilde",
+    "matchedName": "STE-CLOTILDE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste dorothee",
+    "matchedName": "STE DOROTHEE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste edwidge",
+    "matchedName": "STE EDWIDGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st ephrem",
+    "matchedName": "ST EPHREM",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st ferdinand",
+    "matchedName": "ST FERDINAND",
+    "distanceKm": "6818.24",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st flavien",
+    "matchedName": "ST FLAVIEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st georges",
+    "matchedName": "ST GEORGES",
+    "distanceKm": "955.75",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st georges",
+    "note": "Conflicting provinceCode (master: NL, official: QC), using official one",
+    "latMaster": 48.43333333333333,
+    "lonMaster": -58.46666666666667,
+    "latOfficial": 46.15,
+    "lonOfficial": -70.7
+  },
+  {
+    "stationName": "st guillaume",
+    "matchedName": "ST GUILLAUME",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "montreal st-hubert a",
+    "matchedName": "MONTREAL/ST-HUBERT A",
+    "distanceKm": "0.10",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st isidore d'auckland",
+    "matchedName": "ST ISIDORE D'AUCKLAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste madeleine",
+    "matchedName": "STE MADELEINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st pierre de broughton",
+    "matchedName": "ST PIERRE DE BROUGHTON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st sebastien",
+    "matchedName": "ST SEBASTIEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st theophile",
+    "matchedName": "ST THEOPHILE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st zacharie",
+    "matchedName": "ST ZACHARIE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "sawyerville nord",
+    "matchedName": "SAWYERVILLE NORD",
+    "distanceKm": "6428.67",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "sherbrooke",
+    "matchedName": "SHERBROOKE",
+    "distanceKm": "5403.97",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "sherbrooke a",
+    "matchedName": "SHERBROOKE",
+    "distanceKm": "5403.97",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "thetford mines",
+    "matchedName": "THETFORD MINES",
+    "distanceKm": "4.51",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "vallee jonction",
+    "matchedName": "VALLEE JONCTION",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "valleyfield",
+    "matchedName": "VALLEYFIELD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "beauceville",
+    "matchedName": "BEAUCEVILLE",
+    "distanceKm": "1.52",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "west ditton",
+    "matchedName": "WEST DITTON",
+    "distanceKm": "6834.20",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "woburn",
+    "matchedName": "WOBURN",
+    "distanceKm": "7050.56",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "702fhl8 ste-anne-de-bellevue 1",
+    "matchedName": "STE-ANNE-DE-BELLEVUE 1",
+    "distanceKm": null,
+    "note": "Accepted fuzzy match (no geo info)"
+  },
+  {
+    "stationName": "l'acadie",
+    "matchedName": "L'ACADIE",
+    "distanceKm": "7410.86",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "montreal pierre elliott trudeau intl",
+    "matchedName": "MONTREAL/PIERRE ELLIOTT TRUDEAU INTL A",
+    "distanceKm": "0.66",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "angers",
+    "matchedName": "ANGERS",
+    "distanceKm": "6707.50",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "barrage mercier",
+    "matchedName": "BARRAGE MERCIER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "cheneville",
+    "matchedName": "CHENEVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "maniwaki ua",
+    "matchedName": "MANIWAKI UA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "montreal mirabel int'l a",
+    "matchedName": "MONTREAL/MIRABEL INT'L A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "nominingue",
+    "matchedName": "NOMININGUE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste agathe des monts",
+    "matchedName": "STE AGATHE DES MONTS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st jerome",
+    "matchedName": "ST JEROME",
+    "distanceKm": "3201.30",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "shawville",
+    "matchedName": "SHAWVILLE",
+    "distanceKm": "6709.56",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "baie-comeau a",
+    "matchedName": "BAIE COMEAU",
+    "distanceKm": "11.32",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "baie st paul",
+    "matchedName": "BAIE ST PAUL",
+    "distanceKm": "3129.77",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "lourdes de blanc sablon a",
+    "matchedName": "LOURDES DE BLANC SABLON A",
+    "distanceKm": "0.92",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "cap tourmente",
+    "matchedName": "CAP TOURMENTE",
+    "distanceKm": "1.34",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "7041312 charlevoix (mrc)",
+    "matchedName": null,
+    "distanceKm": null,
+    "note": "No match found"
+  },
+  {
+    "stationName": "chevery",
+    "matchedName": "CHEVERY",
+    "distanceKm": "6242.88",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "forestville",
+    "matchedName": "FORESTVILLE",
+    "distanceKm": "6056.45",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "foret montmorency rcs",
+    "matchedName": "FORET MONTMORENCY RCS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "gagnon a",
+    "matchedName": "GAGNON A",
+    "distanceKm": "5637.70",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "grand fonds",
+    "matchedName": "GRAND FONDS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "havre-saint-pierre a",
+    "matchedName": "HAVRE-SAINT-PIERRE A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "natashquan a",
+    "matchedName": "NATASHQUAN A",
+    "distanceKm": "2.11",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "pentecote",
+    "matchedName": "PENTECOTE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "sept-iles",
+    "matchedName": "SEPT-ILES A",
+    "distanceKm": "0.75",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "pointe noire cs",
+    "matchedName": "POINTE NOIRE CS",
+    "distanceKm": "5586.66",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "baie-comeau",
+    "matchedName": "BAIE COMEAU",
+    "distanceKm": "11.32",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "cap madeleine",
+    "matchedName": "CAP DE LA MADELEINE",
+    "distanceKm": "626.23",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "cap seize",
+    "matchedName": "CAP SEIZE",
+    "distanceKm": "4920.18",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "gaspe airport",
+    "matchedName": "GASPE AIRPORT",
+    "distanceKm": "5450.07",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "grande riviere",
+    "matchedName": "GRANDE RIVIERE",
+    "distanceKm": "4667.79",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "heath point",
+    "matchedName": "HEATH POINT",
+    "distanceKm": "5499.17",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "lac humqui",
+    "matchedName": "LAC HUMQUI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "iles de la madeleine",
+    "matchedName": "ILES DE LA MADELEINE A",
+    "distanceKm": "1.01",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "la pocatiere",
+    "matchedName": "LA POCATIERE",
+    "distanceKm": "5701.39",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "matane",
+    "matchedName": "MATANE",
+    "distanceKm": "6065.53",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "mont-joli",
+    "matchedName": "MONT-JOLI A",
+    "distanceKm": "1.69",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "murdochville",
+    "matchedName": "MURDOCHVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "notre dame du lac",
+    "matchedName": "NOTRE DAME DU LAC",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "nouvelle",
+    "matchedName": "NOUVELLE",
+    "distanceKm": "5015.82",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "port-menier",
+    "matchedName": "PORT MENIER",
+    "distanceKm": "8154.93",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "rimouski",
+    "matchedName": "RIMOUSKI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "riviere au renard",
+    "matchedName": "RIVIERE AU RENARD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "riviere-du-loup",
+    "matchedName": "RIVIERE DU LOUP",
+    "distanceKm": "0.66",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st alexis de matapedia",
+    "matchedName": "ST ALEXIS DE MATAPEDIA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st bruno kamouraska",
+    "matchedName": "ST BRUNO KAMOURASKA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st charles garnier",
+    "matchedName": "ST CHARLES GARNIER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ste germaine",
+    "matchedName": "STE GERMAINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st jean de cherbourg",
+    "matchedName": "ST JEAN DE CHERBOURG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st malachie",
+    "matchedName": "ST MALACHIE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st modeste",
+    "matchedName": "ST MODESTE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "bagotville a",
+    "matchedName": "BAGOTVILLE A",
+    "distanceKm": "6197.03",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "jonquiere",
+    "matchedName": "JONQUIERE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "lac ste croix",
+    "matchedName": "LAC STE CROIX",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "mont apica",
+    "matchedName": "MONT APICA",
+    "distanceKm": "4799.58",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "normandin",
+    "matchedName": "NORMANDIN",
+    "distanceKm": "6836.12",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "portage des roches",
+    "matchedName": "PORTAGE DES ROCHES",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "roberval a",
+    "matchedName": "ROBERVAL A",
+    "distanceKm": "6746.75",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "st coeur de marie",
+    "matchedName": "ST COEUR DE MARIE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "la baie",
+    "matchedName": "LA BAIE",
+    "distanceKm": "5522.70",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "grande anse",
+    "matchedName": "GRANDE ANSE",
+    "distanceKm": "6445.49",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "la tuque",
+    "matchedName": "LA TUQUE",
+    "distanceKm": "4825.62",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "parent",
+    "matchedName": "PARENT",
+    "distanceKm": "6356.37",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "saint-michel-des-saints",
+    "matchedName": "SAINT-MICHEL-DES-SAINTS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "barrage angliers",
+    "matchedName": "BARRAGE ANGLIERS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "barrage temiscamingue",
+    "matchedName": "BARRAGE TEMISCAMINGUE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "amos",
+    "matchedName": "AMOS",
+    "distanceKm": "6436.30",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "chapais",
+    "matchedName": "CHAPAIS",
+    "distanceKm": "6276.33",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "la grande riviere a",
+    "matchedName": "GRANDE RIVIERE",
+    "distanceKm": "4667.79",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "la sarre",
+    "matchedName": "LA SARRE",
+    "distanceKm": "6422.89",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "matagami a",
+    "matchedName": "MATAGAMI",
+    "distanceKm": "7133.84",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "nitchequon",
+    "matchedName": "NITCHEQUON",
+    "distanceKm": "5767.24",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "riviere heva",
+    "matchedName": "RIVIERE HEVA",
+    "distanceKm": "5536.85",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "val-d'or",
+    "matchedName": "VAL-D'OR A",
+    "distanceKm": "0.45",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "kuujjuarapik",
+    "matchedName": "KUUJJUARAPIK A",
+    "distanceKm": "14.84",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "inukjuak",
+    "matchedName": "INUKJUAK A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "kuujjuaq a",
+    "matchedName": "KUUJJUAQ A",
+    "distanceKm": "1.22",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "quaqtaq",
+    "matchedName": "QUAQTAQ",
+    "distanceKm": "4676.70",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "schefferville",
+    "matchedName": "SCHEFFERVILLE A",
+    "distanceKm": "0.94",
+    "note": "Exact normalized name match"
+  }
+]

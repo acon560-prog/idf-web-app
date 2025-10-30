@@ -1,0 +1,122 @@
+[
+  {
+    "province": "AB",
+    "stationId": "3012200",
+    "name": "Calgary Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=AB&stnID=3012200"
+  },
+  {
+    "province": "BC",
+    "stationId": "1100030",
+    "name": "Vancouver Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=BC&stnID=1100030"
+  },
+  {
+    "province": "MB",
+    "stationId": "5023222",
+    "name": "Winnipeg Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=MB&stnID=5023222"
+  },
+  {
+    "province": "NB",
+    "stationId": "6100135",
+    "name": "Fredericton A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=NB&stnID=6100135"
+  },
+  {
+    "province": "NL",
+    "stationId": "8403500",
+    "name": "St. John's A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=NL&stnID=8403500"
+  },
+  {
+    "province": "NS",
+    "stationId": "8202250",
+    "name": "Halifax Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=NS&stnID=8202250"
+  },
+  {
+    "province": "ON",
+    "stationId": "6100970",
+    "name": "Toronto City",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=ON&stnID=6100970"
+  },
+  {
+    "province": "PE",
+    "stationId": "8300300",
+    "name": "Charlottetown A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=PE&stnID=8300300"
+  },
+  {
+    "province": "QC",
+    "stationId": "7016520",
+    "name": "Montreal Pierre Elliott Trudeau Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=QC&stnID=7016520"
+  },
+  {
+    "province": "SK",
+    "stationId": "4016561",
+    "name": "Regina Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=SK&stnID=4016561"
+  },
+  {
+    "province": "AB",
+    "stationId": "3012200",
+    "name": "Calgary Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=AB&stnID=3012200"
+  },
+  {
+    "province": "BC",
+    "stationId": "1100030",
+    "name": "Vancouver Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=BC&stnID=1100030"
+  },
+  {
+    "province": "MB",
+    "stationId": "5023222",
+    "name": "Winnipeg Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=MB&stnID=5023222"
+  },
+  {
+    "province": "NB",
+    "stationId": "6100135",
+    "name": "Fredericton A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=NB&stnID=6100135"
+  },
+  {
+    "province": "NL",
+    "stationId": "8403500",
+    "name": "St. John's A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=NL&stnID=8403500"
+  },
+  {
+    "province": "NS",
+    "stationId": "8202250",
+    "name": "Halifax Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=NS&stnID=8202250"
+  },
+  {
+    "province": "ON",
+    "stationId": "6100970",
+    "name": "Toronto City",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=ON&stnID=6100970"
+  },
+  {
+    "province": "PE",
+    "stationId": "8300300",
+    "name": "Charlottetown A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=PE&stnID=8300300"
+  },
+  {
+    "province": "QC",
+    "stationId": "7016520",
+    "name": "Montreal Pierre Elliott Trudeau Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=QC&stnID=7016520"
+  },
+  {
+    "province": "SK",
+    "stationId": "4016561",
+    "name": "Regina Int'l A",
+    "stationUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_e.html?searchType=stnProv&lstProvince=SK&stnID=4016561"
+  }
+]

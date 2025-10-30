@@ -1,0 +1,154 @@
+[
+  {
+    "province": "AB",
+    "stationId": "3012200",
+    "name": "Calgary Int'l A",
+    "lat": 51.12,
+    "lon": -114.02,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=3012200&autonav=1"
+  },
+  {
+    "province": "BC",
+    "stationId": "1100030",
+    "name": "Vancouver Int'l A",
+    "lat": 49.18,
+    "lon": -123.17,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=1100030&autonav=1"
+  },
+  {
+    "province": "MB",
+    "stationId": "5023222",
+    "name": "Winnipeg Int'l A",
+    "lat": 49.91,
+    "lon": -97.23,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=5023222&autonav=1"
+  },
+  {
+    "province": "NB",
+    "stationId": "6100135",
+    "name": "Fredericton A",
+    "lat": 45.87,
+    "lon": -66.53,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=6100135&autonav=1"
+  },
+  {
+    "province": "NL",
+    "stationId": "8403500",
+    "name": "St. John's A",
+    "lat": 47.62,
+    "lon": -52.75,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=8403500&autonav=1"
+  },
+  {
+    "province": "NS",
+    "stationId": "8202250",
+    "name": "Halifax Int'l A",
+    "lat": 44.88,
+    "lon": -63.51,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=8202250&autonav=1"
+  },
+  {
+    "province": "ON",
+    "stationId": "6100970",
+    "name": "Toronto City",
+    "lat": 43.65,
+    "lon": -79.38,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=6100970&autonav=1"
+  },
+  {
+    "province": "PE",
+    "stationId": "8300300",
+    "name": "Charlottetown A",
+    "lat": 46.29,
+    "lon": -63.13,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=8300300&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "82000000",
+    "name": "Arthabaska",
+    "lat": 46.08,
+    "lon": -71.95,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=82000000&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "702S006",
+    "name": "Montreal Pierre Elliott Trudeau Intl",
+    "lat": 45.4706,
+    "lon": -73.7408,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=702S006&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "7016280",
+    "name": "Quebec",
+    "lat": 46.8139,
+    "lon": -71.2082,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=7016280&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "7057110",
+    "name": "Sherbrooke",
+    "lat": 45.4042,
+    "lon": -71.8929,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=7057110&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "7070830",
+    "name": "Gatineau",
+    "lat": 45.4765,
+    "lon": -75.7013,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=7070830&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "703K006",
+    "name": "Trois-Rivieres",
+    "lat": 46.343,
+    "lon": -72.544,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=703K006&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "7042340",
+    "name": "Saguenay/Bagotville",
+    "lat": 48.4283,
+    "lon": -71.064,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=7042340&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "7051050",
+    "name": "Drummondville",
+    "lat": 45.8833,
+    "lon": -72.4833,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=7051050&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "7014440",
+    "name": "Sept-Iles",
+    "lat": 50.2015,
+    "lon": -66.3821,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=7014440&autonav=1"
+  },
+  {
+    "province": "QC",
+    "stationId": "7038380",
+    "name": "Saint-Jean-sur-Richelieu",
+    "lat": 45.3072,
+    "lon": -73.262,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=7038380&autonav=1"
+  },
+  {
+    "province": "SK",
+    "stationId": "4016561",
+    "name": "Regina Int'l A",
+    "lat": 50.43,
+    "lon": -104.66,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/results_1991_2020_station_e.csv?stnID=4016561&autonav=1"
+  }
+]

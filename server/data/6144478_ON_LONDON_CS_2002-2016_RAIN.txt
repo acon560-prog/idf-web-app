@@ -1,0 +1,35 @@
+RASM2013A 03/2015                                                                                              Processed 2016-01-27
+
+                                              METEOROLOGICAL SERVICE OF CANADA
+                                           RAIN DEPTH, DURATION, FREQUENCY VALUES
+                                    PREPARED BY THE ENGINEERING CLIMATE SERVICES UNIT
+************************************************************************************************************************************
+ STATION : LONDON CS                                                                                       STATION NUMBER  6144478
+
+ LATITUDE: 43.03N   LONGITUDE:  81.15W   ELEVATION (M):   278
+
+ ARCHIVE: DLY04 (01/11/2002 - 31/12/2006) DLY02 (01/01/2007 - 26/01/2016)
+
+ CRITICAL PERIOD :  1ST OF MONTH 1 TO THE END OF MONTH 12                                             NOTE : MODIFIED GUMBEL 12/82
+
+      TOTAL %       START
+  YR  DAYS VALID FLAG MAX   1 DAY  2 DAY  3 DAY  4 DAY  5 DAY  6 DAY  7 DAY  8 DAY  9 DAY 10 DAY 15 DAY 20 DAY 25 DAY 30 DAY 
+
+ 2002   61   17  **   M/D   11/10  11/10  11/10  11/10  11/10  11/10  11/10  11/10  11/ 6  11/ 5  11/10  11/ 5  11/ 5  11/ 5
+                      .1MM    532    560    572    572    597    605    605    605    613    626    683    712    712    716
+ 2003  304   83  **   M/D    7/21   7/21   4/30   9/19   9/18   4/30   4/30   9/15   9/14   9/14   9/14   9/14   4/30   9/15
+                      .1MM    408    410    422    468    472    520    520    656    688    690    816    904   1078   1198
+ 2004    30     8     0  **
+ 2005     0     0     0  **
+ 2006     0     0     0  **
+ 2007    23     6     0  **
+ 2008    30     8     0  **
+ 2009    10     3     0  **
+ 2010     0     0     0  **
+ 2011     3     1     0  **
+ 2012    17     5     0  **
+ 2013    16     4     0  **
+ 2014     0     0     0  **
+ 2015     0     0     0  **
+ 2016     0     0     0  **
+  ** WARNING ** : INSUFFICIENT NUMBER OF VALID YEARS OF DATA TO OBTAIN MEANINGFUL STATISTICS FOR THIS STATION -NN=    0

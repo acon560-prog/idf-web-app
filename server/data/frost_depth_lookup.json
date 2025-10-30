@@ -1,0 +1,91 @@
+{
+  "Canada": {
+    "Quebec": {
+      "Montreal": {
+        "frost_depth": 1.5,
+        "lat": 45.5081,
+        "lon": -73.5693
+      },
+      "Quebec City": {
+        "frost_depth": 1.7,
+        "lat": 46.8139,
+        "lon": -71.208
+      },
+      "Sherbrooke": {
+        "frost_depth": 1.7,
+        "lat": 45.4042,
+        "lon": -71.8929
+      },
+      "Gatineau": {
+        "frost_depth": 1.8,
+        "lat": 45.4765,
+        "lon": -75.7013
+      },
+      "Bromont": {
+        "frost_depth": 1.5,
+        "lat": 45.305,
+        "lon": -72.9566
+      },
+      "default": {
+        "frost_depth": 1.7,
+        "lat": 46.0,
+        "lon": -72.0
+      }
+    },
+    "Ontario": {
+      "Toronto": {
+        "frost_depth": 1.2,
+        "lat": 43.6532,
+        "lon": -79.3832
+      },
+      "Ottawa": {
+        "frost_depth": 1.8,
+        "lat": 45.4215,
+        "lon": -75.6972
+      },
+      "London": {
+        "frost_depth": 1.5,
+        "lat": 42.9849,
+        "lon": -81.2453
+      },
+      "Thunder Bay": {
+        "frost_depth": 2.0,
+        "lat": 48.3809,
+        "lon": -89.2477
+      },
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 45.0,
+        "lon": -79.0
+      }
+    }
+  },
+  "USA": {
+    "Minnesota": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 45.0,
+        "lon": -93.0
+      }
+    },
+    "Ohio": {
+      "default": {
+        "frost_depth": 0.8,
+        "lat": 40.0,
+        "lon": -82.0
+      }
+    },
+    "Washington": {
+      "default": {
+        "frost_depth": 0.5,
+        "lat": 47.0,
+        "lon": -120.0
+      }
+    },
+    "default": {
+      "frost_depth": 1.2,
+      "lat": 39.0,
+      "lon": -98.0
+    }
+  }
+}

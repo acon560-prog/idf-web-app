@@ -1,0 +1,15 @@
+{
+  "name": "utils",
+  "version": "1.0.0",
+  "main": "enrichFromECCC.js",
+  "scripts": {
+    "bulk-download": "node bulk_download_eccc_normals.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "puppeteer": "^24.15.0"
+  }
+}

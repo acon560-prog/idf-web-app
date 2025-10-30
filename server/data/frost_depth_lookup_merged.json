@@ -1,0 +1,420 @@
+{
+  "Canada": {
+    "Quebec": {
+      "Montreal": {
+        "frost_depth": 1.5,
+        "lat": 45.5081,
+        "lon": -73.5693
+      },
+      "Quebec City": {
+        "frost_depth": 1.7,
+        "lat": 46.8139,
+        "lon": -71.208
+      },
+      "Sherbrooke": {
+        "frost_depth": 1.7,
+        "lat": 45.4042,
+        "lon": -71.8929
+      },
+      "Gatineau": {
+        "frost_depth": 1.8,
+        "lat": 45.4765,
+        "lon": -75.7013
+      },
+      "Bromont": {
+        "frost_depth": 1.5,
+        "lat": 45.305,
+        "lon": -72.9566
+      },
+      "default": {
+        "frost_depth": 1.7,
+        "lat": 46.0,
+        "lon": -72.0
+      }
+    },
+    "Ontario": {
+      "Toronto": {
+        "frost_depth": 1.2,
+        "lat": 43.6532,
+        "lon": -79.3832
+      },
+      "Ottawa": {
+        "frost_depth": 1.8,
+        "lat": 45.4215,
+        "lon": -75.6972
+      },
+      "London": {
+        "frost_depth": 1.5,
+        "lat": 42.9849,
+        "lon": -81.2453
+      },
+      "Thunder Bay": {
+        "frost_depth": 2.0,
+        "lat": 48.3809,
+        "lon": -89.2477
+      },
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 45.0,
+        "lon": -79.0
+      }
+    }
+  },
+  "USA": {
+    "Alabama": {
+      "default": {
+        "frost_depth": 0.3,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Alaska": {
+      "default": {
+        "frost_depth": 1.8,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Arizona": {
+      "default": {
+        "frost_depth": 0.3,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Arkansas": {
+      "default": {
+        "frost_depth": 0.4,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "California": {
+      "default": {
+        "frost_depth": 0.3,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Colorado": {
+      "default": {
+        "frost_depth": 1.2,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Connecticut": {
+      "default": {
+        "frost_depth": 1.2,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Delaware": {
+      "default": {
+        "frost_depth": 0.81,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Florida": {
+      "default": {
+        "frost_depth": 0.0,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Georgia": {
+      "default": {
+        "frost_depth": 0.3,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Hawaii": {
+      "default": {
+        "frost_depth": 0.0,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Idaho": {
+      "default": {
+        "frost_depth": 0.9,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Illinois": {
+      "default": {
+        "frost_depth": 1.0,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Indiana": {
+      "default": {
+        "frost_depth": 1.1,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Iowa": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Kansas": {
+      "default": {
+        "frost_depth": 1.1,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Kentucky": {
+      "default": {
+        "frost_depth": 0.8,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Louisiana": {
+      "default": {
+        "frost_depth": 0.2,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Maine": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Maryland": {
+      "default": {
+        "frost_depth": 0.9,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Massachusetts": {
+      "default": {
+        "frost_depth": 1.2,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Michigan": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Minnesota": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Mississippi": {
+      "default": {
+        "frost_depth": 0.3,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Missouri": {
+      "default": {
+        "frost_depth": 0.9,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Montana": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Nebraska": {
+      "default": {
+        "frost_depth": 1.2,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Nevada": {
+      "default": {
+        "frost_depth": 0.6,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "New Hampshire": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "New Jersey": {
+      "default": {
+        "frost_depth": 1.1,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "New Mexico": {
+      "default": {
+        "frost_depth": 0.6,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "New York": {
+      "default": {
+        "frost_depth": 1.2,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "North Carolina": {
+      "default": {
+        "frost_depth": 0.6,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "North Dakota": {
+      "default": {
+        "frost_depth": 1.8,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Ohio": {
+      "default": {
+        "frost_depth": 0.9,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Oklahoma": {
+      "default": {
+        "frost_depth": 0.6,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Oregon": {
+      "default": {
+        "frost_depth": 0.6,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Pennsylvania": {
+      "default": {
+        "frost_depth": 1.0,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Rhode Island": {
+      "default": {
+        "frost_depth": 1.1,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "South Carolina": {
+      "default": {
+        "frost_depth": 0.3,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "South Dakota": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Tennessee": {
+      "default": {
+        "frost_depth": 0.6,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Texas": {
+      "default": {
+        "frost_depth": 0.3,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Utah": {
+      "default": {
+        "frost_depth": 0.9,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Vermont": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Virginia": {
+      "default": {
+        "frost_depth": 0.8,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Washington": {
+      "default": {
+        "frost_depth": 0.6,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "West Virginia": {
+      "default": {
+        "frost_depth": 0.9,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Wisconsin": {
+      "default": {
+        "frost_depth": 1.5,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "Wyoming": {
+      "default": {
+        "frost_depth": 1.2,
+        "lat": 0,
+        "lon": 0
+      }
+    },
+    "default": {
+      "frost_depth": 1.2,
+      "lat": 39.0,
+      "lon": -98.0
+    }
+  }
+}

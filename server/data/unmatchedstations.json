@@ -1,0 +1,590 @@
+[
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7010565_BEAUPORT.txt",
+    "station": "beauport"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7011309_CHARLESBOURG_PARC_ORLEAN.txt",
+    "station": "charlesbourg parc orlean"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7011982_DESCHAMBAULT.txt",
+    "station": "deschambault"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7012232_DUBERGER.txt",
+    "station": "duberger"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7012240_DUCHESNAY.txt",
+    "station": "duchesnay"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7013362_JOLIETTE_VILLE.txt",
+    "station": "joliette ville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7014160_L_ASSOMPTION.txt",
+    "station": "l'assomption"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7015730_OKA.txt",
+    "station": "oka"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7016280_QUEBEC.txt",
+    "station": "quebec"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7016800_ST_ALBAN.txt",
+    "station": "st alban"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7016900_ST_AUGUSTIN.txt",
+    "station": "st augustin"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7016902_STE_BEATRIX.txt",
+    "station": "ste beatrix"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7016906_ST_BENOIT.txt",
+    "station": "st benoit"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7016932_STE_CATHERINE.txt",
+    "station": "ste catherine"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7017100_ST_DONAT.txt",
+    "station": "st donat"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7017B65_STE_FOY_MATAPEDIA.txt",
+    "station": "ste foy matapedia"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7017BFN_STE_FOY_(PIE_XII).txt",
+    "station": "7017bfn ste foy (pie xii)"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_7018001_SHAWINIGAN.txt",
+    "station": "shawinigan"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_701A9E0_COURVILLE_DE_POISSY.txt",
+    "station": "courville de poissy"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_701HE63_TROIS_RIVIERES_AQUEDUC.txt",
+    "station": "trois rivieres aqueduc"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_701_QC_701S001_QUEBEC_JEAN_LESAGE_INTL.txt",
+    "station": "quebec jean lesage intl"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7020360_ASBESTOS.txt",
+    "station": "asbestos"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7020840_BROME.txt",
+    "station": "brome"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7021320_CHARTIERVILLE.txt",
+    "station": "chartierville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7021954_DANVILLE.txt",
+    "station": "danville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7022160_DRUMMONDVILLE.txt",
+    "station": "drummondville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7022494_FORTIERVILLE.txt",
+    "station": "fortierville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7022579_FRELIGHSBURG.txt",
+    "station": "frelighsburg"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7022720_GEORGEVILLE.txt",
+    "station": "georgeville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7022802_GRANBY.txt",
+    "station": "granby"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7023312_ISLAND_BROOK.txt",
+    "station": "island brook"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7023677_LAC_MEGANTIC_2.txt",
+    "station": "7023677 lac megantic 2"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7024254_LAUZON.txt",
+    "station": "lauzon"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7024280_LENNOXVILLE.txt",
+    "station": "lennoxville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7024320_LINGWICK.txt",
+    "station": "lingwick"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7024624_MAPLE_LEAF_EAST.txt",
+    "station": "maple leaf east"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7024745_MCTAVISH.txt",
+    "station": "mctavish"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7025212_MONT_MEGANTIC.txt",
+    "station": "mont megantic"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7025257_MONTREAL_JAR_BOT.txt",
+    "station": "montreal jar bot"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7025260_MONTREAL_JEAN_BREBEUF.txt",
+    "station": "montreal jean brebeuf"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7025267_MONTREAL_LAFONTAINE.txt",
+    "station": "montreal lafontaine"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7025440_NICOLET.txt",
+    "station": "nicolet"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7025745_ORMSTOWN.txt",
+    "station": "ormstown"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027039_STE-CLOTILDE.txt",
+    "station": "ste-clotilde"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027110_STE_DOROTHEE.txt",
+    "station": "ste dorothee"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027120_STE_EDWIDGE.txt",
+    "station": "ste edwidge"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027200_ST_EPHREM.txt",
+    "station": "st ephrem"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027248_ST_FERDINAND.txt",
+    "station": "st ferdinand"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027259_ST_FLAVIEN.txt",
+    "station": "st flavien"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027283_ST_GEORGES.txt",
+    "station": "st georges"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027302_ST_GUILLAUME.txt",
+    "station": "st guillaume"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027320_MONTREAL_ST-HUBERT_A.txt",
+    "station": "montreal st-hubert a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027372_ST_ISIDORE_D_AUCKLAND.txt",
+    "station": "st isidore d'auckland"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027517_STE_MADELEINE.txt",
+    "station": "ste madeleine"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027656_ST_PIERRE_DE_BROUGHTON.txt",
+    "station": "st pierre de broughton"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027725_ST_SEBASTIEN.txt",
+    "station": "st sebastien"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027750_ST_THEOPHILE.txt",
+    "station": "st theophile"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027785_ST_ZACHARIE.txt",
+    "station": "st zacharie"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7027802_SAWYERVILLE_NORD.txt",
+    "station": "sawyerville nord"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7028120_SHERBROOKE.txt",
+    "station": "sherbrooke"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7028124_SHERBROOKE_A.txt",
+    "station": "sherbrooke a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7028441_THETFORD_MINES.txt",
+    "station": "thetford mines"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7028676_VALLEE_JONCTION.txt",
+    "station": "vallee jonction"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7028680_VALLEYFIELD.txt",
+    "station": "valleyfield"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7028754_BEAUCEVILLE.txt",
+    "station": "beauceville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7028906_WEST_DITTON.txt",
+    "station": "west ditton"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_7028946_WOBURN.txt",
+    "station": "woburn"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_702FHL8_STE-ANNE-DE-BELLEVUE_1.txt",
+    "station": "702fhl8 ste-anne-de-bellevue 1"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_702LED4_L_ACADIE.txt",
+    "station": "l'acadie"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_702_QC_702S006_MONTREAL_PIERRE_ELLIOTT_TRUDEAU_INTL.txt",
+    "station": "montreal pierre elliott trudeau intl"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7030170_ANGERS.txt",
+    "station": "angers"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7030457_BARRAGE_MERCIER.txt",
+    "station": "barrage mercier"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7031375_CHENEVILLE.txt",
+    "station": "cheneville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7034480_MANIWAKI_UA.txt",
+    "station": "maniwaki ua"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7035290_MONTREAL_MIRABEL_INT_L_A.txt",
+    "station": "montreal mirabel int'l a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7035520_NOMININGUE.txt",
+    "station": "nominingue"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7036762_STE_AGATHE_DES_MONTS.txt",
+    "station": "ste agathe des monts"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7037400_ST_JEROME.txt",
+    "station": "st jerome"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_703_QC_7038040_SHAWVILLE.txt",
+    "station": "shawville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7040440_BAIE-COMEAU_A.txt",
+    "station": "baie-comeau a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7040446_BAIE_ST_PAUL.txt",
+    "station": "baie st paul"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7040813_LOURDES_DE_BLANC_SABLON_A.txt",
+    "station": "lourdes de blanc sablon a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7041177_CAP_TOURMENTE.txt",
+    "station": "cap tourmente"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7041312_CHARLEVOIX_(MRC).txt",
+    "station": "7041312 charlevoix (mrc)"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7041382_CHEVERY.txt",
+    "station": "chevery"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7042378_FORESTVILLE.txt",
+    "station": "forestville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7042395_FORET_MONTMORENCY_RCS.txt",
+    "station": "foret montmorency rcs"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7042590_GAGNON_A.txt",
+    "station": "gagnon a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7042870_GRAND_FONDS.txt",
+    "station": "grand fonds"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7043018_HAVRE-SAINT-PIERRE_A.txt",
+    "station": "havre-saint-pierre a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7045400_NATASHQUAN_A.txt",
+    "station": "natashquan a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7045910_PENTECOTE.txt",
+    "station": "pentecote"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_7047914_SEPT-ILES.txt",
+    "station": "sept-iles"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_704Q003_POINTE_NOIRE_CS.txt",
+    "station": "pointe noire cs"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_704_QC_704S001_BAIE-COMEAU.txt",
+    "station": "baie-comeau"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7051160_CAP_MADELEINE.txt",
+    "station": "cap madeleine"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7051175_CAP_SEIZE.txt",
+    "station": "cap seize"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7052603_GASPE_AIRPORT.txt",
+    "station": "gaspe airport"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7052820_GRANDE_RIVIERE.txt",
+    "station": "grande riviere"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7053038_HEATH_POINT.txt",
+    "station": "heath point"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7053649_LAC_HUMQUI.txt",
+    "station": "lac humqui"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7053KGR_ILES_DE_LA_MADELEINE.txt",
+    "station": "iles de la madeleine"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7054096_LA_POCATIERE.txt",
+    "station": "la pocatiere"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7054640_MATANE.txt",
+    "station": "matane"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7055122_MONT-JOLI.txt",
+    "station": "mont-joli"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7055380_MURDOCHVILLE.txt",
+    "station": "murdochville"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7055675_NOTRE_DAME_DU_LAC.txt",
+    "station": "notre dame du lac"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7055705_NOUVELLE.txt",
+    "station": "nouvelle"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7056202_PORT-MENIER.txt",
+    "station": "port-menier"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7056480_RIMOUSKI.txt",
+    "station": "rimouski"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7056563_RIVIERE_AU_RENARD.txt",
+    "station": "riviere au renard"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7056616_RIVIERE-DU-LOUP.txt",
+    "station": "riviere-du-loup"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7056814_ST_ALEXIS_DE_MATAPEDIA.txt",
+    "station": "st alexis de matapedia"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7056922_ST_BRUNO_KAMOURASKA.txt",
+    "station": "st bruno kamouraska"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7056970_ST_CHARLES_GARNIER.txt",
+    "station": "st charles garnier"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7057287_STE_GERMAINE.txt",
+    "station": "ste germaine"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7057395_ST_JEAN_DE_CHERBOURG.txt",
+    "station": "st jean de cherbourg"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7057518_ST_MALACHIE.txt",
+    "station": "st malachie"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_705_QC_7057574_ST_MODESTE.txt",
+    "station": "st modeste"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_7060400_BAGOTVILLE_A.txt",
+    "station": "bagotville a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_7063370_JONQUIERE.txt",
+    "station": "jonquiere"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_7063690_LAC_STE_CROIX.txt",
+    "station": "lac ste croix"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_7065100_MONT_APICA.txt",
+    "station": "mont apica"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_7065639_NORMANDIN.txt",
+    "station": "normandin"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_7066080_PORTAGE_DES_ROCHES.txt",
+    "station": "portage des roches"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_7066685_ROBERVAL_A.txt",
+    "station": "roberval a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_7067060_ST_COEUR_DE_MARIE.txt",
+    "station": "st coeur de marie"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_706_QC_706Q001_LA_BAIE.txt",
+    "station": "la baie"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_707_QC_7072816_GRANDE_ANSE.txt",
+    "station": "grande anse"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_707_QC_7074240_LA_TUQUE.txt",
+    "station": "la tuque"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_707_QC_7075800_PARENT.txt",
+    "station": "parent"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_707_QC_7077571_SAINT-MICHEL-DES-SAINTS.txt",
+    "station": "saint-michel-des-saints"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_708_QC_7080452_BARRAGE_ANGLIERS.txt",
+    "station": "barrage angliers"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_708_QC_7080468_BARRAGE_TEMISCAMINGUE.txt",
+    "station": "barrage temiscamingue"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_709_QC_7090120_AMOS.txt",
+    "station": "amos"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_709_QC_7091299_CHAPAIS.txt",
+    "station": "chapais"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_709_QC_7093716_LA_GRANDE_RIVIERE_A.txt",
+    "station": "la grande riviere a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_709_QC_7094120_LA_SARRE.txt",
+    "station": "la sarre"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_709_QC_7094639_MATAGAMI_A.txt",
+    "station": "matagami a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_709_QC_7095480_NITCHEQUON.txt",
+    "station": "nitchequon"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_709_QC_7096621_RIVIERE_HEVA.txt",
+    "station": "riviere heva"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_709_QC_7098603_VAL-D_OR.txt",
+    "station": "val-d'or"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_710_QC_7103539_KUUJJUARAPIK.txt",
+    "station": "kuujjuarapik"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_710_QC_710S005_INUKJUAK.txt",
+    "station": "inukjuak"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_711_QC_7113534_KUUJJUAQ_A.txt",
+    "station": "kuujjuaq a"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_711_QC_7116270_QUAQTAQ.txt",
+    "station": "quaqtaq"
+  },
+  {
+    "file": "idf_v3-30_2022_10_31_711_QC_7117827_SCHEFFERVILLE.txt",
+    "station": "schefferville"
+  }
+]

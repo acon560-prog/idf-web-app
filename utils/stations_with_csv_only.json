@@ -1,0 +1,82 @@
+[
+  {
+    "province": "QC",
+    "stationId": "7016520",
+    "name": "Montreal Pierre Elliott Trudeau Int'l A",
+    "lat": 45.47,
+    "lon": -73.75,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/7016520.csv"
+  },
+  {
+    "province": "ON",
+    "stationId": "6100970",
+    "name": "Toronto City",
+    "lat": 43.65,
+    "lon": -79.38,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/6100970.csv"
+  },
+  {
+    "province": "BC",
+    "stationId": "1100030",
+    "name": "Vancouver Int'l A",
+    "lat": 49.18,
+    "lon": -123.17,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/1100030.csv"
+  },
+  {
+    "province": "AB",
+    "stationId": "3012200",
+    "name": "Calgary Int'l A",
+    "lat": 51.12,
+    "lon": -114.02,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/3012200.csv"
+  },
+  {
+    "province": "MB",
+    "stationId": "5023222",
+    "name": "Winnipeg Int'l A",
+    "lat": 49.91,
+    "lon": -97.23,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/5023222.csv"
+  },
+  {
+    "province": "NS",
+    "stationId": "8202250",
+    "name": "Halifax Int'l A",
+    "lat": 44.88,
+    "lon": -63.51,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/8202250.csv"
+  },
+  {
+    "province": "NB",
+    "stationId": "6100135",
+    "name": "Fredericton A",
+    "lat": 45.87,
+    "lon": -66.53,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/6100135.csv"
+  },
+  {
+    "province": "NL",
+    "stationId": "8403500",
+    "name": "St. John's A",
+    "lat": 47.62,
+    "lon": -52.75,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/8403500.csv"
+  },
+  {
+    "province": "PE",
+    "stationId": "8300300",
+    "name": "Charlottetown A",
+    "lat": 46.29,
+    "lon": -63.13,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/8300300.csv"
+  },
+  {
+    "province": "SK",
+    "stationId": "4016561",
+    "name": "Regina Int'l A",
+    "lat": 50.43,
+    "lon": -104.66,
+    "normalsCsvUrl": "https://climate.weather.gc.ca/climate_normals/data/1991_2020/csv_en/4016561.csv"
+  }
+]

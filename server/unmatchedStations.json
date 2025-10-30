@@ -1,0 +1,952 @@
+[
+  {
+    "entryName": "LONDON INT'L AIRPORT txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON INT'L AIRPORT txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON LAMBETH A txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON LAMBETH A txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON SHARON DRIVE txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON SHARON DRIVE txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON SOUTH txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON SOUTH txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "MANIC 2 LB1 txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "MANIC 2 LB1 txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 CHARLESBOURG PARC ORLEAN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 DESCHAMBAULT txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 DUBERGER txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 L ASSOMPTION txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 ST AUGUSTIN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 STE BEATRIX txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 ST BENOIT txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 STE CATHERINE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 ST DONAT txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 QUEBEC JEAN LESAGE INTL txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ASBESTOS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 CHARTIERVILLE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 FRELIGHSBURG txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 LAC MEGANTIC 2 txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 LINGWICK txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 MAPLE LEAF EAST txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 MCTAVISH txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 MONT MEGANTIC txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 NICOLET txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ORMSTOWN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 STE DOROTHEE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 STE EDWIDGE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST EPHREM txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST FERDINAND txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST FLAVIEN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST GEORGES txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST GUILLAUME txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST ISIDORE D AUCKLAND txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 STE MADELEINE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST SEBASTIEN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST ZACHARIE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 SAWYERVILLE NORD txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 THETFORD MINES txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 VALLEE JONCTION txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 VALLEYFIELD txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 WEST DITTON txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 WOBURN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 BARRAGE MERCIER txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 MANIWAKI UA txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 NOMININGUE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 STE AGATHE DES MONTS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 ST JEROME txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 BAIE COMEAU A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 BAIE ST PAUL txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 LOURDES DE BLANC SABLON A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 CAP TOURMENTE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 CHARLEVOIX (MRC) txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 CHEVERY txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 FORET MONTMORENCY RCS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 GRAND FONDS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 NATASHQUAN A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 PENTECOTE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 BAIE COMEAU txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 CAP MADELEINE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 CAP SEIZE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 GASPE AIRPORT txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 LAC HUMQUI txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 NOTRE DAME DU LAC txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 PORT MENIER txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 RIVIERE AU RENARD txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 RIVIERE DU LOUP txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST ALEXIS DE MATAPEDIA txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST BRUNO KAMOURASKA txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST CHARLES GARNIER txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 STE GERMAINE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST JEAN DE CHERBOURG txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST MALACHIE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST MODESTE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 JONQUIERE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 LAC STE CROIX txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 NORMANDIN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 PORTAGE DES ROCHES txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 ST COEUR DE MARIE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "707 GRANDE ANSE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "707 LA TUQUE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "707 SAINT MICHEL DES SAINTS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "708 BARRAGE ANGLIERS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "708 BARRAGE TEMISCAMINGUE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "709 LA GRANDE RIVIERE A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "709 MATAGAMI A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "709 NITCHEQUON txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "710 KUUJJUARAPIK txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "711 KUUJJUAQ A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "711 QUAQTAQ txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "711 SCHEFFERVILLE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON INT'L AIRPORT txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON INT'L AIRPORT txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON LAMBETH A txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON LAMBETH A txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON SHARON DRIVE txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON SHARON DRIVE txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON SOUTH txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "LONDON SOUTH txt",
+    "province": "ON",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "MANIC 2 LB1 txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "MANIC 2 LB1 txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 CHARLESBOURG PARC ORLEAN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 DESCHAMBAULT txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 DUBERGER txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 L ASSOMPTION txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 ST AUGUSTIN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 STE BEATRIX txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 ST BENOIT txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 STE CATHERINE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 ST DONAT txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "701 QUEBEC JEAN LESAGE INTL txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ASBESTOS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 CHARTIERVILLE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 FRELIGHSBURG txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 LAC MEGANTIC 2 txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 LINGWICK txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 MAPLE LEAF EAST txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 MCTAVISH txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 MONT MEGANTIC txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 NICOLET txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ORMSTOWN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 STE DOROTHEE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 STE EDWIDGE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST EPHREM txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST FERDINAND txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST FLAVIEN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST GEORGES txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST GUILLAUME txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST ISIDORE D AUCKLAND txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 STE MADELEINE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST SEBASTIEN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 ST ZACHARIE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 SAWYERVILLE NORD txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 THETFORD MINES txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 VALLEE JONCTION txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 VALLEYFIELD txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 WEST DITTON txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "702 WOBURN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 BARRAGE MERCIER txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 MANIWAKI UA txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 NOMININGUE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 STE AGATHE DES MONTS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "703 ST JEROME txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 BAIE COMEAU A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 BAIE ST PAUL txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 LOURDES DE BLANC SABLON A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 CAP TOURMENTE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 CHARLEVOIX (MRC) txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 CHEVERY txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 FORET MONTMORENCY RCS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 GRAND FONDS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 NATASHQUAN A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 PENTECOTE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "704 BAIE COMEAU txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 CAP MADELEINE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 CAP SEIZE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 GASPE AIRPORT txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 LAC HUMQUI txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 NOTRE DAME DU LAC txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 PORT MENIER txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 RIVIERE AU RENARD txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 RIVIERE DU LOUP txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST ALEXIS DE MATAPEDIA txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST BRUNO KAMOURASKA txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST CHARLES GARNIER txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 STE GERMAINE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST JEAN DE CHERBOURG txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST MALACHIE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "705 ST MODESTE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 JONQUIERE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 LAC STE CROIX txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 NORMANDIN txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 PORTAGE DES ROCHES txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "706 ST COEUR DE MARIE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "707 GRANDE ANSE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "707 LA TUQUE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "707 SAINT MICHEL DES SAINTS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "708 BARRAGE ANGLIERS txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "708 BARRAGE TEMISCAMINGUE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "709 LA GRANDE RIVIERE A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "709 MATAGAMI A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "709 NITCHEQUON txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "710 KUUJJUARAPIK txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "711 KUUJJUAQ A txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "711 QUAQTAQ txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  },
+  {
+    "entryName": "711 SCHEFFERVILLE txt",
+    "province": "QC",
+    "reason": "No fuzzy match found"
+  }
+]
