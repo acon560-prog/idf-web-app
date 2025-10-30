@@ -9,7 +9,7 @@ import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import ProjectWizard from './pages/ProjectWizard';
-import MVP_IDFViewer from './pages/MVP_IDFViewer.jsx';
+import MVPIDFViewerV2 from './pages/MVPIDFViewerV2.jsx';
 import TestAutocomplete from './pages/TestAutocomplete.jsx';
 
 function App() {
@@ -23,8 +23,8 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/start" element={<MVP_IDFViewer />} /> {/* Change this line */}
-          <Route path="/idf-viewer" element={<MVP_IDFViewer />} />
+          <Route path="/start" element={<MVPIDFViewerV2 />} /> {/* Change this line */}
+          <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
           <Route path="/test-autocomplete" element={<TestAutocomplete />} />
         </Routes>
       </main>
