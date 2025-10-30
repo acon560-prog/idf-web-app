@@ -39,7 +39,8 @@ const SearchIcon = (props) => (
 const allReturnPeriods = ['2', '5', '10', '25', '50', '100'];
 
 const MVPIDFViewerV2 = () => {
-  const { user } = useAuth(); // Add this line or move it here if already declared
+  const auth = useAuth();
+  const user = auth?.user ?? null;
  
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
@@ -56,6 +57,10 @@ const MVPIDFViewerV2 = () => {
   
   // This useEffect ensures the Google Maps script is loaded only once and correctly.
   useEffect(() => {
+    if (!user) {
+      setScriptLoaded(false);
+      return;
+    }
     let isMounted = true;
     const GOOGLE_MAPS_SCRIPT_ID = 'google-maps-script';
 
@@ -104,10 +109,13 @@ const MVPIDFViewerV2 = () => {
       isMounted = false;
       // No need to remove the script tag, as other components might need it.
     };
-  }, []);
+  }, [user]);
 
   // This useEffect initializes Autocomplete only after the script has successfully loaded.
   useEffect(() => {
+    if (!user) {
+      return;
+    }
     if (scriptLoaded && autocompleteInputRef.current) {
       // Use a short delay to ensure the places library is fully available
       const initAutocomplete = () => {
@@ -144,7 +152,7 @@ const MVPIDFViewerV2 = () => {
         }
       };
     }
-  }, [scriptLoaded, setPlace]);
+  }, [scriptLoaded, setPlace, user]);
 
   const handleSearch = useCallback(async (e) => {
     e.preventDefault();
@@ -363,7 +371,7 @@ const MVPIDFViewerV2 = () => {
   
   const yAxisDomain = useMemo(() => {
     if (!idfData || idfData.length === 0) {
-      return [0, 'auto'];
+      return [1, 'auto'];
     }
     let maxIntensity = 0;
     idfData.forEach(item => {
@@ -373,7 +381,11 @@ const MVPIDFViewerV2 = () => {
         }
       });
     });
-    // User not logged in: show advisory message and stop rendering main UI
+    const upperLimit = Math.max(Math.ceil(maxIntensity / 10) * 10, 1);
+    return [1, upperLimit];
+  }, [idfData]);
+
+
   if (!user) {
     return (
       <div className="max-w-3xl mx-auto p-6 mt-10 border border-yellow-400 bg-yellow-100 rounded text-center text-yellow-900">
@@ -387,11 +399,6 @@ const MVPIDFViewerV2 = () => {
       </div>
     );
   }
-    const upperLimit = Math.ceil(maxIntensity / 10) * 10;
-    const lowerLimit = 1;
-    return [lowerLimit, upperLimit];
-  }, [idfData]);
-
 
   if (!scriptLoaded) {
     return (
