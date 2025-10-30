@@ -53,20 +53,7 @@ const MVPIDFViewerV2 = () => {
   const autocompleteRef = useRef(null);
   const autocompleteInputRef = useRef(null);
   const chartDataRef = useRef(null);
-  // User not logged in: show advisory message and stop rendering main UI
-  if (!user) {
-    return (
-      <div className="max-w-3xl mx-auto p-6 mt-10 border border-yellow-400 bg-yellow-100 rounded text-center text-yellow-900">
-        <p className="mb-4 text-lg font-semibold">
-          Please{' '}
-          <Link to="/login" className="text-blue-700 underline">
-            log in
-          </Link>{' '}
-          to access IDF curves and tables.
-        </p>
-      </div>
-    );
-  }
+  
   // This useEffect ensures the Google Maps script is loaded only once and correctly.
   useEffect(() => {
     let isMounted = true;
@@ -386,7 +373,20 @@ const MVPIDFViewerV2 = () => {
         }
       });
     });
-
+    // User not logged in: show advisory message and stop rendering main UI
+  if (!user) {
+    return (
+      <div className="max-w-3xl mx-auto p-6 mt-10 border border-yellow-400 bg-yellow-100 rounded text-center text-yellow-900">
+        <p className="mb-4 text-lg font-semibold">
+          Please{' '}
+          <Link to="/login" className="text-blue-700 underline">
+            log in
+          </Link>{' '}
+          to access IDF curves and tables.
+        </p>
+      </div>
+    );
+  }
     const upperLimit = Math.ceil(maxIntensity / 10) * 10;
     const lowerLimit = 1;
     return [lowerLimit, upperLimit];
