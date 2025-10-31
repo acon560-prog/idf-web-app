@@ -20,7 +20,7 @@ from flask_jwt_extended import (
 from flask_pymongo import PyMongo
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, supports_credentials=True)
 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
@@ -155,21 +155,30 @@ print(f"Total IDF data sets loaded: {len(IDF_DATA)}")
 def register():
     payload = request.get_json() or {}
     email = normalize_email(payload.get('email'))
+    username = payload.get('username')
     password = payload.get('password')
     name = payload.get('name', '')
 
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required.'}), 400
+    if not password:
+        return jsonify({'error': 'Password is required.'}), 400
 
-    if users_collection.find_one({'email': email}):
-        return jsonify({'error': 'An account with this email already exists.'}), 409
+    if email:
+        if users_collection.find_one({'email': email}):
+            return jsonify({'error': 'An account with this email already exists.'}), 409
+    if username:
+        if users_collection.find_one({'username': username}):
+            return jsonify({'error': 'An account with this username already exists.'}), 409
+
+    if not email and not username:
+        return jsonify({'error': 'An email or username is required.'}), 400
 
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     now = datetime.utcnow()
     trial_end = now + timedelta(days=7)
 
     user_doc = {
-        'email': email,
+        'email': email if email else None,
+        'username': username if username else None,
         'name': name,
         'passwordHash': password_hash,
         'subscriptionStatus': 'trialing',
@@ -195,15 +204,22 @@ def register():
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     payload = request.get_json() or {}
-    email = normalize_email(payload.get('email'))
+    identifier = payload.get('email') or payload.get('username')
     password = payload.get('password')
 
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required.'}), 400
+    if not identifier or not password:
+        return jsonify({'error': 'Email/username and password are required.'}), 400
 
-    user_doc = users_collection.find_one({'email': email})
+    email = normalize_email(identifier) if '@' in str(identifier) else None
+
+    if email:
+        query = {'email': email}
+    else:
+        query = {'username': identifier}
+
+    user_doc = users_collection.find_one(query)
     if not user_doc or 'passwordHash' not in user_doc:
-        return jsonify({'error': 'Invalid email or password.'}), 401
+        return jsonify({'error': 'Invalid credentials.'}), 401
 
     stored_hash = user_doc['passwordHash']
     if isinstance(stored_hash, bytes):
