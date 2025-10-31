@@ -7,8 +7,8 @@ import { Link } from 'react-router-dom';
 // Example: const GOOGLE_MAPS_API_KEY = 'AIzaSyB-C1...';
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || '';
 
-// const GOOGLE_MAPS_API_KEY = typeof __google_maps_api_key !== 'undefined' ? __google_maps_api_key : 'AIzaSyD4ngcsdvF7gXdLiYb8UPpSWEhixiIpe4g';
-const API_BASE_URL = 'http://127.0.0.1:5000/api';
+const API_ROOT = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:5000';
+const API_BASE_URL = `${API_ROOT}/api`;
 
 const DownloadIcon = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download">
@@ -199,7 +199,9 @@ const MVPIDFViewerV2 = () => {
       setIsStationInfoVisible(true);
       console.log('Found nearest station:', nearestStation);
 
-      const idfResponse = await fetch(`${API_BASE_URL}/idf/curves?stationId=${nearestStation.stationId}`);
+      const idfResponse = await (auth?.authFetch
+        ? auth.authFetch(`${API_BASE_URL}/idf/curves?stationId=${nearestStation.stationId}`)
+        : fetch(`${API_BASE_URL}/idf/curves?stationId=${nearestStation.stationId}`));
       if (!idfResponse.ok) {
         const errorData = await idfResponse.json();
         throw new Error(errorData.error || 'Failed to fetch IDF data.');

@@ -1,20 +1,37 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext();
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:5000';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')) || null);
   const [token, setToken] = useState(() => localStorage.getItem('accessToken') || null);
   const [refreshToken, setRefreshToken] = useState(() => localStorage.getItem('refreshToken') || null);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    setRefreshToken(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+  const setSession = useCallback((userData, accessToken, newRefreshToken) => {
+    setUser(userData);
+    setToken(accessToken);
+    setRefreshToken(newRefreshToken || null);
+    if (userData) {
+      localStorage.setItem('user', JSON.stringify(userData));
+    } else {
+      localStorage.removeItem('user');
+    }
+    if (accessToken) {
+      localStorage.setItem('accessToken', accessToken);
+    } else {
+      localStorage.removeItem('accessToken');
+    }
+    if (newRefreshToken) {
+      localStorage.setItem('refreshToken', newRefreshToken);
+    } else if (!newRefreshToken) {
+      localStorage.removeItem('refreshToken');
+    }
   }, []);
+
+  const logout = useCallback(() => {
+    setSession(null, null, null);
+  }, [setSession]);
 
   const refreshAccessToken = useCallback(async () => {
     if (!refreshToken) {
@@ -22,21 +39,20 @@ export function AuthProvider({ children }) {
       return null;
     }
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/api/auth/refresh-token`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: refreshToken }),
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
       });
 
       if (res.ok) {
         const data = await res.json();
+        if (!data.accessToken) {
+          throw new Error('Missing access token in refresh response');
+        }
         setToken(data.accessToken);
         localStorage.setItem('accessToken', data.accessToken);
-
-        if (data.refreshToken) {
-          setRefreshToken(data.refreshToken);
-          localStorage.setItem('refreshToken', data.refreshToken);
-        }
         return data.accessToken;
       } else {
         logout();
@@ -90,19 +106,71 @@ export function AuthProvider({ children }) {
     return res;
   }, [token, refreshAccessToken, logout]);
 
-  const login = (userData, accessToken, newRefreshToken) => {
-    setUser(userData);
-    setToken(accessToken);
-    setRefreshToken(newRefreshToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('accessToken', accessToken);
-    if (newRefreshToken) {
-      localStorage.setItem('refreshToken', newRefreshToken);
+  const syncProfile = useCallback(async (overrideToken) => {
+    const activeToken = overrideToken || token;
+    if (!activeToken) return null;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${activeToken}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.user) {
+          setUser(data.user);
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+        return data?.user ?? null;
+      }
+
+      if (res.status === 401) {
+        const newToken = await refreshAccessToken();
+        if (newToken && newToken !== activeToken) {
+          return syncProfile(newToken);
+        }
+        logout();
+      }
+    } catch (err) {
+      console.error('Failed to sync user profile', err);
     }
-  };
+
+    return null;
+  }, [token, refreshAccessToken, logout]);
+
+  useEffect(() => {
+    if (!token) return;
+    syncProfile(token);
+  }, [token, syncProfile]);
+
+  const login = useCallback((userData, accessToken, newRefreshToken) => {
+    setSession(userData, accessToken, newRefreshToken);
+  }, [setSession]);
+
+  const register = useCallback(async ({ email, password, name }) => {
+    const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, name }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || 'Unable to register. Please try again.');
+    }
+
+    if (!data.accessToken || !data.refreshToken) {
+      throw new Error('Registration response did not include credentials.');
+    }
+
+    setSession(data.user, data.accessToken, data.refreshToken);
+    return data.user;
+  }, [setSession]);
 
   return (
-    <AuthContext.Provider value={{ user, token, refreshToken, login, logout, authFetch }}>
+    <AuthContext.Provider value={{ user, token, refreshToken, login, logout, authFetch, register, syncProfile }}>
       {children}
     </AuthContext.Provider>
   );

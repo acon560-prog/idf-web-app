@@ -4,11 +4,33 @@ import re
 import json
 import os
 import math
+from datetime import datetime, timedelta
+
+import bcrypt
+from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+    jwt_required,
+)
+from flask_pymongo import PyMongo
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
-CORS(app) # Enable CORS for all routes
+CORS(app)  # Enable CORS for all routes
+
+app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
+
+mongo = PyMongo(app)
+jwt = JWTManager(app)
+
+users_collection = mongo.db.users
 
 # Define the provinces to load. Add more as you get the data for them.
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
@@ -16,6 +38,84 @@ PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', '
 STATIONS_DATA = []
 IDF_DATA = {}
 IDF_KEY_MAPPING = {} 
+
+
+def normalize_email(email: str) -> str:
+    return email.strip().lower() if isinstance(email, str) else ''
+
+
+def isoformat_or_none(value):
+    if isinstance(value, datetime):
+        if value.tzinfo:
+            return value.isoformat()
+        return value.replace(microsecond=0).isoformat() + 'Z'
+    return None
+
+
+def serialize_user(user_doc):
+    if not user_doc:
+        return None
+    return {
+        'id': str(user_doc['_id']),
+        'email': user_doc.get('email'),
+        'name': user_doc.get('name'),
+        'subscriptionStatus': user_doc.get('subscriptionStatus', 'trialing'),
+        'plan': user_doc.get('plan'),
+        'trialStartsAt': isoformat_or_none(user_doc.get('trialStartsAt')),
+        'trialEndsAt': isoformat_or_none(user_doc.get('trialEndsAt')),
+        'stripeCustomerId': user_doc.get('stripeCustomerId'),
+    }
+
+
+def generate_tokens(user_doc):
+    identity = str(user_doc['_id'])
+    additional_claims = {
+        'email': user_doc.get('email'),
+        'subscriptionStatus': user_doc.get('subscriptionStatus', 'trialing'),
+    }
+    access_token = create_access_token(identity=identity, additional_claims=additional_claims)
+    refresh_token = create_refresh_token(identity=identity)
+    return {
+        'accessToken': access_token,
+        'refreshToken': refresh_token,
+    }
+
+
+def get_user_by_id(user_id):
+    try:
+        return users_collection.find_one({'_id': ObjectId(user_id)})
+    except Exception:
+        return None
+
+
+def get_current_user():
+    identity = get_jwt_identity()
+    if not identity:
+        return None
+    return get_user_by_id(identity)
+
+
+def user_has_active_access(user_doc):
+    if not user_doc:
+        return False
+
+    status = user_doc.get('subscriptionStatus')
+    if status == 'active':
+        return True
+
+    trial_end = user_doc.get('trialEndsAt')
+    now = datetime.utcnow()
+
+    if status == 'trialing' and isinstance(trial_end, datetime):
+        if now <= trial_end:
+            return True
+        users_collection.update_one(
+            {'_id': user_doc['_id']},
+            {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
+        )
+        return False
+
+    return False
 
 for province_code in PROVINCES:
     # Construct file paths for each province.
@@ -49,6 +149,105 @@ for province_code in PROVINCES:
         continue
 print(f"Total stations loaded: {len(STATIONS_DATA)}")
 print(f"Total IDF data sets loaded: {len(IDF_DATA)}")
+
+
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    payload = request.get_json() or {}
+    email = normalize_email(payload.get('email'))
+    password = payload.get('password')
+    name = payload.get('name', '')
+
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required.'}), 400
+
+    if users_collection.find_one({'email': email}):
+        return jsonify({'error': 'An account with this email already exists.'}), 409
+
+    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    now = datetime.utcnow()
+    trial_end = now + timedelta(days=7)
+
+    user_doc = {
+        'email': email,
+        'name': name,
+        'passwordHash': password_hash,
+        'subscriptionStatus': 'trialing',
+        'plan': None,
+        'stripeCustomerId': None,
+        'trialStartsAt': now,
+        'trialEndsAt': trial_end,
+        'createdAt': now,
+        'updatedAt': now,
+    }
+
+    result = users_collection.insert_one(user_doc)
+    user_doc['_id'] = result.inserted_id
+
+    tokens = generate_tokens(user_doc)
+
+    return jsonify({
+        'user': serialize_user(user_doc),
+        **tokens,
+    }), 201
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    payload = request.get_json() or {}
+    email = normalize_email(payload.get('email'))
+    password = payload.get('password')
+
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required.'}), 400
+
+    user_doc = users_collection.find_one({'email': email})
+    if not user_doc or 'passwordHash' not in user_doc:
+        return jsonify({'error': 'Invalid email or password.'}), 401
+
+    stored_hash = user_doc['passwordHash']
+    if isinstance(stored_hash, bytes):
+        stored_hash = stored_hash.decode('utf-8')
+
+    if not bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+        return jsonify({'error': 'Invalid email or password.'}), 401
+
+    users_collection.update_one(
+        {'_id': user_doc['_id']},
+        {'$set': {'updatedAt': datetime.utcnow()}},
+    )
+
+    tokens = generate_tokens(user_doc)
+
+    return jsonify({
+        'user': serialize_user(user_doc),
+        **tokens,
+    })
+
+
+@app.route('/api/auth/me', methods=['GET'])
+@jwt_required()
+def auth_me():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'User not found.'}), 404
+    return jsonify({'user': serialize_user(user_doc)})
+
+
+@app.route('/api/auth/refresh-token', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh_token():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'User not found.'}), 404
+
+    additional_claims = {
+        'email': user_doc.get('email'),
+        'subscriptionStatus': user_doc.get('subscriptionStatus', 'trialing'),
+    }
+    access_token = create_access_token(identity=str(user_doc['_id']), additional_claims=additional_claims)
+
+    return jsonify({'accessToken': access_token})
 
 def duration_to_minutes(duration_str):
     if not isinstance(duration_str, str):
@@ -111,7 +310,18 @@ def nearest_station():
         return jsonify({"error": "No stations with valid lat/lon found."}), 404
 
 @app.route('/api/idf/curves', methods=['GET'])
+@jwt_required()
 def idf_curves():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'Authentication required.'}), 401
+
+    if not user_has_active_access(user_doc):
+        return jsonify({
+            'error': 'Your free trial has expired. Please subscribe to continue accessing IDF data.',
+            'code': 'trial_expired',
+        }), 402
+
     try:
         stationId = request.args.get('stationId')
         print(f"Received request for station ID: {stationId}")
