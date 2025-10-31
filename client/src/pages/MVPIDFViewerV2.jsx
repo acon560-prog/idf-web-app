@@ -41,6 +41,7 @@ const allReturnPeriods = ['2', '5', '10', '25', '50', '100'];
 const MVPIDFViewerV2 = () => {
   const auth = useAuth();
   const user = auth?.user ?? null;
+  const [trialMessage, setTrialMessage] = useState('');
  
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
@@ -154,6 +155,28 @@ const MVPIDFViewerV2 = () => {
     }
   }, [scriptLoaded, setPlace, user]);
 
+  useEffect(() => {
+    if (!user) {
+      setTrialMessage('');
+      return;
+    }
+    if (user.trialEndsAt) {
+      const endsAt = new Date(user.trialEndsAt);
+      const now = new Date();
+      const diffMs = endsAt - now;
+      if (diffMs > 0) {
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        setTrialMessage(`Your free trial ends in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}.`);
+      } else {
+        setTrialMessage('Your free trial has expired. Please upgrade to continue accessing IDF curves.');
+      }
+    } else if (user.subscriptionStatus !== 'active') {
+      setTrialMessage('Your free trial status could not be verified.');
+    } else {
+      setTrialMessage('');
+    }
+  }, [user]);
+
   const handleSearch = useCallback(async (e) => {
     e.preventDefault();
     setError(null);
@@ -203,8 +226,17 @@ const MVPIDFViewerV2 = () => {
         ? auth.authFetch(`${API_BASE_URL}/idf/curves?stationId=${nearestStation.stationId}`)
         : fetch(`${API_BASE_URL}/idf/curves?stationId=${nearestStation.stationId}`));
       if (!idfResponse.ok) {
-        const errorData = await idfResponse.json();
-        throw new Error(errorData.error || 'Failed to fetch IDF data.');
+        let message = 'Failed to fetch IDF data.';
+        try {
+          const errorData = await idfResponse.json();
+          if (errorData?.code === 'trial_expired') {
+            setTrialMessage('Your free trial has expired. Please upgrade to continue accessing IDF curves.');
+          }
+          message = errorData.error || message;
+        } catch (jsonErr) {
+          console.error('Failed to parse IDF error response', jsonErr);
+        }
+        throw new Error(message);
       }
       const idfJson = await idfResponse.json();
       console.log('Raw IDF data from API:', idfJson.data);
@@ -418,6 +450,13 @@ const MVPIDFViewerV2 = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
+      {trialMessage && (
+        <div className="w-full max-w-5xl mb-4">
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm">
+            {trialMessage}
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-5xl bg-white p-6 sm:p-8 lg:p-10 rounded-2xl shadow-xl flex flex-col md:flex-row gap-6">
 
         {/* Left Side: Search and Controls */}
