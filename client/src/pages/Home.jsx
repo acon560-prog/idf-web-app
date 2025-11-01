@@ -11,7 +11,7 @@ function Home() {
       viewport={{ once: true }}
       transition={{ duration: 0.8 }}
     >
-      <h2 className="text-2xl font-bold">Welcome to Our Civil Engineering Practice</h2>
+      <h2 className="text-2xl font-bold">Welcome to CiviSpec</h2>
       <p className="mt-4">
         We provide structural design, permit drawings, grading plans, and more — tailored for residential and commercial projects.
       </p>
