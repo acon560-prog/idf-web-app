@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 // To make the app functional, please replace 'YOUR_API_KEY' with your actual Google Maps API key.
 // Example: const GOOGLE_MAPS_API_KEY = 'AIzaSyB-C1...';
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || '';
+const HAS_GOOGLE_API_KEY = Boolean(GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY.trim());
 
 const API_ROOT = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:5000';
 const API_BASE_URL = `${API_ROOT}/api`;
@@ -62,6 +63,11 @@ const MVPIDFViewerV2 = () => {
       setScriptLoaded(false);
       return;
     }
+    if (!HAS_GOOGLE_API_KEY) {
+      setScriptLoaded(false);
+      setError('Google Maps API key is missing or invalid. Set REACT_APP_GOOGLE_PLACES_API_KEY in your environment or .env file.');
+      return;
+    }
     let isMounted = true;
     const GOOGLE_MAPS_SCRIPT_ID = 'google-maps-script';
 
@@ -110,11 +116,14 @@ const MVPIDFViewerV2 = () => {
       isMounted = false;
       // No need to remove the script tag, as other components might need it.
     };
-  }, [user]);
+  }, [user, HAS_GOOGLE_API_KEY]);
 
   // This useEffect initializes Autocomplete only after the script has successfully loaded.
   useEffect(() => {
     if (!user) {
+      return;
+    }
+    if (!HAS_GOOGLE_API_KEY) {
       return;
     }
     if (scriptLoaded && autocompleteInputRef.current) {
@@ -153,7 +162,7 @@ const MVPIDFViewerV2 = () => {
         }
       };
     }
-  }, [scriptLoaded, setPlace, user]);
+  }, [scriptLoaded, setPlace, user, HAS_GOOGLE_API_KEY]);
 
   useEffect(() => {
     if (!user) {
@@ -485,7 +494,7 @@ const MVPIDFViewerV2 = () => {
             <button
               type="submit"
               className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
+              disabled={loading || !HAS_GOOGLE_API_KEY}
             >
               {loading ? (
                 <div className="flex items-center">
