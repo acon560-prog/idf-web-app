@@ -8,10 +8,11 @@ const Login = () => {
   const auth = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -27,7 +28,7 @@ const Login = () => {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: identifier.trim(), password }),
       });
 
       if (!response.ok) {
@@ -36,7 +37,7 @@ const Login = () => {
       }
 
       const data = await response.json();
-      const userData = data.user || { email };
+      const userData = data.user || { email: identifier.trim() };
       const accessToken = data.accessToken || data.token;
       const refreshToken = data.refreshToken;
 
@@ -69,14 +70,14 @@ const Login = () => {
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
+            <label htmlFor="identifier" className="block text-sm font-medium text-gray-700">
+              Email or Username
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              id="identifier"
+              type="text"
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               autoComplete="email"
@@ -87,15 +88,24 @@ const Login = () => {
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              autoComplete="current-password"
-            />
+            <div className="mt-1 relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-10"
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 px-3 flex items-center text-sm text-indigo-600 hover:text-indigo-800 focus:outline-none"
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
 
           <button
