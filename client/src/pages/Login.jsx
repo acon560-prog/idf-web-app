@@ -25,10 +25,11 @@ const Login = () => {
 
     setLoading(true);
     try {
+      const trimmedIdentifier = identifier.trim();
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: identifier.trim(), password }),
+        body: JSON.stringify({ email: trimmedIdentifier, username: trimmedIdentifier, password }),
       });
 
       if (!response.ok) {
@@ -37,7 +38,7 @@ const Login = () => {
       }
 
       const data = await response.json();
-      const userData = data.user || { email: identifier.trim() };
+      const userData = data.user || { email: trimmedIdentifier };
       const accessToken = data.accessToken || data.token;
       const refreshToken = data.refreshToken;
 
