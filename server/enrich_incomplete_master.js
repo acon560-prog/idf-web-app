@@ -12,8 +12,29 @@ function normalizeName(name) {
     .trim();
 }
 
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const options = {};
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === '--seed' && args[i + 1]) {
+      options.seed = args[++i];
+    } else if (arg === '--output' && args[i + 1]) {
+      options.output = args[++i];
+    } else if (arg === '--help') {
+      console.log('Usage: node enrich_incomplete_master.js [--seed path] [--output path]');
+      process.exit(0);
+    }
+  }
+  return options;
+}
+
+const { seed, output } = parseArgs();
+
 // Load your master stations (incomplete)
-const masterFilePath = path.join(__dirname, '../utils/stations_lookup_demo_fixed.json');
+const masterFilePath = seed
+  ? path.resolve(process.cwd(), seed)
+  : path.join(__dirname, '../utils/stations_lookup_demo_fixed.json');
 const masterStations = JSON.parse(fs.readFileSync(masterFilePath, 'utf8'));
 
 // Load official ECCC stations (enriched)
@@ -45,7 +66,9 @@ const enriched = masterStations.map(station => {
 });
 
 // Save enriched master list to new file
-const outputFilePath = path.join(__dirname, 'master_stations_enriched.json');
+const outputFilePath = output
+  ? path.resolve(process.cwd(), output)
+  : path.join(__dirname, 'master_stations_enriched.json');
 fs.writeFileSync(outputFilePath, JSON.stringify(enriched, null, 2));
 
 console.log(`Enriched master list saved to ${outputFilePath}`);
