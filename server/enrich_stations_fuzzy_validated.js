@@ -32,7 +32,30 @@ function isValidLatLon(lat, lon) {
   );
 }
 
-const masterFilePath = path.join(__dirname, 'master_stations_enriched.json');
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const options = {};
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === '--master' && args[i + 1]) {
+      options.master = args[++i];
+    } else if (arg === '--output' && args[i + 1]) {
+      options.output = args[++i];
+    } else if (arg === '--log' && args[i + 1]) {
+      options.log = args[++i];
+    } else if (arg === '--help') {
+      console.log('Usage: node enrich_stations_fuzzy_validated.js [--master path] [--output path] [--log path]');
+      process.exit(0);
+    }
+  }
+  return options;
+}
+
+const { master, output, log } = parseArgs();
+
+const masterFilePath = master
+  ? path.resolve(process.cwd(), master)
+  : path.join(__dirname, 'master_stations_enriched.json');
 const masterStations = JSON.parse(fs.readFileSync(masterFilePath, 'utf8'));
 
 const ecccFilePath = path.join(__dirname, 'eccc_climate_stations_full.json');
@@ -140,11 +163,15 @@ const enriched = masterStations.map(station => {
 });
 
 // Save enriched master list
-const outputFilePath = path.join(__dirname, 'master_stations_enriched_validated.json');
+const outputFilePath = output
+  ? path.resolve(process.cwd(), output)
+  : path.join(__dirname, 'master_stations_enriched_validated.json');
 fs.writeFileSync(outputFilePath, JSON.stringify(enriched, null, 2));
 
 // Save matching logs for review
-const logFilePath = path.join(__dirname, 'enrichment_match_logs.json');
+const logFilePath = log
+  ? path.resolve(process.cwd(), log)
+  : path.join(__dirname, 'enrichment_match_logs.json');
 fs.writeFileSync(logFilePath, JSON.stringify(matchLogs, null, 2));
 
 console.log(`Enrichment complete. Results saved to ${outputFilePath}`);
