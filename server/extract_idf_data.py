@@ -1,10 +1,12 @@
-import os
+import argparse
 import json
 import re
+from pathlib import Path
+from typing import Dict, List, Optional
 
-# Directory with all ECCC txt files
-DATA_DIR = './data'
-OUTPUT_FILE = 'idf_data_by_station.json'
+BASE_DIR = Path(__file__).resolve().parent
+DEFAULT_DATA_DIR = BASE_DIR / 'data'
+DEFAULT_OUTPUT_NAME = 'idf_data_by_station.json'
 
 def parse_table_2a(lines):
     results = []
@@ -86,20 +88,88 @@ def extract_station_id_from_filename(fname):
     return match.group(1) if match else fname.split('.')[0]
 
 
-def main():
-    out = {}
-    for fname in os.listdir(DATA_DIR):
-        if not fname.endswith('.txt'):
-            continue
-        station_id = extract_station_id_from_filename(fname)
-        with open(os.path.join(DATA_DIR, fname), encoding='latin-1') as f:
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        description='Extract IDF data from Environment Canada station text files.'
+    )
+    parser.add_argument(
+        '--data-dir', '-d', '-DataDir',
+        default=str(DEFAULT_DATA_DIR),
+        help='Directory containing the Environment Canada IDF text files. '
+             'Default is the "data" directory that sits next to this script.'
+    )
+    parser.add_argument(
+        '--province', '-p', '-Province',
+        help='Optional province code (e.g. ON, QC). When provided and the data directory '
+             'matches the default, the script will look inside a province-specific '
+             'subdirectory.'
+    )
+    parser.add_argument(
+        '--output', '-o', '-Output',
+        help='Path for the generated JSON file. Defaults to <data-dir>/idf_data_by_station.json.'
+    )
+    return parser.parse_args(argv)
+
+
+def resolve_data_dir(data_dir: Path, province: Optional[str]) -> Path:
+    data_dir = data_dir.expanduser()
+    if not data_dir.is_absolute():
+        data_dir = (BASE_DIR / data_dir).resolve()
+
+    if province:
+        province = province.strip()
+        if data_dir.name.lower() != province.lower():
+            candidate = data_dir / province
+            if candidate.is_dir():
+                data_dir = candidate
+
+    if not data_dir.is_dir():
+        raise FileNotFoundError(f'Data directory does not exist: {data_dir}')
+
+    return data_dir
+
+
+def resolve_output_path(output: Optional[str], data_dir: Path) -> Path:
+    if output:
+        path = Path(output).expanduser()
+        if not path.is_absolute():
+            path = (BASE_DIR / path).resolve()
+    else:
+        path = data_dir / DEFAULT_OUTPUT_NAME
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def main(argv=None):
+    args = parse_args(argv)
+
+    data_dir = resolve_data_dir(Path(args.data_dir), args.province)
+    output_path = resolve_output_path(args.output, data_dir)
+
+    txt_files = sorted(p for p in data_dir.iterdir() if p.suffix.lower() == '.txt')
+
+    if not txt_files:
+        raise FileNotFoundError(
+            f'No .txt files found in {data_dir}. Ensure the directory contains Environment '
+            'Canada IDF text files.'
+        )
+
+    out: Dict[str, List[Dict[str, Optional[float]]]] = {}
+
+    for txt_file in txt_files:
+        station_id = extract_station_id_from_filename(txt_file.name)
+        with txt_file.open(encoding='latin-1') as f:
             lines = f.readlines()
         idf_table = parse_table_2a(lines)
-        print("Station ID:", station_id, type(station_id))
+        print('Processed station:', station_id)
         out[station_id] = idf_table
 
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as out_f:
+    with output_path.open('w', encoding='utf-8') as out_f:
         json.dump(out, out_f, indent=2)
+
+    print(f'Wrote IDF data for {len(out)} stations to {output_path}')
+
 
 if __name__ == '__main__':
     main()
