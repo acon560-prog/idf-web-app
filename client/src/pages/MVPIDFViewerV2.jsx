@@ -281,17 +281,21 @@ const MVPIDFViewerV2 = () => {
 
         const newItem = { duration: durationInMinutes };
         let hasValidData = false;
-        
+
         allReturnPeriods.forEach(period => {
           const value = parseFloat(item[period]);
           if (!isNaN(value)) {
-            newItem[period] = value;
-            hasValidData = true;
+            const durationHours = durationInMinutes / 60;
+            const intensity = durationHours > 0 ? value / durationHours : null;
+            if (intensity !== null && !isNaN(intensity) && isFinite(intensity)) {
+              newItem[period] = intensity;
+              hasValidData = true;
+            }
           } else {
             console.log(`- Item ${index}: Value for return period "${period}" is not a number.`);
           }
         });
-        
+
         if (!hasValidData) {
           console.log(`- Skipping item ${index} because no valid numerical IDF values were found.`);
           return null;

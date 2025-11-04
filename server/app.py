@@ -381,7 +381,10 @@ def nearest_station():
                 continue
 
     if closest_station:
-        return jsonify(closest_station)
+        station_with_distance = dict(closest_station)
+        if min_distance != float('inf'):
+            station_with_distance['distance_km'] = round(min_distance, 2)
+        return jsonify(station_with_distance)
     else:
         return jsonify({"error": "No stations with valid lat/lon found."}), 404
 
