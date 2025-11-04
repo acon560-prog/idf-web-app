@@ -3,6 +3,7 @@ import json
 import os
 import re
 from pathlib import Path
+from difflib import SequenceMatcher
 
 DURATION_PATTERN = re.compile(r'^\d+(\.\d+)?\s(min|h)$')
 
@@ -102,21 +103,80 @@ def parse_table_2a(lines):
     return results
 
 
-def extract_station_id(path: Path) -> str:
-    match = re.search(r'_(\w{5,})\.txt$', path.name)
-    return match.group(1) if match else path.stem
+STATION_ID_PATTERN = re.compile(r'_(\d{7}|\d{3}[A-Z]{2}\d)_', re.IGNORECASE)
+
+
+def extract_station_id(path: Path) -> str | None:
+    match = STATION_ID_PATTERN.search(path.name)
+    return match.group(1) if match else None
+
+
+def extract_station_name(path: Path) -> str:
+    # Remove prefix like idf_v3-30_2022_10_31_101_BC_
+    name_part = path.name
+    prefix = re.compile(r'^idf_v3-30_\d{4}_\d{2}_\d{2}_\d+_[A-Z]{2}_')
+    name_part = prefix.sub('', name_part)
+    # Remove extension and suffix variants (_qq, _r, _t)
+    name_part = name_part.rsplit('.', 1)[0]
+    name_part = re.sub(r'_(qq|r|t)$', '', name_part)
+    return name_part.upper()
+
+
+def normalize(s: str) -> str:
+    return re.sub(r'[^A-Z0-9]', '', s.upper())
 
 
 def main():
     args = parse_args()
     base_dir = Path(args.data_dir)
 
+    # Load master metadata for fallback matching
+    province = args.province.upper() if args.province else None
+    master_path = base_dir.parent / 'data' / (province or '') / 'master_stations_enriched_validated.json'
+    master_lookup = {}
+    if master_path.exists():
+        with master_path.open(encoding='utf-8') as fh:
+            for record in json.load(fh):
+                sid = record.get('stationId')
+                if sid:
+                    master_lookup[sid] = record
+
     output = {}
-    for txt_path in iter_txt_files(base_dir, args.province):
+    name_index = {}
+
+    for txt_path in iter_txt_files(base_dir, province):
+        station_id = extract_station_id(txt_path)
         with txt_path.open(encoding='latin-1') as fh:
             lines = fh.readlines()
         idf_table = parse_table_2a(lines)
-        output[extract_station_id(txt_path)] = idf_table
+
+        if station_id:
+            output[station_id] = idf_table
+            continue
+
+        # Fallback: attempt to match by station name
+        raw_name = extract_station_name(txt_path)
+        normalized = normalize(raw_name)
+
+        # Build name index from master lookup on first use
+        if not name_index and master_lookup:
+            for sid, record in master_lookup.items():
+                name = record.get('name') or record.get('lookupName') or ''
+                name_index[sid] = normalize(name)
+
+        best_sid = None
+        best_score = 0.0
+        for sid, nname in name_index.items():
+            score = SequenceMatcher(None, normalized, nname).ratio()
+            if score > best_score:
+                best_score = score
+                best_sid = sid
+
+        if best_sid and best_score >= 0.85:  # accept close matches
+            output[best_sid] = idf_table
+        else:
+            # fallback: store under raw name to avoid data loss
+            output[raw_name] = idf_table
 
     with open(args.output, 'w', encoding='utf-8') as out_f:
         json.dump(output, out_f, indent=2)
