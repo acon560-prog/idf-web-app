@@ -36,8 +36,10 @@ users_collection = mongo.db.users
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
 
 STATIONS_DATA = []
+STATION_LOOKUP = {}
 IDF_DATA = {}
-IDF_KEY_MAPPING = {} 
+IDF_KEY_MAPPING = {}
+IDF_STATION_IDS = set()
 
 
 def normalize_email(email: str) -> str:
@@ -126,7 +128,12 @@ for province_code in PROVINCES:
     try:
         # Load station data
         with open(stations_path, 'r', encoding='utf-8') as f:
-            STATIONS_DATA.extend(json.load(f))
+            stations = json.load(f)
+            STATIONS_DATA.extend(stations)
+            for station in stations:
+                sid = station.get('stationId')
+                if sid:
+                    STATION_LOOKUP[sid] = station
         print(f"Successfully loaded stations metadata for {province_code}.")
 
         # Load IDF data and create mapping
@@ -140,15 +147,68 @@ for province_code in PROVINCES:
                 if station_id_match:
                     station_id = station_id_match.group(1)
                     IDF_KEY_MAPPING[station_id] = key
+                    IDF_STATION_IDS.add(station_id)
                 else:
                     # Fallback for keys that don't match the regex
                     IDF_KEY_MAPPING[key] = key
+                    IDF_STATION_IDS.add(key)
         print(f"Successfully loaded IDF data for {len(prov_idf_data)} stations in {province_code}.")
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Could not load data for {province_code}: {e}")
         continue
 print(f"Total stations loaded: {len(STATIONS_DATA)}")
 print(f"Total IDF data sets loaded: {len(IDF_DATA)}")
+
+
+def parse_coordinate(value):
+    try:
+        if value in (None, ''):
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def find_nearest_station_with_idf(station_id):
+    origin = STATION_LOOKUP.get(station_id)
+    if not origin:
+        return None
+
+    origin_lat = parse_coordinate(origin.get('lat'))
+    origin_lon = parse_coordinate(origin.get('lon'))
+    if origin_lat is None or origin_lon is None:
+        return None
+
+    best_station = None
+    best_idf_key = None
+    best_distance = float('inf')
+
+    for candidate in STATIONS_DATA:
+        candidate_id = candidate.get('stationId')
+        if not candidate_id or candidate_id not in IDF_KEY_MAPPING:
+            continue
+        if candidate_id == station_id:
+            continue
+
+        cand_lat = parse_coordinate(candidate.get('lat'))
+        cand_lon = parse_coordinate(candidate.get('lon'))
+        if cand_lat is None or cand_lon is None:
+            continue
+
+        distance = haversine(origin_lat, origin_lon, cand_lat, cand_lon)
+        if distance < best_distance:
+            best_distance = distance
+            best_station = candidate
+            best_idf_key = IDF_KEY_MAPPING[candidate_id]
+
+    if not best_station or best_idf_key is None:
+        return None
+
+    return {
+        'station': best_station,
+        'idf_key': best_idf_key,
+        'distance_km': best_distance
+    }
 
 
 @app.route('/api/auth/register', methods=['POST'])
@@ -345,12 +405,27 @@ def idf_curves():
             return jsonify({"error": "Missing 'stationId' parameter"}), 400
 
         idf_key = IDF_KEY_MAPPING.get(stationId)
-        
-        if not idf_key or idf_key not in IDF_DATA:
-            print(f"IDF data not found for station ID: {stationId}")
-            return jsonify({"error": "IDF data not found for this station."}), 404
+        fallback_meta = None
 
-        idf_station_data = IDF_DATA[idf_key]
+        if not idf_key or idf_key not in IDF_DATA:
+            print(f"IDF data not found for station ID: {stationId}. Attempting fallback.")
+            fallback = find_nearest_station_with_idf(stationId)
+            if fallback:
+                fallback_station = fallback['station']
+                idf_key = fallback['idf_key']
+                fallback_meta = {
+                    'requestedStationId': stationId,
+                    'requestedStationName': STATION_LOOKUP.get(stationId, {}).get('name'),
+                    'usedStationId': fallback_station.get('stationId'),
+                    'usedStationName': fallback_station.get('name'),
+                    'distanceKm': round(fallback['distance_km'], 2)
+                }
+                print(f"Fallback succeeded: using station {fallback_meta['usedStationId']} ({fallback_meta['usedStationName']}) at {fallback_meta['distanceKm']} km.")
+            else:
+                print(f"IDF fallback failed for station ID: {stationId}")
+                return jsonify({"error": "IDF data not found for this station or nearby stations."}), 404
+
+        idf_station_data = IDF_DATA.get(idf_key, [])
         
         processed_data = []
         
@@ -374,8 +449,11 @@ def idf_curves():
                     processed_data.append(data_point)
 
         processed_data.sort(key=lambda x: x['duration'])
-        
-        return jsonify({"data": processed_data})
+
+        response_payload = {"data": processed_data}
+        if fallback_meta:
+            response_payload['fallback'] = fallback_meta
+        return jsonify(response_payload)
 
     except Exception as e:
         print(f"An unexpected error occurred in idf_curves: {e}")

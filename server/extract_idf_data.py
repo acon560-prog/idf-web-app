@@ -144,14 +144,26 @@ def main():
     output = {}
     name_index = {}
 
+    processed = 0
+    idf_entries = 0
+    empty_tables = []
+    fallback_by_name = []
+    unmatched_files = []
+
     for txt_path in iter_txt_files(base_dir, province):
         station_id = extract_station_id(txt_path)
         with txt_path.open(encoding='latin-1') as fh:
             lines = fh.readlines()
         idf_table = parse_table_2a(lines)
 
+        processed += 1
+
+        if not idf_table:
+            empty_tables.append(txt_path.name)
+
         if station_id:
             output[station_id] = idf_table
+            idf_entries += 1
             continue
 
         # Fallback: attempt to match by station name
@@ -174,12 +186,29 @@ def main():
 
         if best_sid and best_score >= 0.85:  # accept close matches
             output[best_sid] = idf_table
+            idf_entries += 1
+            fallback_by_name.append((txt_path.name, best_sid, round(best_score, 3)))
         else:
             # fallback: store under raw name to avoid data loss
             output[raw_name] = idf_table
+            unmatched_files.append(txt_path.name)
 
     with open(args.output, 'w', encoding='utf-8') as out_f:
         json.dump(output, out_f, indent=2)
+
+    print(f"Processed {processed} IDF files -> wrote {idf_entries} station entries to {args.output}.")
+    if empty_tables:
+        print(f"Warning: {len(empty_tables)} files had empty or unreadable Table 2a data (first 5 shown):")
+        for name in empty_tables[:5]:
+            print(f"  - {name}")
+    if fallback_by_name:
+        print(f"Used name-based matching for {len(fallback_by_name)} files (first 5 shown):")
+        for name, sid, score in fallback_by_name[:5]:
+            print(f"  - {name} -> {sid} (score {score})")
+    if unmatched_files:
+        print(f"Stored {len(unmatched_files)} files under raw names because no ID or close match was found (first 5 shown):")
+        for name in unmatched_files[:5]:
+            print(f"  - {name}")
 
 
 if __name__ == '__main__':
