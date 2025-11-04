@@ -6,9 +6,10 @@ import { Link } from 'react-router-dom';
 // To make the app functional, please replace 'YOUR_API_KEY' with your actual Google Maps API key.
 // Example: const GOOGLE_MAPS_API_KEY = 'AIzaSyB-C1...';
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || '';
+const HAS_GOOGLE_API_KEY = Boolean(GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY.trim());
 
-// const GOOGLE_MAPS_API_KEY = typeof __google_maps_api_key !== 'undefined' ? __google_maps_api_key : 'AIzaSyD4ngcsdvF7gXdLiYb8UPpSWEhixiIpe4g';
-const API_BASE_URL = 'http://127.0.0.1:5000/api';
+const API_ROOT = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:5000';
+const API_BASE_URL = `${API_ROOT}/api`;
 
 const DownloadIcon = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download">
@@ -39,7 +40,9 @@ const SearchIcon = (props) => (
 const allReturnPeriods = ['2', '5', '10', '25', '50', '100'];
 
 const MVPIDFViewerV2 = () => {
-  const { user } = useAuth(); // Add this line or move it here if already declared
+  const auth = useAuth();
+  const user = auth?.user ?? null;
+  const [trialMessage, setTrialMessage] = useState('');
  
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
@@ -56,6 +59,15 @@ const MVPIDFViewerV2 = () => {
   
   // This useEffect ensures the Google Maps script is loaded only once and correctly.
   useEffect(() => {
+    if (!user) {
+      setScriptLoaded(false);
+      return;
+    }
+    if (!HAS_GOOGLE_API_KEY) {
+      setScriptLoaded(false);
+      setError('Google Maps API key is missing or invalid. Set REACT_APP_GOOGLE_PLACES_API_KEY in your environment or .env file.');
+      return;
+    }
     let isMounted = true;
     const GOOGLE_MAPS_SCRIPT_ID = 'google-maps-script';
 
@@ -104,10 +116,16 @@ const MVPIDFViewerV2 = () => {
       isMounted = false;
       // No need to remove the script tag, as other components might need it.
     };
-  }, []);
+  }, [user, HAS_GOOGLE_API_KEY]);
 
   // This useEffect initializes Autocomplete only after the script has successfully loaded.
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+    if (!HAS_GOOGLE_API_KEY) {
+      return;
+    }
     if (scriptLoaded && autocompleteInputRef.current) {
       // Use a short delay to ensure the places library is fully available
       const initAutocomplete = () => {
@@ -144,7 +162,29 @@ const MVPIDFViewerV2 = () => {
         }
       };
     }
-  }, [scriptLoaded, setPlace]);
+  }, [scriptLoaded, setPlace, user, HAS_GOOGLE_API_KEY]);
+
+  useEffect(() => {
+    if (!user) {
+      setTrialMessage('');
+      return;
+    }
+    if (user.trialEndsAt) {
+      const endsAt = new Date(user.trialEndsAt);
+      const now = new Date();
+      const diffMs = endsAt - now;
+      if (diffMs > 0) {
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        setTrialMessage(`Your free trial ends in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}.`);
+      } else {
+        setTrialMessage('Your free trial has expired. Please upgrade to continue accessing IDF curves.');
+      }
+    } else if (user.subscriptionStatus !== 'active') {
+      setTrialMessage('Your free trial status could not be verified.');
+    } else {
+      setTrialMessage('');
+    }
+  }, [user]);
 
   const handleSearch = useCallback(async (e) => {
     e.preventDefault();
@@ -191,10 +231,21 @@ const MVPIDFViewerV2 = () => {
       setIsStationInfoVisible(true);
       console.log('Found nearest station:', nearestStation);
 
-      const idfResponse = await fetch(`${API_BASE_URL}/idf/curves?stationId=${nearestStation.stationId}`);
+      const idfResponse = await (auth?.authFetch
+        ? auth.authFetch(`${API_BASE_URL}/idf/curves?stationId=${nearestStation.stationId}`)
+        : fetch(`${API_BASE_URL}/idf/curves?stationId=${nearestStation.stationId}`));
       if (!idfResponse.ok) {
-        const errorData = await idfResponse.json();
-        throw new Error(errorData.error || 'Failed to fetch IDF data.');
+        let message = 'Failed to fetch IDF data.';
+        try {
+          const errorData = await idfResponse.json();
+          if (errorData?.code === 'trial_expired') {
+            setTrialMessage('Your free trial has expired. Please upgrade to continue accessing IDF curves.');
+          }
+          message = errorData.error || message;
+        } catch (jsonErr) {
+          console.error('Failed to parse IDF error response', jsonErr);
+        }
+        throw new Error(message);
       }
       const idfJson = await idfResponse.json();
       console.log('Raw IDF data from API:', idfJson.data);
@@ -230,17 +281,21 @@ const MVPIDFViewerV2 = () => {
 
         const newItem = { duration: durationInMinutes };
         let hasValidData = false;
-        
+
         allReturnPeriods.forEach(period => {
           const value = parseFloat(item[period]);
           if (!isNaN(value)) {
-            newItem[period] = value;
-            hasValidData = true;
+            const durationHours = durationInMinutes / 60;
+            const intensity = durationHours > 0 ? value / durationHours : null;
+            if (intensity !== null && !isNaN(intensity) && isFinite(intensity)) {
+              newItem[period] = intensity;
+              hasValidData = true;
+            }
           } else {
             console.log(`- Item ${index}: Value for return period "${period}" is not a number.`);
           }
         });
-        
+
         if (!hasValidData) {
           console.log(`- Skipping item ${index} because no valid numerical IDF values were found.`);
           return null;
@@ -363,7 +418,7 @@ const MVPIDFViewerV2 = () => {
   
   const yAxisDomain = useMemo(() => {
     if (!idfData || idfData.length === 0) {
-      return [0, 'auto'];
+      return [1, 'auto'];
     }
     let maxIntensity = 0;
     idfData.forEach(item => {
@@ -373,7 +428,11 @@ const MVPIDFViewerV2 = () => {
         }
       });
     });
-    // User not logged in: show advisory message and stop rendering main UI
+    const upperLimit = Math.max(Math.ceil(maxIntensity / 10) * 10, 1);
+    return [1, upperLimit];
+  }, [idfData]);
+
+
   if (!user) {
     return (
       <div className="max-w-3xl mx-auto p-6 mt-10 border border-yellow-400 bg-yellow-100 rounded text-center text-yellow-900">
@@ -387,11 +446,6 @@ const MVPIDFViewerV2 = () => {
       </div>
     );
   }
-    const upperLimit = Math.ceil(maxIntensity / 10) * 10;
-    const lowerLimit = 1;
-    return [lowerLimit, upperLimit];
-  }, [idfData]);
-
 
   if (!scriptLoaded) {
     return (
@@ -409,6 +463,13 @@ const MVPIDFViewerV2 = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
+      {trialMessage && (
+        <div className="w-full max-w-5xl mb-4">
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm">
+            {trialMessage}
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-5xl bg-white p-6 sm:p-8 lg:p-10 rounded-2xl shadow-xl flex flex-col md:flex-row gap-6">
 
         {/* Left Side: Search and Controls */}
@@ -437,7 +498,7 @@ const MVPIDFViewerV2 = () => {
             <button
               type="submit"
               className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
+              disabled={loading || !HAS_GOOGLE_API_KEY}
             >
               {loading ? (
                 <div className="flex items-center">
