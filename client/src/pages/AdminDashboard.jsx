@@ -1,9 +1,8 @@
 // File: src/pages/AdminDashboard.jsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
-
-const API_ROOT = process.env.REACT_APP_API_BASE_URL || 'http://127.0.0.1:5000';
+import React, { useEffect, useMemo, useState } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import { buildApiUrl, readJsonResponse } from "../utils/apiConfig";
 
 function AdminDashboard() {
   const { user, authFetch } = useAuth();
@@ -12,10 +11,10 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const contactApiUrl = useMemo(() => `${API_ROOT}/api/contact`, []);
+  const contactApiUrl = useMemo(() => buildApiUrl("/contact"), []);
 
   useEffect(() => {
-    if (!user || user.role !== 'admin') {
+    if (!user || user.role !== "admin") {
       setLoading(false);
       return;
     }
@@ -31,21 +30,28 @@ function AdminDashboard() {
           : fetch(contactApiUrl, { signal: controller.signal }));
 
         if (response.status === 403) {
-          setError('You do not have permission to view submissions.');
+          setError("You do not have permission to view submissions.");
           setSubmissions([]);
           return;
         }
 
+        const data = await readJsonResponse(
+          response,
+          "Failed to load submissions.",
+        );
         if (!response.ok) {
-          throw new Error('Failed to load submissions.');
+          throw new Error(data?.error || "Failed to load submissions.");
         }
-
-        const data = await response.json();
         setSubmissions(Array.isArray(data) ? data : []);
       } catch (err) {
-        if (err.name === 'AbortError') return;
-        console.error('Failed to fetch submissions', err);
-        setError(err.message || 'Unexpected error while loading submissions.');
+        if (err.name === "AbortError") return;
+        console.error("Failed to fetch submissions", err);
+        const apiHint = contactApiUrl ? ` (API: ${contactApiUrl})` : "";
+        setError(
+          err.message
+            ? `${err.message}${apiHint}`
+            : `Unexpected error while loading submissions.${apiHint}`,
+        );
       } finally {
         setLoading(false);
       }
@@ -60,34 +66,36 @@ function AdminDashboard() {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (user.role !== 'admin') {
+  if (user.role !== "admin") {
     return <Navigate to="/" replace />;
   }
 
   const downloadCSV = () => {
-    const headers = ['Name', 'Email', 'Message', 'Date'];
+    const headers = ["Name", "Email", "Message", "Date"];
     const rows = submissions.map((submission) => [
       submission.name,
       submission.email,
       submission.message,
-      submission.date ? new Date(submission.date).toLocaleString() : '',
+      submission.date ? new Date(submission.date).toLocaleString() : "",
     ]);
 
     const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row
-        .map((field) => {
-          const value = field ?? '';
-          return `"${String(value).replace(/"/g, '""')}"`;
-        })
-        .join(',')),
-    ].join('\n');
+      headers.join(","),
+      ...rows.map((row) =>
+        row
+          .map((field) => {
+            const value = field ?? "";
+            return `"${String(value).replace(/"/g, '""')}"`;
+          })
+          .join(","),
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'submissions.csv';
+    a.download = "submissions.csv";
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -106,13 +114,9 @@ function AdminDashboard() {
         </button>
       </div>
 
-      {loading && (
-        <p className="text-gray-500">Loading submissions…</p>
-      )}
+      {loading && <p className="text-gray-500">Loading submissions…</p>}
 
-      {error && !loading && (
-        <p className="text-red-600 mb-4">{error}</p>
-      )}
+      {error && !loading && <p className="text-red-600 mb-4">{error}</p>}
 
       {!loading && !error && (
         <div className="overflow-x-auto">
@@ -127,18 +131,30 @@ function AdminDashboard() {
             </thead>
             <tbody>
               {submissions.map((submission) => (
-                <tr key={submission._id || `${submission.email}-${submission.date}`}
-                  className="hover:bg-gray-50">
+                <tr
+                  key={
+                    submission._id || `${submission.email}-${submission.date}`
+                  }
+                  className="hover:bg-gray-50"
+                >
                   <td className="border px-4 py-2">{submission.name}</td>
                   <td className="border px-4 py-2">{submission.email}</td>
-                  <td className="border px-4 py-2 whitespace-pre-wrap">{submission.message}</td>
-                  <td className="border px-4 py-2">{submission.date ? new Date(submission.date).toLocaleString() : ''}</td>
+                  <td className="border px-4 py-2 whitespace-pre-wrap">
+                    {submission.message}
+                  </td>
+                  <td className="border px-4 py-2">
+                    {submission.date
+                      ? new Date(submission.date).toLocaleString()
+                      : ""}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
           {submissions.length === 0 && (
-            <p className="text-center text-gray-500 mt-4">No submissions found.</p>
+            <p className="text-center text-gray-500 mt-4">
+              No submissions found.
+            </p>
           )}
         </div>
       )}
