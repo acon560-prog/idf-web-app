@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout?.();
+    setMenuOpen(false);
+    navigate('/');
+  };
 
   return (
     <nav className="bg-gray-800 text-white">
@@ -15,8 +24,23 @@ function Navbar() {
           <li><Link to="/about" className="hover:underline">About</Link></li>
           <li><Link to="/services" className="hover:underline">Services</Link></li>
           <li><Link to="/contact" className="hover:underline">Contact</Link></li>
-          <li><Link to="/admin" className="hover:underline">Admin</Link></li>
+          {user?.role === 'admin' && (
+            <li><Link to="/admin" className="hover:underline">Admin</Link></li>
+          )}
           <li><Link to="/start" className="hover:underline text-yellow-300 font-semibold">Start</Link></li> {/* ✅ Added */}
+          {user ? (
+            <li>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="hover:underline"
+              >
+                Logout
+              </button>
+            </li>
+          ) : (
+            <li><Link to="/login" className="hover:underline">Login</Link></li>
+          )}
         </ul>
 
         {/* Mobile Menu Toggle Button */}
@@ -35,8 +59,23 @@ function Navbar() {
           <li><Link to="/about" onClick={() => setMenuOpen(false)}>About</Link></li>
           <li><Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link></li>
           <li><Link to="/contact" onClick={() => setMenuOpen(false)}>Contact</Link></li>
-          <li><Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link></li> {/* ✅ Added */}
+          {user?.role === 'admin' && (
+            <li><Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link></li>
+          )}
           <li><Link to="/start" onClick={() => setMenuOpen(false)} className="text-yellow-300 font-semibold">Start</Link></li> {/* ✅ Added */}
+          {user ? (
+            <li>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full text-left"
+              >
+                Logout
+              </button>
+            </li>
+          ) : (
+            <li><Link to="/login" onClick={() => setMenuOpen(false)}>Login</Link></li>
+          )}
         </ul>
       )}
     </nav>
