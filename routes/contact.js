@@ -1,7 +1,44 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
+
 const router = express.Router();
+
+const JWT_SECRET = process.env.JWT_SECRET_KEY || 'change-me';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+
+function extractBearerToken(req) {
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7);
+  }
+  return null;
+}
+
+function requireAdmin(req, res, next) {
+  try {
+    const token = extractBearerToken(req);
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const payload = jwt.verify(token, JWT_SECRET);
+    const role = payload?.role;
+    const email = (payload?.email || '').toLowerCase();
+    const isAdmin = role === 'admin' || (!!ADMIN_EMAIL && email === ADMIN_EMAIL);
+
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Administrator access required' });
+    }
+
+    req.user = { id: payload?.sub, email, role: role || (isAdmin ? 'admin' : undefined) };
+    next();
+  } catch (err) {
+    console.error('JWT verification failed for admin route:', err);
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}
 
 router.post('/', async (req, res) => {
   const { name, email, message, sendCopy, honeypot } = req.body;
@@ -71,7 +108,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET route for Admin Dashboard
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     const db = req.app.locals.db;
     if (!db) throw new Error('MongoDB not connected');

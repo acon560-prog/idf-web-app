@@ -31,6 +31,7 @@ mongo = PyMongo(app)
 jwt = JWTManager(app)
 
 users_collection = mongo.db.users
+ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
 
 # Define the provinces to load. Add more as you get the data for them.
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
@@ -46,6 +47,18 @@ def normalize_email(email: str) -> str:
     return email.strip().lower() if isinstance(email, str) else ''
 
 
+def determine_role(user_doc) -> str:
+    if not user_doc:
+        return 'user'
+    role = user_doc.get('role')
+    if role:
+        return role
+    email = normalize_email(user_doc.get('email'))
+    if email and email == ADMIN_EMAIL:
+        return 'admin'
+    return 'user'
+
+
 def isoformat_or_none(value):
     if isinstance(value, datetime):
         if value.tzinfo:
@@ -57,6 +70,7 @@ def isoformat_or_none(value):
 def serialize_user(user_doc):
     if not user_doc:
         return None
+    role = determine_role(user_doc)
     return {
         'id': str(user_doc['_id']),
         'email': user_doc.get('email'),
@@ -66,14 +80,17 @@ def serialize_user(user_doc):
         'trialStartsAt': isoformat_or_none(user_doc.get('trialStartsAt')),
         'trialEndsAt': isoformat_or_none(user_doc.get('trialEndsAt')),
         'stripeCustomerId': user_doc.get('stripeCustomerId'),
+        'role': role,
     }
 
 
 def generate_tokens(user_doc):
     identity = str(user_doc['_id'])
+    role = determine_role(user_doc)
     additional_claims = {
         'email': user_doc.get('email'),
         'subscriptionStatus': user_doc.get('subscriptionStatus', 'trialing'),
+        'role': role,
     }
     access_token = create_access_token(identity=identity, additional_claims=additional_claims)
     refresh_token = create_refresh_token(identity=identity)
@@ -235,6 +252,7 @@ def register():
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     now = datetime.utcnow()
     trial_end = now + timedelta(days=7)
+    role = 'admin' if email and email == ADMIN_EMAIL else 'user'
 
     user_doc = {
         'email': email if email else None,
@@ -248,10 +266,12 @@ def register():
         'trialEndsAt': trial_end,
         'createdAt': now,
         'updatedAt': now,
+        'role': role,
     }
 
     result = users_collection.insert_one(user_doc)
     user_doc['_id'] = result.inserted_id
+    user_doc['role'] = role
 
     tokens = generate_tokens(user_doc)
 
@@ -288,9 +308,15 @@ def login():
     if not bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
         return jsonify({'error': 'Invalid email or password.'}), 401
 
+    role = determine_role(user_doc)
+    updates = {'updatedAt': datetime.utcnow()}
+    if user_doc.get('role') != role:
+        updates['role'] = role
+    user_doc['role'] = role
+
     users_collection.update_one(
         {'_id': user_doc['_id']},
-        {'$set': {'updatedAt': datetime.utcnow()}},
+        {'$set': updates},
     )
 
     tokens = generate_tokens(user_doc)
@@ -320,6 +346,7 @@ def refresh_token():
     additional_claims = {
         'email': user_doc.get('email'),
         'subscriptionStatus': user_doc.get('subscriptionStatus', 'trialing'),
+        'role': determine_role(user_doc),
     }
     access_token = create_access_token(identity=str(user_doc['_id']), additional_claims=additional_claims)
 
