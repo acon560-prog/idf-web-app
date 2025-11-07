@@ -170,29 +170,6 @@ export function AuthProvider({ children }) {
     [setSession],
   );
 
-  const register = useCallback(
-    async ({ email, password, name }) => {
-      const res = await fetch(buildApiUrl("/auth/register"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || "Unable to register. Please try again.");
-      }
-
-      if (!data.accessToken || !data.refreshToken) {
-        throw new Error("Registration response did not include credentials.");
-      }
-
-      setSession(data.user, data.accessToken, data.refreshToken);
-      return data.user;
-    },
-    [setSession],
-  );
-
   return (
     <AuthContext.Provider
       value={{ user, token, refreshToken, login, logout, authFetch }}
