@@ -1,24 +1,25 @@
 // File: client/src/pages/Contact.jsx
 
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
+import { buildApiUrl } from "../utils/apiConfig";
 
 function Contact() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
+    name: "",
+    email: "",
+    message: "",
     sendCopy: false,
-    honeypot: ''  // Spam bot trap
+    honeypot: "", // Spam bot trap
   });
 
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -27,33 +28,33 @@ function Contact() {
 
     // Honeypot protection: if filled, likely a bot
     if (formData.honeypot) {
-      setStatus('Spam detected. Submission blocked.');
+      setStatus("Spam detected. Submission blocked.");
       return;
     }
 
     try {
-      const res = await axios.post('http://localhost:5000/api/contact', {
+      const res = await axios.post(buildApiUrl("/contact"), {
         name: formData.name,
         email: formData.email,
         message: formData.message,
-        sendCopy: formData.sendCopy
+        sendCopy: formData.sendCopy,
       });
 
       if (res.data.success) {
-        setStatus('✅ Message sent successfully!');
+        setStatus("✅ Message sent successfully!");
         setFormData({
-          name: '',
-          email: '',
-          message: '',
+           name: "",
+          email: "",
+          message: "",
           sendCopy: false,
-          honeypot: ''
+          honeypot: "",
         });
       } else {
-        setStatus('❌ Something went wrong. Try again.');
+        setStatus("❌ Something went wrong. Try again.");;
       }
     } catch (err) {
       console.error(err);
-      setStatus('❌ Error sending message.');
+      setStatus("❌ Error sending message.");
     }
   };
 
@@ -67,7 +68,7 @@ function Contact() {
           name="honeypot"
           value={formData.honeypot}
           onChange={handleChange}
-          style={{ display: 'none' }}
+          style={{ display: "none" }}
           autoComplete="off"
         />
 
@@ -121,9 +122,7 @@ function Contact() {
       </form>
 
       {status && (
-        <p className="mt-4 text-sm text-center text-green-600">
-          {status}
-        </p>
+        <p className="mt-4 text-sm text-center text-green-600">{status}</p>
       )}
     </div>
   );
