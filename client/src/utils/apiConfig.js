@@ -13,7 +13,7 @@ export function getApiBaseUrl() {
   if (cachedBaseUrl) {
     return cachedBaseUrl;
   }
-
+  
   if (envBase) {
     cachedBaseUrl = envBase.replace(/\/$/, "");
     return cachedBaseUrl;
