@@ -1,4 +1,3 @@
-/* global __google_maps_api_key */
 import React, {
   useState,
   useEffect,
@@ -196,7 +195,7 @@ const MVPIDFViewerV2 = () => {
       isMounted = false;
       // No need to remove the script tag, as other components might need it.
     };
-  }, [user, HAS_GOOGLE_API_KEY]);
+  }, [user]);
 
   // This useEffect initializes Autocomplete only after the script has successfully loaded.
   useEffect(() => {

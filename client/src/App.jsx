@@ -1,17 +1,16 @@
 // File: client/src/App.jsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import Home from './pages/Home.jsx';
-import About from './pages/About.jsx';
-import Services from './pages/Services.jsx';
-import Contact from './pages/Contact.jsx';
-import Navbar from './components/Navbar.jsx';
-import Footer from './components/Footer.jsx';
-import AdminDashboard from './pages/AdminDashboard.jsx';
-import ProjectWizard from './pages/ProjectWizard';
-import MVPIDFViewerV2 from './pages/MVPIDFViewerV2.jsx';
-import TestAutocomplete from './pages/TestAutocomplete.jsx';
-import Login from './pages/Login.jsx';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home.jsx";
+import About from "./pages/About.jsx";
+import Services from "./pages/Services.jsx";
+import Contact from "./pages/Contact.jsx";
+import Navbar from "./components/Navbar.jsx";
+import Footer from "./components/Footer.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
+import MVPIDFViewerV2 from "./pages/MVPIDFViewerV2.jsx";
+import TestAutocomplete from "./pages/TestAutocomplete.jsx";
+import Login from "./pages/Login.jsx";
 
 function App() {
   return (
@@ -24,7 +23,8 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/start" element={<MVPIDFViewerV2 />} /> {/* Change this line */}
+          <Route path="/start" element={<MVPIDFViewerV2 />} />{" "}
+          {/* Change this line */}
           <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
           <Route path="/login" element={<Login />} />
           <Route path="/test-autocomplete" element={<TestAutocomplete />} />
@@ -36,7 +36,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
