@@ -457,7 +457,7 @@ const MVPIDFViewerV2 = () => {
           setLoading(false);
         }
       },
-      [API_BASE_URL, authFetch, place],
+      [authFetch, place],
     );
 
   const handleCheckboxChange = useCallback((event) => {
