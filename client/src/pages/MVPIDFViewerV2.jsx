@@ -114,6 +114,7 @@ const allReturnPeriods = ["2", "5", "10", "25", "50", "100"];
 const MVPIDFViewerV2 = () => {
   const auth = useAuth();
   const user = auth?.user ?? null;
+  const authFetch = auth?.authFetch ?? null;
   const [trialMessage, setTrialMessage] = useState("");
 
   const [station, setStation] = useState(null);
@@ -130,13 +131,15 @@ const MVPIDFViewerV2 = () => {
   const autocompleteInputRef = useRef(null);
   const chartDataRef = useRef(null);
 
+  const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
+
   // This useEffect ensures the Google Maps script is loaded only once and correctly.
   useEffect(() => {
     if (!user) {
       setScriptLoaded(false);
       return;
     }
-    if (!HAS_GOOGLE_API_KEY) {
+    if (!hasGoogleApiKey) {
       setScriptLoaded(false);
       setError(
         "Google Maps API key is missing or invalid. Set REACT_APP_GOOGLE_PLACES_API_KEY in your environment or .env file.",
@@ -195,14 +198,14 @@ const MVPIDFViewerV2 = () => {
       isMounted = false;
       // No need to remove the script tag, as other components might need it.
     };
-  }, [user]);
+  }, [user, hasGoogleApiKey]);
 
   // This useEffect initializes Autocomplete only after the script has successfully loaded.
   useEffect(() => {
     if (!user) {
       return;
     }
-    if (!HAS_GOOGLE_API_KEY) {
+    if (!hasGoogleApiKey) {
       return;
     }
     if (scriptLoaded && autocompleteInputRef.current) {
@@ -243,7 +246,7 @@ const MVPIDFViewerV2 = () => {
         }
       };
     }
-  }, [scriptLoaded, user]);
+  }, [hasGoogleApiKey, scriptLoaded, user]);
 
   useEffect(() => {
     if (!user) {
@@ -329,8 +332,8 @@ const MVPIDFViewerV2 = () => {
         setIsStationInfoVisible(true);
         console.log("Found nearest station:", nearestStation);
 
-        const idfResponse = await (auth?.authFetch
-          ? auth.authFetch(
+        const idfResponse = await (authFetch
+          ? authFetch(
               `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`,
             )
           : fetch(
@@ -454,7 +457,7 @@ const MVPIDFViewerV2 = () => {
         setLoading(false);
       }
     },
-    [auth, place],
+    [API_BASE_URL, authFetch, place],
   );
 
   const handleCheckboxChange = useCallback((event) => {
