@@ -1,14 +1,14 @@
 # File: server/app.py
 
-import re
 import json
-import os
 import math
+import os
+import re
 from datetime import datetime, timedelta
 
 import bcrypt
 from bson import ObjectId
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager,
@@ -19,7 +19,7 @@ from flask_jwt_extended import (
 )
 from flask_pymongo import PyMongo
 
-app = Flask(__name__, static_folder='../build', static_url_path='/')
+app = Flask(__name__, static_folder='build', static_url_path='/')
 default_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -39,6 +39,13 @@ CORS(
     resources={r"/api/*": {"origins": allowed_origins}},
     supports_credentials=True,
 )
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
