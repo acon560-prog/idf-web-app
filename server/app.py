@@ -20,8 +20,23 @@ from flask_jwt_extended import (
 from flask_pymongo import PyMongo
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, supports_credentials=True)
+#CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, supports_credentials=True)
+default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+extra_origins = [
+    origin.strip()
+    for origin in (os.environ.get("FRONTEND_ORIGINS") or "").split(",")
+    if origin.strip()
+]
+allowed_origins = default_origins + extra_origins
 
+CORS(
+    app,
+    resources={r"/api/*": {"origins": allowed_origins}},
+    supports_credentials=True,
+)
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
@@ -489,4 +504,6 @@ def idf_curves():
         return jsonify({"error": "An unexpected error occurred."}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+    #app.run(debug=True, port=5000)
