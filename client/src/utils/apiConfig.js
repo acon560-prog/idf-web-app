@@ -1,6 +1,7 @@
 const DEFAULT_API_BASE_URL = "https://idf-web-app.onrender.com/api";
-
-const envBase = (process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL).trim();
+const envBase = (
+  process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL
+).trim();
 
 function getWindowOrigin() {
   if (typeof window !== "undefined" && window.location?.origin) {
@@ -15,7 +16,7 @@ export function getApiBaseUrl() {
   if (cachedBaseUrl) {
     return cachedBaseUrl;
   }
-  
+
   if (envBase) {
     cachedBaseUrl = envBase.replace(/\/$/, "");
     return cachedBaseUrl;
