@@ -32,3 +32,4 @@ Thumbs.db
 coverage/
 node_modules/
 client/dist/
+.vercel

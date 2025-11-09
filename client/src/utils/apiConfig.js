@@ -28,7 +28,8 @@ export function getApiBaseUrl() {
   cachedBaseUrl = "/api";
   return cachedBaseUrl;
 }
-
+const runtimeApiBaseUrl = getApiBaseUrl();
+console.log("[apiConfig] base:", runtimeApiBaseUrl);
 export function getApiRootUrl() {
   const base = getApiBaseUrl();
   if (base.endsWith("/api")) {
