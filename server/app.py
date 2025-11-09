@@ -31,6 +31,9 @@ extra_origins = [
 ]
 allowed_origins = default_origins + extra_origins
 
+# Allow all Vercel preview domains automatically
+allowed_origins.append(r"https://.*\.vercel\.app")
+
 CORS(
     app,
     resources={r"/api/*": {"origins": allowed_origins}},
