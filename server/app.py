@@ -20,7 +20,6 @@ from flask_jwt_extended import (
 from flask_pymongo import PyMongo
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
-#CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, supports_credentials=True)
 default_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -32,11 +31,15 @@ extra_origins = [
 ]
 allowed_origins = default_origins + extra_origins
 
+# Allow all Vercel preview domains automatically
+allowed_origins.append(r"https://.*\.vercel\.app")
+
 CORS(
     app,
     resources={r"/api/*": {"origins": allowed_origins}},
     supports_credentials=True,
 )
+
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
