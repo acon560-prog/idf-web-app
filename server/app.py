@@ -20,7 +20,22 @@ from flask_jwt_extended import (
 from flask_pymongo import PyMongo
 
 app = Flask(__name__, static_folder='../build', static_url_path='/')
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}}, supports_credentials=True)
+default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+extra_origins = [
+    origin.strip()
+    for origin in (os.environ.get("FRONTEND_ORIGINS") or "").split(",")
+    if origin.strip()
+]
+allowed_origins = default_origins + extra_origins
+
+CORS(
+    app,
+    resources={r"/api/*": {"origins": allowed_origins}},
+    supports_credentials=True,
+)
 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
