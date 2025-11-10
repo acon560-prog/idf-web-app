@@ -4,6 +4,8 @@ import re
 import json
 import os
 import math
+import smtplib
+from email.message import EmailMessage
 from datetime import datetime, timedelta
 
 import bcrypt
@@ -56,6 +58,7 @@ mongo = PyMongo(app)
 jwt = JWTManager(app)
 
 users_collection = mongo.db.users
+submissions_collection = mongo.db.submissions
 ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
 
 # Define the provinces to load. Add more as you get the data for them.
@@ -109,6 +112,20 @@ def serialize_user(user_doc):
     }
 
 
+def serialize_submission(doc):
+    if not doc:
+        return None
+    return {
+        '_id': str(doc.get('_id')),
+        'name': doc.get('name'),
+        'email': doc.get('email'),
+        'message': doc.get('message'),
+        'sendCopy': bool(doc.get('sendCopy')),
+        'createdAt': isoformat_or_none(doc.get('createdAt')) or isoformat_or_none(doc.get('date')),
+        'date': isoformat_or_none(doc.get('date')) or isoformat_or_none(doc.get('createdAt')),
+    }
+
+
 def generate_tokens(user_doc):
     identity = str(user_doc['_id'])
     role = determine_role(user_doc)
@@ -150,16 +167,63 @@ def user_has_active_access(user_doc):
     trial_end = user_doc.get('trialEndsAt')
     now = datetime.utcnow()
 
-    if status == 'trialing' and isinstance(trial_end, datetime):
-        if now <= trial_end:
-            return True
-        users_collection.update_one(
-            {'_id': user_doc['_id']},
-            {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
-        )
-        return False
+    if status == 'trialing':
+        if isinstance(trial_end, datetime):
+            if now <= trial_end:
+                return True
+            users_collection.update_one(
+                {'_id': user_doc['_id']},
+                {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
+            )
+            return False
+        # Legacy users might not have a recorded trial end. Treat as active trial.
+        return True
 
     return False
+
+
+def log_submission_to_file(name, email, message):
+    log_path = os.path.join(os.path.dirname(__file__), '..', 'submissions.log')
+    try:
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(f"[{datetime.utcnow().isoformat()}] {name} <{email}>: {message}\n")
+    except OSError as exc:
+        print(f"Failed to write submission log: {exc}")
+
+
+def send_contact_email(name, email, message, send_copy=False):
+    email_user = os.environ.get('EMAIL_USER')
+    email_pass = os.environ.get('EMAIL_PASS')
+    if not email_user or not email_pass:
+        print("Email credentials not configured; skipping email dispatch.")
+        return True
+
+    msg_admin = EmailMessage()
+    msg_admin['Subject'] = 'New Contact Form Submission'
+    msg_admin['From'] = email_user
+    msg_admin['To'] = email_user
+    msg_admin.set_content(f"Name: {name}\nEmail: {email}\nMessage:\n{message}")
+
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(email_user, email_pass)
+            smtp.send_message(msg_admin)
+
+            if send_copy:
+                msg_user = EmailMessage()
+                msg_user['Subject'] = 'We received your message!'
+                msg_user['From'] = email_user
+                msg_user['To'] = email
+                msg_user.set_content(
+                    f"Hi {name},\n\nThanks for contacting us. Here's what you sent:\n\n"
+                    f"\"{message}\"\n\nWe'll get back to you soon.\n\n- Civispec Team"
+                )
+                smtp.send_message(msg_user)
+    except Exception as exc:
+        print(f"Failed to send contact email: {exc}")
+        return False
+
+    return True
 
 for province_code in PROVINCES:
     # Construct file paths for each province.
@@ -375,6 +439,62 @@ def refresh_token():
     access_token = create_access_token(identity=str(user_doc['_id']), additional_claims=additional_claims)
 
     return jsonify({'accessToken': access_token})
+
+
+@app.route('/api/contact', methods=['POST'])
+def submit_contact():
+    payload = request.get_json() or {}
+    name = (payload.get('name') or '').strip()
+    email = (payload.get('email') or '').strip()
+    message = (payload.get('message') or '').strip()
+    send_copy = bool(payload.get('sendCopy'))
+    honeypot = (payload.get('honeypot') or '').strip()
+
+    if honeypot:
+        return jsonify({'success': False, 'message': 'Spam detected.'}), 400
+
+    if not name or not email or not message:
+        return jsonify({'success': False, 'message': 'All fields are required.'}), 400
+
+    log_submission_to_file(name, email, message)
+
+    submission_doc = {
+        'name': name,
+        'email': email,
+        'message': message,
+        'sendCopy': send_copy,
+        'createdAt': datetime.utcnow(),
+        'date': datetime.utcnow(),
+    }
+
+    try:
+        submissions_collection.insert_one(submission_doc)
+    except Exception as exc:
+        print(f"Failed to persist contact submission: {exc}")
+
+    email_ok = send_contact_email(name, email, message, send_copy=send_copy)
+
+    if not email_ok:
+        return jsonify({'success': False, 'message': 'Submission saved, but email could not be sent.'}), 202
+
+    return jsonify({'success': True})
+
+
+@app.route('/api/contact', methods=['GET'])
+@jwt_required()
+def list_contact_submissions():
+    user_doc = get_current_user()
+    if not user_doc or determine_role(user_doc) != 'admin':
+        return jsonify({'error': 'Forbidden'}), 403
+
+    try:
+        cursor = submissions_collection.find().sort([('date', -1), ('createdAt', -1)])
+        submissions = [s for s in (serialize_submission(doc) for doc in cursor) if s]
+        return jsonify(submissions)
+    except Exception as exc:
+        print(f"Failed to fetch submissions: {exc}")
+        return jsonify({'error': 'Failed to fetch submissions'}), 500
+
 
 def duration_to_minutes(duration_str):
     if not isinstance(duration_str, str):
