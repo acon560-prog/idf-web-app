@@ -126,6 +126,7 @@ const MVPIDFViewerV2 = () => {
   const [selectedReturnPeriods, setSelectedReturnPeriods] =
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
+  const [locationQuery, setLocationQuery] = useState("");
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const autocompleteRef = useRef(null);
   const autocompleteInputRef = useRef(null);
@@ -211,7 +212,7 @@ const MVPIDFViewerV2 = () => {
     if (scriptLoaded && autocompleteInputRef.current) {
       // Use a short delay to ensure the places library is fully available
       const initAutocomplete = () => {
-        if (window.google?.maps?.places) {
+          if (window.google?.maps?.places) {
           console.log("Initializing Autocomplete.");
           // Create and store the autocomplete instance in a ref
           autocompleteRef.current = new window.google.maps.places.Autocomplete(
@@ -223,11 +224,18 @@ const MVPIDFViewerV2 = () => {
           );
     
           // Attach the listener and update the state when a place is selected
-          autocompleteRef.current.addListener("place_changed", () => {
-            const selectedPlace = autocompleteRef.current.getPlace();
-            console.log("Place selected:", selectedPlace);
-            setPlace(selectedPlace);
-          });
+            autocompleteRef.current.addListener("place_changed", () => {
+              const selectedPlace = autocompleteRef.current.getPlace();
+              console.log("Place selected:", selectedPlace);
+              setPlace(selectedPlace);
+              const formatted =
+                selectedPlace?.formatted_address ||
+                selectedPlace?.description ||
+                selectedPlace?.name ||
+                autocompleteInputRef.current?.value ||
+                "";
+              setLocationQuery(formatted);
+            });
         } else {
           // If the library is not yet ready, try again after a short delay
           setTimeout(initAutocomplete, 100);
@@ -267,28 +275,30 @@ const MVPIDFViewerV2 = () => {
           "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
         );
       }
-     } else if (user.subscriptionStatus !== "active") {
-      setTrialMessage("Your free trial status could not be verified.");
-    } else {
-      setTrialMessage("");
-    }
-  }, [user, hasGoogleApiKey]);
+      } else if (user.subscriptionStatus === "trialing") {
+        setTrialMessage("Your free trial is active.");
+      } else if (user.subscriptionStatus !== "active") {
+        setTrialMessage("Your subscription status could not be verified.");
+      } else {
+        setTrialMessage("");
+      }
+    }, [user, hasGoogleApiKey]);
 
   const handleSearch = useCallback(
     async (e) => {
       e.preventDefault();
-      setError(null);
-      setIDFData([]);
-      setStation(null);
-      setShowChart(false);
-      setIsStationInfoVisible(false);
-      setLoading(true);
+        setError(null);
+        setIDFData([]);
+        setStation(null);
+        setShowChart(false);
+        setIsStationInfoVisible(false);
+        setLoading(true);
 
-     if (!place || !place.geometry) {
-        setError("Please select a valid location from the dropdown.");
-        setLoading(false);
-        return;
-      }
+       if (!place || !place.geometry) {
+          setError("Please select a valid location from the dropdown.");
+          setLoading(false);
+          return;
+        }
 
       const lat = place.geometry.location.lat();
       const lon = place.geometry.location.lng();
@@ -638,21 +648,26 @@ const MVPIDFViewerV2 = () => {
           </p>
 
           <form onSubmit={handleSearch} className="space-y-4">
-            <div>
-              <label
-                htmlFor="location"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Location
-              </label>
-              <input
-                ref={autocompleteInputRef}
-                type="text"
-                id="location"
-                placeholder="e.g., Montreal, QC"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
+              <div>
+                <label
+                  htmlFor="location"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Location
+                </label>
+                <input
+                  ref={autocompleteInputRef}
+                  type="text"
+                  id="location"
+                  placeholder="e.g., Montreal, QC"
+                  value={locationQuery}
+                  onChange={(event) => {
+                    setLocationQuery(event.target.value);
+                    setPlace(null);
+                  }}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
             <button
               type="submit"
               className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
