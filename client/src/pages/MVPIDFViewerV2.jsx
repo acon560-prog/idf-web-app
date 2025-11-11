@@ -126,7 +126,6 @@ const MVPIDFViewerV2 = () => {
   const [selectedReturnPeriods, setSelectedReturnPeriods] =
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
-  const [locationQuery, setLocationQuery] = useState("");
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const autocompleteRef = useRef(null);
   const autocompleteInputRef = useRef(null);
