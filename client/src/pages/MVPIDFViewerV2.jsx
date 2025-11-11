@@ -126,6 +126,7 @@ const MVPIDFViewerV2 = () => {
   const [selectedReturnPeriods, setSelectedReturnPeriods] =
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
+  const [locationQuery, setLocationQuery] = useState("");
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const autocompleteRef = useRef(null);
   const autocompleteInputRef = useRef(null);
@@ -223,10 +224,17 @@ const MVPIDFViewerV2 = () => {
           );
     
           // Attach the listener and update the state when a place is selected
-         autocompleteRef.current.addListener("place_changed", () => {
+          autocompleteRef.current.addListener("place_changed", () => {
               const selectedPlace = autocompleteRef.current.getPlace();
               console.log("Place selected:", selectedPlace);
               setPlace(selectedPlace);
+              const formatted =
+                selectedPlace?.formatted_address ||
+                selectedPlace?.description ||
+                selectedPlace?.name ||
+                autocompleteInputRef.current?.value ||
+                "";
+              setLocationQuery(formatted);
             });
         } else {
           // If the library is not yet ready, try again after a short delay
@@ -652,7 +660,9 @@ const MVPIDFViewerV2 = () => {
                   type="text"
                   id="location"
                   placeholder="e.g., Montreal, QC"
-                  onChange={() => {
+                  value={locationQuery}
+                  onChange={(event) => {
+                    setLocationQuery(event.target.value);
                     setPlace(null);
                     setError(null);
                   }}
