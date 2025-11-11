@@ -236,7 +236,6 @@ const MVPIDFViewerV2 = () => {
               if (autocompleteInputRef.current) {
                   autocompleteInputRef.current.value = formatted;
                 }
-                setLocationQuery(formatted);
             });
         } else {
           // If the library is not yet ready, try again after a short delay
@@ -663,8 +662,6 @@ const MVPIDFViewerV2 = () => {
                   id="location"
                   placeholder="e.g., Montreal, QC"
                   onChange={(event) => {
-                    const value = event.target.value;
-                    setLocationQuery(value);
                     setPlace(null);
                     setError(null);
                   }}
