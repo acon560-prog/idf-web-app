@@ -234,7 +234,10 @@ const MVPIDFViewerV2 = () => {
                 selectedPlace?.name ||
                 autocompleteInputRef.current?.value ||
                 "";
-              setLocationQuery(formatted);
+              if (autocompleteInputRef.current) {
+                  autocompleteInputRef.current.value = formatted;
+                }
+                setLocationQuery(formatted);
             });
         } else {
           // If the library is not yet ready, try again after a short delay
@@ -660,9 +663,9 @@ const MVPIDFViewerV2 = () => {
                   type="text"
                   id="location"
                   placeholder="e.g., Montreal, QC"
-                  value={locationQuery}
                   onChange={(event) => {
-                    setLocationQuery(event.target.value);
+                    const value = event.target.value;
+                    setLocationQuery(value);
                     setPlace(null);
                     setError(null);
                   }}
