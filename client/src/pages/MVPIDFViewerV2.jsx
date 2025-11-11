@@ -126,7 +126,6 @@ const MVPIDFViewerV2 = () => {
   const [selectedReturnPeriods, setSelectedReturnPeriods] =
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
-  const [locationQuery, setLocationQuery] = useState("");
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const autocompleteRef = useRef(null);
   const autocompleteInputRef = useRef(null);
@@ -237,7 +236,6 @@ const MVPIDFViewerV2 = () => {
                 if (autocompleteInputRef.current) {
                   autocompleteInputRef.current.value = formatted;
                 }
-                setLocationQuery(formatted);
             });
         } else {
           // If the library is not yet ready, try again after a short delay
@@ -663,9 +661,7 @@ const MVPIDFViewerV2 = () => {
                   type="text"
                   id="location"
                   placeholder="e.g., Montreal, QC"
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setLocationQuery(value);
+                  onChange={() => {
                     setPlace(null);
                     setError(null);
                   }}
