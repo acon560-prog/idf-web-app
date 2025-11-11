@@ -662,6 +662,7 @@ const MVPIDFViewerV2 = () => {
                   id="location"
                   placeholder="e.g., Montreal, QC"
                   onChange={(event) => {
+                    console.log('Location input change:', event.target.value);
                     setPlace(null);
                     setError(null);
                   }}
