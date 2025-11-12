@@ -12,6 +12,7 @@ import MVPIDFViewerV2 from "./pages/MVPIDFViewerV2.jsx";
 import TestAutocomplete from "./pages/TestAutocomplete.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
 
 function App() {
   return (
@@ -30,6 +31,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/test-autocomplete" element={<TestAutocomplete />} />
           <Route path="/signup" element={<Signup />} />
+          <Route
+                path="/start"
+                element={
+                  <RequireAuth>
+                    <MVPIDFViewerV2 />
+                  </RequireAuth>
+                  }
+                />
         </Routes>
       </main>
       <Footer />
