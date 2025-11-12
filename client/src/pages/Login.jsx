@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { buildApiUrl } from "../utils/apiConfig";
+import { Link } from "react-router-dom";
 
 function Login() {
   const { login } = useAuth();
@@ -110,6 +111,12 @@ function Login() {
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Need an account?{" "}
+          <Link to="/signup" className="text-indigo-600 hover:text-indigo-700">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );

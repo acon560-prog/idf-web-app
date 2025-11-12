@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 import MVPIDFViewerV2 from "./pages/MVPIDFViewerV2.jsx";
 import TestAutocomplete from "./pages/TestAutocomplete.jsx";
 import Login from "./pages/Login.jsx";
+import Signup from "./pages/Signup.jsx";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
           <Route path="/login" element={<Login />} />
           <Route path="/test-autocomplete" element={<TestAutocomplete />} />
+          <Route path="/signup" element={<Signup />} />
         </Routes>
       </main>
       <Footer />

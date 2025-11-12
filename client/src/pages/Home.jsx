@@ -1,6 +1,7 @@
 // File: src/Home.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from "react-router-dom";
 
 function Home() {
   return (
@@ -15,6 +16,12 @@ function Home() {
       <p className="mt-4">
         We provide structural design, permit drawings, grading plans, and more — tailored for residential and commercial projects.
       </p>
+      <Link
+        to="/signup"
+        className="inline-flex items-center px-6 py-3 text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+      >
+        Start your free trial
+      </Link>
     </motion.div>
   );
 }
