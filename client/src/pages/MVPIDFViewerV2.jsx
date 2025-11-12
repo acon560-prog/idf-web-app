@@ -116,7 +116,6 @@ const MVPIDFViewerV2 = () => {
   const user = auth?.user ?? null;
   const authFetch = auth?.authFetch ?? null;
   const [trialMessage, setTrialMessage] = useState("");
-
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -132,6 +131,15 @@ const MVPIDFViewerV2 = () => {
   const chartDataRef = useRef(null);
   
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
+
+  const trialExpired = useMemo(() => {
+    const message = (trialMessage || "").toLowerCase();
+    const errorMessage = (error || "").toLowerCase();
+    return (
+      message.includes("free trial has expired") ||
+      errorMessage.includes("free trial has expired")
+    );
+  }, [trialMessage, error]);
 
   // This useEffect ensures the Google Maps script is loaded only once and correctly.
   useEffect(() => {
@@ -627,14 +635,36 @@ const MVPIDFViewerV2 = () => {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
-      {trialMessage && (
-        <div className="w-full max-w-5xl mb-4">
-          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm">
-            {trialMessage}
+      <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
+        {(trialMessage || trialExpired) && (
+          <div className="w-full max-w-5xl mb-4">
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm space-y-3">
+              {trialMessage ? (
+                <p>{trialMessage}</p>
+              ) : (
+                trialExpired && (
+                  <p>Your free trial has expired. Please upgrade to continue accessing IDF curves.</p>
+                )
+              )}
+              {trialExpired && (
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    to="/contact"
+                    className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
+                  >
+                    Contact us to upgrade
+                  </Link>
+                  <a
+                    href="mailto:support@civispec.com"
+                    className="inline-flex items-center justify-center rounded-md border border-indigo-600 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition"
+                  >
+                    Email support
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       <div className="w-full max-w-5xl bg-white p-6 sm:p-8 lg:p-10 rounded-2xl shadow-xl flex flex-col md:flex-row gap-6">
         {/* Left Side: Search and Controls */}
         <div className="w-full md:w-1/3 space-y-6">
