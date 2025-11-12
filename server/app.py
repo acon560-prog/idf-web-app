@@ -22,7 +22,7 @@ from flask_jwt_extended import (
 from flask_pymongo import PyMongo
 from flask import send_from_directory
 
-app = Flask(__name__, static_folder='build', static_url_path='/')
+app = Flask(__name__, static_folder='build', static_url_path='')
 default_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -45,8 +45,14 @@ CORS(
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
-    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+    file_path = os.path.join(app.static_folder, path)
+    if path and os.path.exists(file_path):
         return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
+@app.errorhandler(404)
+def handle_not_found(_error):
+    if request.path.startswith("/api"):
+        return jsonify({'error': 'Not Found'}), 404
     return send_from_directory(app.static_folder, 'index.html')
 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
