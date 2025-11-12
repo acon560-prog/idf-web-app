@@ -24,21 +24,19 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/start" element={<MVPIDFViewerV2 />} />{" "}
-          {/* Change this line */}
-          <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/test-autocomplete" element={<TestAutocomplete />} />
           <Route path="/signup" element={<Signup />} />
           <Route
-                path="/start"
-                element={
-                  <RequireAuth>
-                    <MVPIDFViewerV2 />
-                  </RequireAuth>
-                  }
-                />
+            path="/start"
+            element={
+              <RequireAuth>
+                <MVPIDFViewerV2 />
+              </RequireAuth>
+            }
+          />
+          <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
+          <Route path="/test-autocomplete" element={<TestAutocomplete />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </main>
       <Footer />
