@@ -11,6 +11,8 @@ import AdminDashboard from "./pages/AdminDashboard.jsx";
 import MVPIDFViewerV2 from "./pages/MVPIDFViewerV2.jsx";
 import TestAutocomplete from "./pages/TestAutocomplete.jsx";
 import Login from "./pages/Login.jsx";
+import Signup from "./pages/Signup.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
 
 function App() {
   return (
@@ -22,12 +24,19 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/start" element={<MVPIDFViewerV2 />} />{" "}
-          {/* Change this line */}
-          <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/start"
+            element={
+              <RequireAuth>
+                <MVPIDFViewerV2 />
+              </RequireAuth>
+            }
+          />
+          <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
           <Route path="/test-autocomplete" element={<TestAutocomplete />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </main>
       <Footer />
