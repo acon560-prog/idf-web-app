@@ -637,15 +637,13 @@ const MVPIDFViewerV2 = () => {
   return (
       <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
         {(trialMessage || trialExpired) && (
-          <div className="w-full max-w-5xl mb-4">
-            <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm space-y-3">
-              {trialMessage ? (
-                <p>{trialMessage}</p>
-              ) : (
-                trialExpired && (
-                  <p>Your free trial has expired. Please upgrade to continue accessing IDF curves.</p>
-                )
-              )}
+        <div className="w-full max-w-5xl mb-4">
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm space-y-3">
+            <p>
+              {trialExpired
+                ? "Your free trial has expired. Please upgrade to continue accessing IDF curves."
+                : trialMessage}
+            </p>
               {trialExpired && (
                 <div className="flex flex-wrap gap-3">
                   <Link
