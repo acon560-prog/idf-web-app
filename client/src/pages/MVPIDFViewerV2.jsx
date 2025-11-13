@@ -284,14 +284,14 @@ const MVPIDFViewerV2 = () => {
           "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
         );
       }
-      } else if (user.subscriptionStatus === "trialing") {
-        setTrialMessage("Your free trial is active.");
-      } else if (user.subscriptionStatus !== "active") {
-        setTrialMessage("Your subscription status could not be verified.");
-      } else {
-        setTrialMessage("");
-      }
-    }, [user, hasGoogleApiKey]);
+        } else if (user.subscriptionStatus === "trialing") {
+          setTrialMessage("Your free trial is active.");
+        } else if (user.subscriptionStatus !== "active") {
+          setTrialMessage("Your subscription status could not be verified.");
+        } else {
+          setTrialMessage("");
+        }
+      }, [user, hasGoogleApiKey, trialExpired]);
 
   const handleSearch = useCallback(
     async (e) => {
@@ -373,7 +373,7 @@ const MVPIDFViewerV2 = () => {
         }
         console.log("Raw IDF data from API:", idfJson.data);
 
-        const processedData = idfJson.data
+          const processedData = idfJson.data
             .map((item, index) => {
               console.log(`Processing item ${index}:`, item);
               let durationInMinutes = 0;
