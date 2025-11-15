@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
-import Autocomplete from 'react-google-autocomplete';
+import React, { useState } from "react";
+import Autocomplete from "react-google-autocomplete";
+
+const GOOGLE_MAPS_API_KEY =
+  process.env.REACT_APP_GOOGLE_PLACES_API_KEY || "";
 
 const TestAutocomplete = () => {
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -7,8 +10,8 @@ const TestAutocomplete = () => {
   return (
     <div>
       <h2>Test Location Autocomplete</h2>
-      <Autocomplete
-        apiKey="AIzaSyB00aH1ZJGW_PtQhKj6DtOZqh_veQuKAro"
+        <Autocomplete
+          apiKey={GOOGLE_MAPS_API_KEY}
         onPlaceSelected={(place) => {
           setSelectedPlace(place);
           console.log(place);
