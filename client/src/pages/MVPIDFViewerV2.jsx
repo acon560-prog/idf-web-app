@@ -125,6 +125,7 @@ const MVPIDFViewerV2 = () => {
   const [selectedReturnPeriods, setSelectedReturnPeriods] =
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
+  const [locationInputValue, setLocationInputValue] = useState("");
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const autocompleteRef = useRef(null);
   const autocompleteInputRef = useRef(null);
@@ -219,7 +220,7 @@ const MVPIDFViewerV2 = () => {
     if (scriptLoaded && autocompleteInputRef.current) {
       // Use a short delay to ensure the places library is fully available
       const initAutocomplete = () => {
-          if (window.google?.maps?.places) {
+            if (window.google?.maps?.places) {
             console.log("Initializing Autocomplete.");
             // Create and store the autocomplete instance in a ref
             autocompleteRef.current = new window.google.maps.places.Autocomplete(
@@ -233,17 +234,15 @@ const MVPIDFViewerV2 = () => {
           // Attach the listener and update the state when a place is selected
           autocompleteRef.current.addListener("place_changed", () => {
               const selectedPlace = autocompleteRef.current.getPlace();
-              console.log("Place selected:", selectedPlace);
-              setPlace(selectedPlace);
-              const formatted =
-                selectedPlace?.formatted_address ||
-                selectedPlace?.description ||
-                selectedPlace?.name ||
-                autocompleteInputRef.current?.value ||
-                "";
-              if (autocompleteInputRef.current) {
-                  autocompleteInputRef.current.value = formatted;
-                }
+                console.log("Place selected:", selectedPlace);
+                setPlace(selectedPlace);
+                const formatted =
+                  selectedPlace?.formatted_address ||
+                  selectedPlace?.description ||
+                  selectedPlace?.name ||
+                  autocompleteInputRef.current?.value ||
+                  "";
+                setLocationInputValue(formatted);
             });
         } else {
           // If the library is not yet ready, try again after a short delay
@@ -684,15 +683,18 @@ const MVPIDFViewerV2 = () => {
                 >
                   Location
                 </label>
-                <input
+                  <input
                   ref={autocompleteInputRef}
                   type="text"
                   id="location"
                   placeholder="e.g., Montreal, QC"
-                  onChange={() => {
-                    setPlace(null);
-                    setError(null);
-                  }}
+                    value={locationInputValue}
+                    onChange={(event) => {
+                      const nextValue = event.target.value;
+                      setLocationInputValue(nextValue);
+                      setPlace(null);
+                      setError(null);
+                    }}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
