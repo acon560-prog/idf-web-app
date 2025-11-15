@@ -125,6 +125,7 @@ const MVPIDFViewerV2 = () => {
   const [selectedReturnPeriods, setSelectedReturnPeriods] =
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
+  const [locationInputValue, setLocationInputValue] = useState("");
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const autocompleteRef = useRef(null);
   const autocompleteInputRef = useRef(null);
@@ -689,7 +690,10 @@ const MVPIDFViewerV2 = () => {
                   type="text"
                   id="location"
                   placeholder="e.g., Montreal, QC"
-                  onChange={() => {
+                  value={locationInputValue}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    setLocationInputValue(nextValue);
                     setPlace(null);
                     setError(null);
                   }}
