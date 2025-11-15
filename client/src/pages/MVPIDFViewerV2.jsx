@@ -141,7 +141,7 @@ const MVPIDFViewerV2 = () => {
       errorMessage.includes("free trial has expired")
     );
   }, [trialMessage, error]);
-
+  
   // This useEffect ensures the Google Maps script is loaded only once and correctly.
   useEffect(() => {
     if (!user) {

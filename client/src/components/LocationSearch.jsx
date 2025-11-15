@@ -1,5 +1,7 @@
 import React from 'react';
 import Autocomplete from 'react-google-autocomplete';
+const GOOGLE_MAPS_API_KEY =
+  process.env.REACT_APP_GOOGLE_PLACES_API_KEY || "";
 
 const LocationSearch = ({ onStationSelected }) => {
   const handlePlaceSelected = place => {
@@ -31,7 +33,7 @@ const LocationSearch = ({ onStationSelected }) => {
 
   return (
     <Autocomplete
-      apiKey="AIzaSyB00aH1ZJGW_PtQhKj6DtOZqh_veQuKAro"
+      apiKey={GOOGLE_MAPS_API_KEY}
       onPlaceSelected={handlePlaceSelected}
       options={{
         //componentRestrictions: { country: 'ca' },
