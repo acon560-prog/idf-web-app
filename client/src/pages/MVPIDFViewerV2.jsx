@@ -142,6 +142,64 @@ const MVPIDFViewerV2 = () => {
     );
   }, [trialMessage, error]);
 
+  const geocodePlaceByText = useCallback(
+    async (inputText) => {
+      if (!GOOGLE_MAPS_API_KEY || !inputText?.trim()) {
+        return null;
+      }
+      const query = encodeURIComponent(inputText.trim());
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${GOOGLE_MAPS_API_KEY}`;
+      try {
+        const response = await fetch(geocodeUrl);
+        if (!response.ok) {
+          console.error("Geocode lookup failed:", response.status, response.statusText);
+          return null;
+        }
+        const data = await response.json();
+        if (data.status !== "OK" || !data.results?.length) {
+          console.warn("Geocode returned no results:", data.status, data.error_message);
+          return null;
+        }
+        const first = data.results[0];
+        const lat = first.geometry?.location?.lat;
+        const lon = first.geometry?.location?.lng;
+        if (typeof lat !== "number" || typeof lon !== "number") {
+          return null;
+        }
+        return {
+          geometry: {
+            location: {
+              lat: () => lat,
+              lng: () => lon,
+            },
+          },
+          address_components: first.address_components || [],
+          formatted_address: first.formatted_address,
+          description: first.formatted_address,
+          name:
+            first.address_components?.[0]?.long_name || first.formatted_address,
+        };
+      } catch (error) {
+        console.error("Geocode lookup threw an error:", error);
+        return null;
+      }
+    },
+    [GOOGLE_MAPS_API_KEY],
+  );
+
+  const resolveProvinceCode = useCallback((placeObject) => {
+    if (!placeObject) {
+      return "";
+    }
+    const components = placeObject.address_components || [];
+    for (const component of components) {
+      if (component.types?.includes("administrative_area_level_1")) {
+        return component.short_name || component.long_name || "";
+      }
+    }
+    return "";
+  }, []);
+
   // This useEffect ensures the Google Maps script is loaded only once and correctly.
   useEffect(() => {
     if (!user) {
@@ -228,6 +286,13 @@ const MVPIDFViewerV2 = () => {
               {
                 types: ["(cities)"],
                 componentRestrictions: { country: "ca" },
+                fields: [
+                  "address_components",
+                  "formatted_address",
+                  "geometry",
+                  "name",
+                  "place_id",
+                ],
               },
             );
     
@@ -302,23 +367,34 @@ const MVPIDFViewerV2 = () => {
         setIsStationInfoVisible(false);
         setLoading(true);
 
-      if (!place || !place.geometry) {
-          setError("Please select a valid location from the dropdown.");
+        let resolvedPlace = place;
+        if ((!resolvedPlace || !resolvedPlace.geometry) && locationInputValue) {
+          const fallbackPlace = await geocodePlaceByText(locationInputValue);
+          if (fallbackPlace) {
+            resolvedPlace = fallbackPlace;
+            setPlace(fallbackPlace);
+            setLocationInputValue(
+              fallbackPlace.formatted_address || locationInputValue,
+            );
+          }
+        }
+
+        if (!resolvedPlace || !resolvedPlace.geometry) {
+          setError(
+            "Please select a location from the suggestions or enter a valid city/province name.",
+          );
           setLoading(false);
           return;
         }
 
-      const lat = place.geometry.location.lat();
-      const lon = place.geometry.location.lng();
+        const rawLat = resolvedPlace.geometry.location.lat;
+        const rawLon = resolvedPlace.geometry.location.lng;
+        const lat = typeof rawLat === "function" ? rawLat() : rawLat;
+        const lon = typeof rawLon === "function" ? rawLon() : rawLon;
       let provinceCode = "";
 
-      if (place.address_components) {
-          for (const component of place.address_components) {
-            if (component.types.includes("administrative_area_level_1")) {
-              provinceCode = component.short_name;
-              break;
-            }
-          }
+        if (resolvedPlace.address_components) {
+          provinceCode = resolveProvinceCode(resolvedPlace);
         }
 
       if (!provinceCode) {
