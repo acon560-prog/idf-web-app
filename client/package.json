@@ -17,6 +17,7 @@
     "downloadjs": "^1.4.7",
     "framer-motion": "^12.23.5",
     "html2canvas": "^1.4.1",
+    "lucide-react": "^0.553.0",
     "node-fetch": "^3.3.2",
     "node-geocoder": "^4.4.1",
     "react": "^19.1.0",

@@ -291,7 +291,7 @@ const MVPIDFViewerV2 = () => {
         } else {
           setTrialMessage("");
         }
-      }, [user, hasGoogleApiKey]);
+      }, [user, hasGoogleApiKey, trialExpired]);
 
   const handleSearch = useCallback(
     async (e) => {
