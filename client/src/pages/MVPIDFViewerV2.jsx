@@ -232,20 +232,21 @@ const MVPIDFViewerV2 = () => {
             );
     
           // Attach the listener and update the state when a place is selected
-          autocompleteRef.current.addListener("place_changed", () => {
-              const selectedPlace = autocompleteRef.current.getPlace();
-              console.log("Place selected:", selectedPlace);
-              setPlace(selectedPlace);
-              const formatted =
-                selectedPlace?.formatted_address ||
-                selectedPlace?.description ||
-                selectedPlace?.name ||
-                autocompleteInputRef.current?.value ||
-                "";
-              if (autocompleteInputRef.current) {
-                  autocompleteInputRef.current.value = formatted;
-                }
-            });
+            autocompleteRef.current.addListener("place_changed", () => {
+                const selectedPlace = autocompleteRef.current.getPlace();
+                console.log("Place selected:", selectedPlace);
+                setPlace(selectedPlace);
+                const formatted =
+                  selectedPlace?.formatted_address ||
+                  selectedPlace?.description ||
+                  selectedPlace?.name ||
+                  autocompleteInputRef.current?.value ||
+                  "";
+                setLocationInputValue(formatted);
+                if (autocompleteInputRef.current) {
+                    autocompleteInputRef.current.value = formatted;
+                  }
+              });
         } else {
           // If the library is not yet ready, try again after a short delay
           setTimeout(initAutocomplete, 100);
