@@ -111,12 +111,17 @@ function Login() {
             {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Need an account?{" "}
+        <div className="mt-4 flex justify-between text-sm text-gray-600">
           <Link to="/signup" className="text-indigo-600 hover:text-indigo-700">
-            Sign up
+            Need an account? Sign up
           </Link>
-        </p>
+          <Link
+            to="/forgot-password"
+            className="text-indigo-600 hover:text-indigo-700"
+          >
+            Forgot password?
+          </Link>
+        </div>
       </div>
     </div>
   );
