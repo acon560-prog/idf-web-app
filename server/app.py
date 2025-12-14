@@ -8,6 +8,7 @@ import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 
+from dotenv import load_dotenv
 import bcrypt
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
@@ -21,6 +22,9 @@ from flask_jwt_extended import (
 )
 from flask_pymongo import PyMongo
 from flask import send_from_directory
+
+# Load environment variables from server/.env (works regardless of where you run python from)
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 app = Flask(__name__, static_folder='build', static_url_path='')
 default_origins = [
