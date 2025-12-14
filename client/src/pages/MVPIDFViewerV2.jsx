@@ -242,9 +242,10 @@ const MVPIDFViewerV2 = () => {
                 selectedPlace?.name ||
                 autocompleteInputRef.current?.value ||
                 "";
-              if (autocompleteInputRef.current) {
-                  autocompleteInputRef.current.value = formatted;
-                }
+              // Keep the controlled input value in sync with Google Autocomplete.
+              // If we don't, React will re-render with the previous state value,
+              // which can look like the input only "keeps" the first character.
+              setLocationInputValue(formatted);
             });
         } else {
           // If the library is not yet ready, try again after a short delay
