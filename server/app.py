@@ -21,6 +21,7 @@ from flask_jwt_extended import (
 )
 from flask_pymongo import PyMongo
 from flask import send_from_directory
+import stripe
 
 app = Flask(__name__, static_folder='build', static_url_path='')
 default_origins = [
@@ -66,6 +67,22 @@ jwt = JWTManager(app)
 users_collection = mongo.db.users
 submissions_collection = mongo.db.submissions
 ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
+
+def _get_env(key):
+    value = os.environ.get(key)
+    if isinstance(value, str):
+        return value.strip()
+    return value
+
+stripe.api_key = _get_env('STRIPE_SECRET_KEY')
+STRIPE_PRICE_DAILY = _get_env('STRIPE_PRICE_DAILY')
+STRIPE_PRICE_MONTHLY = _get_env('STRIPE_PRICE_MONTHLY')
+STRIPE_PRICE_YEARLY = _get_env('STRIPE_PRICE_YEARLY')
+STRIPE_PRICE_MAP = {
+    'daily': STRIPE_PRICE_DAILY,
+    'monthly': STRIPE_PRICE_MONTHLY,
+    'yearly': STRIPE_PRICE_YEARLY,
+}
 
 # Define the provinces to load. Add more as you get the data for them.
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
