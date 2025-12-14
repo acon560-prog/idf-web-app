@@ -68,10 +68,16 @@ users_collection = mongo.db.users
 submissions_collection = mongo.db.submissions
 ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
 
-stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
-STRIPE_PRICE_DAILY = os.environ.get('STRIPE_PRICE_DAILY')
-STRIPE_PRICE_MONTHLY = os.environ.get('STRIPE_PRICE_MONTHLY')
-STRIPE_PRICE_YEARLY = os.environ.get('STRIPE_PRICE_YEARLY')
+def _get_env(key):
+    value = os.environ.get(key)
+    if isinstance(value, str):
+        return value.strip()
+    return value
+
+stripe.api_key = _get_env('STRIPE_SECRET_KEY')
+STRIPE_PRICE_DAILY = _get_env('STRIPE_PRICE_DAILY')
+STRIPE_PRICE_MONTHLY = _get_env('STRIPE_PRICE_MONTHLY')
+STRIPE_PRICE_YEARLY = _get_env('STRIPE_PRICE_YEARLY')
 STRIPE_PRICE_MAP = {
     'daily': STRIPE_PRICE_DAILY,
     'monthly': STRIPE_PRICE_MONTHLY,
