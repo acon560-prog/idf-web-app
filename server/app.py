@@ -6,7 +6,7 @@ import os
 import math
 import smtplib
 from email.message import EmailMessage
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import bcrypt
 from bson import ObjectId
@@ -96,9 +96,21 @@ def determine_role(user_doc) -> str:
 def isoformat_or_none(value):
     if isinstance(value, datetime):
         if value.tzinfo:
-            return value.isoformat()
+            # Normalize to UTC and emit a stable "Z" suffix.
+            return (
+                value.astimezone(timezone.utc)
+                .replace(microsecond=0)
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
+        # Treat naive datetimes as UTC for backwards compatibility.
         return value.replace(microsecond=0).isoformat() + 'Z'
     return None
+
+
+def utcnow() -> datetime:
+    """Timezone-aware current UTC time."""
+    return datetime.now(timezone.utc)
 
 
 def serialize_user(user_doc):
@@ -171,7 +183,7 @@ def user_has_active_access(user_doc):
         return True
 
     trial_end = user_doc.get('trialEndsAt')
-    now = datetime.utcnow()
+    now = utcnow()
 
     if status == 'trialing':
         if isinstance(trial_end, datetime):
@@ -192,7 +204,7 @@ def log_submission_to_file(name, email, message):
     log_path = os.path.join(os.path.dirname(__file__), '..', 'submissions.log')
     try:
         with open(log_path, 'a', encoding='utf-8') as f:
-            f.write(f"[{datetime.utcnow().isoformat()}] {name} <{email}>: {message}\n")
+            f.write(f"[{utcnow().isoformat()}] {name} <{email}>: {message}\n")
     except OSError as exc:
         print(f"Failed to write submission log: {exc}")
 
@@ -345,7 +357,7 @@ def register():
         return jsonify({'error': 'An email or username is required.'}), 400
 
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    now = datetime.utcnow()
+    now = utcnow()
     trial_end = now + timedelta(days=7)
     role = 'admin' if email and email == ADMIN_EMAIL else 'user'
 
@@ -404,7 +416,7 @@ def login():
         return jsonify({'error': 'Invalid email or password.'}), 401
 
     role = determine_role(user_doc)
-    updates = {'updatedAt': datetime.utcnow()}
+    updates = {'updatedAt': utcnow()}
     if user_doc.get('role') != role:
         updates['role'] = role
     user_doc['role'] = role
@@ -469,8 +481,8 @@ def submit_contact():
         'email': email,
         'message': message,
         'sendCopy': send_copy,
-        'createdAt': datetime.utcnow(),
-        'date': datetime.utcnow(),
+        'createdAt': utcnow(),
+        'date': utcnow(),
     }
 
     try:
