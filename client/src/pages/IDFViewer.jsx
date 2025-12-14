@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import LocationSearch from '../components/LocationSearch'; // Adjust path to your component
+import { buildApiUrl } from "../utils/apiConfig";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
@@ -20,7 +21,7 @@ export default function IDFViewer() {
 
   // Fetch stations once on mount
   useEffect(() => {
-    fetch('/api/stations')
+    fetch(buildApiUrl("/stations"))
       .then(res => res.json())
       .then(data => setStationsMasterList(data))
       .catch(err => console.error("Failed to load stations", err));
@@ -48,7 +49,7 @@ export default function IDFViewer() {
       params.set("place", place.trim());
       if (province.trim()) params.set("province", province.trim());
     }
-    return `/api/idf/curves?${params.toString()}`;
+    return buildApiUrl(`/idf/curves?${params.toString()}`);
   }, [mode, effectiveStationId, place, province, unitSystem]);
 
   // Fetch IDF data whenever the query changes

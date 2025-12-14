@@ -9,6 +9,7 @@ from email.message import EmailMessage
 from datetime import datetime, timedelta, timezone
 
 import bcrypt
+import stripe
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -67,6 +68,18 @@ users_collection = mongo.db.users
 submissions_collection = mongo.db.submissions
 ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
 
+# Stripe configuration (optional but enabled when env vars present)
+stripe.api_key = (os.environ.get("STRIPE_SECRET_KEY") or "").strip() or None
+STRIPE_WEBHOOK_SECRET = (os.environ.get("STRIPE_WEBHOOK_SECRET") or "").strip()
+STRIPE_PRICE_DAILY = (os.environ.get("STRIPE_PRICE_DAILY") or "").strip()
+STRIPE_PRICE_MONTHLY = (os.environ.get("STRIPE_PRICE_MONTHLY") or "").strip()
+STRIPE_PRICE_YEARLY = (os.environ.get("STRIPE_PRICE_YEARLY") or "").strip()
+STRIPE_PRICE_MAP = {
+    "daily": STRIPE_PRICE_DAILY,
+    "monthly": STRIPE_PRICE_MONTHLY,
+    "yearly": STRIPE_PRICE_YEARLY,
+}
+
 # Define the provinces to load. Add more as you get the data for them.
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
 
@@ -111,6 +124,14 @@ def isoformat_or_none(value):
 def utcnow() -> datetime:
     """Timezone-aware current UTC time."""
     return datetime.now(timezone.utc)
+
+
+def _frontend_base_url() -> str:
+    env = (os.environ.get("FRONTEND_BASE_URL") or "").strip().rstrip("/")
+    if env:
+        return env
+    # request.host_url includes trailing slash
+    return (request.host_url or "").rstrip("/")
 
 
 def serialize_user(user_doc):
@@ -174,6 +195,27 @@ def get_current_user():
     return get_user_by_id(identity)
 
 
+def _require_stripe_enabled():
+    if not stripe.api_key:
+        raise RuntimeError("Stripe is not configured. Missing STRIPE_SECRET_KEY.")
+
+
+def _ensure_stripe_customer(user_doc):
+    customer_id = user_doc.get("stripeCustomerId")
+    if customer_id:
+        return customer_id
+    customer = stripe.Customer.create(
+        email=user_doc.get("email"),
+        metadata={"userId": str(user_doc["_id"])},
+    )
+    customer_id = customer.get("id")
+    users_collection.update_one(
+        {"_id": user_doc["_id"]},
+        {"$set": {"stripeCustomerId": customer_id, "updatedAt": utcnow()}},
+    )
+    return customer_id
+
+
 def user_has_active_access(user_doc):
     if not user_doc:
         return False
@@ -198,6 +240,63 @@ def user_has_active_access(user_doc):
         return True
 
     return False
+
+
+@app.route("/api/billing/create-checkout-session", methods=["POST"])
+@jwt_required()
+def create_checkout_session():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({"error": "Authentication required."}), 401
+
+    payload = request.get_json() or {}
+    plan = (payload.get("plan") or "").lower().strip()
+    price_id = STRIPE_PRICE_MAP.get(plan) or ""
+    if not price_id:
+        return jsonify({"error": "Unknown plan."}), 400
+
+    try:
+        _require_stripe_enabled()
+        customer_id = _ensure_stripe_customer(user_doc)
+        frontend_base = _frontend_base_url()
+        success_url = f"{frontend_base}/start?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{frontend_base}/pricing"
+
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            customer=customer_id,
+            client_reference_id=str(user_doc["_id"]),
+            line_items=[{"price": price_id, "quantity": 1}],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            allow_promotion_codes=True,
+        )
+        return jsonify({"checkoutUrl": session.url})
+    except Exception as exc:
+        print(f"Failed to create Stripe checkout session: {exc}")
+        return jsonify({"error": "Failed to create checkout session."}), 500
+
+
+@app.route("/api/billing/create-portal-session", methods=["POST"])
+@jwt_required()
+def create_billing_portal_session():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({"error": "Authentication required."}), 401
+    if not user_doc.get("stripeCustomerId"):
+        return jsonify({"error": "No Stripe customer on file."}), 400
+
+    try:
+        _require_stripe_enabled()
+        frontend_base = _frontend_base_url()
+        portal = stripe.billing_portal.Session.create(
+            customer=user_doc["stripeCustomerId"],
+            return_url=f"{frontend_base}/start",
+        )
+        return jsonify({"url": portal.url})
+    except Exception as exc:
+        print(f"Failed to create Stripe billing portal session: {exc}")
+        return jsonify({"error": "Failed to create billing portal session."}), 500
 
 
 def log_submission_to_file(name, email, message):
@@ -280,6 +379,53 @@ for province_code in PROVINCES:
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Could not load data for {province_code}: {e}")
         continue
+
+# Fallback: some deploys may not include per-province subfolders.
+# If nothing loaded, try consolidated JSON files in server/data/.
+if not STATIONS_DATA:
+    consolidated_stations_path = os.path.join(
+        os.path.dirname(__file__),
+        "data",
+        "master_stations_enriched_validated.json",
+    )
+    try:
+        with open(consolidated_stations_path, "r", encoding="utf-8") as f:
+            stations = json.load(f)
+            STATIONS_DATA.extend(stations)
+            for station in stations:
+                sid = station.get("stationId")
+                if sid:
+                    STATION_LOOKUP[sid] = station
+        print(
+            f"Loaded consolidated stations metadata ({len(stations)}) from {consolidated_stations_path}."
+        )
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Could not load consolidated stations data: {e}")
+
+if not IDF_DATA:
+    consolidated_idf_path = os.path.join(
+        os.path.dirname(__file__),
+        "data",
+        "idf_data_by_station.json",
+    )
+    try:
+        with open(consolidated_idf_path, "r", encoding="utf-8") as f:
+            prov_idf_data = json.load(f)
+            IDF_DATA.update(prov_idf_data)
+            for key in prov_idf_data:
+                station_id_match = re.search(r"(\d{7}|\d{3}[A-Z]{2}\d)", key)
+                if station_id_match:
+                    station_id = station_id_match.group(1)
+                    IDF_KEY_MAPPING[station_id] = key
+                    IDF_STATION_IDS.add(station_id)
+                else:
+                    IDF_KEY_MAPPING[key] = key
+                    IDF_STATION_IDS.add(key)
+        print(
+            f"Loaded consolidated IDF data ({len(prov_idf_data)}) from {consolidated_idf_path}."
+        )
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Could not load consolidated IDF data: {e}")
 print(f"Total stations loaded: {len(STATIONS_DATA)}")
 print(f"Total IDF data sets loaded: {len(IDF_DATA)}")
 
