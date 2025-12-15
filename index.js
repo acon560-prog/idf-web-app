@@ -51,7 +51,8 @@ async function startServer() {
     });
 
     // === 4. Start Server ===
-    const PORT = process.env.PORT || 3000;
+    // Default to 5000 to match the React dev proxy (client/package.json)
+    const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });

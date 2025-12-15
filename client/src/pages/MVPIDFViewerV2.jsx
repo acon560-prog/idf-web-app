@@ -365,7 +365,10 @@ const MVPIDFViewerV2 = () => {
           "Failed to fetch IDF data.",
         );
         if (!idfResponse.ok) {
-          if (idfResponse.status === 403 && idfJson?.code === "trial_expired") {
+          if (
+            (idfResponse.status === 402 || idfResponse.status === 403) &&
+            idfJson?.code === "trial_expired"
+          ) {
             setTrialMessage(
               "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
             );

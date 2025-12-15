@@ -8,6 +8,7 @@ import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 
+from dotenv import load_dotenv
 import bcrypt
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
@@ -21,6 +22,9 @@ from flask_jwt_extended import (
 )
 from flask_pymongo import PyMongo
 from flask import send_from_directory
+
+# Load environment variables from server/.env (works regardless of where you run python from)
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 app = Flask(__name__, static_folder='build', static_url_path='')
 default_origins = [
@@ -165,6 +169,18 @@ def get_current_user():
 def user_has_active_access(user_doc):
     if not user_doc:
         return False
+
+    # Optional hard gate: require active subscription immediately (no trial access).
+    # Enable by setting IDF_REQUIRE_ACTIVE_SUBSCRIPTION=true in server/.env
+    require_active = (os.environ.get("IDF_REQUIRE_ACTIVE_SUBSCRIPTION") or "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+    if require_active:
+        return user_doc.get("role") == "admin" or user_doc.get("subscriptionStatus") == "active"
 
     status = user_doc.get('subscriptionStatus')
     if status == 'active':

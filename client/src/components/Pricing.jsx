@@ -1,6 +1,7 @@
 import React from "react";
 import Card from "./ui/Card";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const plans = [
   {
@@ -28,8 +29,14 @@ const plans = [
   },
 ];
 
-const Pricing = () => (
-  <section className="bg-white py-24">
+const Pricing = () => {
+  const { user } = useAuth();
+
+  const primaryHref = user ? "/start" : "/signup";
+  const primaryLabel = user ? "Subscribe to unlock" : "Create account";
+
+  return (
+    <section className="bg-white py-24">
     <div className="mx-auto max-w-6xl px-4 md:px-8">
       <div className="mx-auto max-w-3xl text-center">
         <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Choose the plan that fits your team</h2>
@@ -67,20 +74,21 @@ const Pricing = () => (
             </ul>
 
             <Link
-              to="/signup"
+              to={primaryHref}
               className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 plan.highlight
                   ? "bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500"
                   : "border border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 focus:ring-slate-400"
               }`}
             >
-              Start free trial
+              {primaryLabel}
             </Link>
           </Card>
         ))}
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export default Pricing;
