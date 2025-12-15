@@ -170,6 +170,18 @@ def user_has_active_access(user_doc):
     if not user_doc:
         return False
 
+    # Optional hard gate: require active subscription immediately (no trial access).
+    # Enable by setting IDF_REQUIRE_ACTIVE_SUBSCRIPTION=true in server/.env
+    require_active = (os.environ.get("IDF_REQUIRE_ACTIVE_SUBSCRIPTION") or "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+    if require_active:
+        return user_doc.get("role") == "admin" or user_doc.get("subscriptionStatus") == "active"
+
     status = user_doc.get('subscriptionStatus')
     if status == 'active':
         return True

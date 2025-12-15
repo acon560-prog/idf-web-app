@@ -13,6 +13,8 @@ import TestAutocomplete from "./pages/TestAutocomplete.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
+import RequireSubscription from "./components/RequireSubscription.jsx";
+import Start from "./pages/Start.jsx";
 
 function App() {
   return (
@@ -26,15 +28,19 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          {/* Entry gate: explains pricing and routes user to login/signup/subscribe */}
+          <Route path="/start" element={<Start />} />
+          {/* IDF Viewer is a paid feature: requires login + active subscription */}
           <Route
-            path="/start"
+            path="/idf-viewer"
             element={
               <RequireAuth>
-                <MVPIDFViewerV2 />
+                <RequireSubscription>
+                  <MVPIDFViewerV2 />
+                </RequireSubscription>
               </RequireAuth>
             }
           />
-          <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
           <Route path="/test-autocomplete" element={<TestAutocomplete />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
