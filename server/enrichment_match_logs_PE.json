@@ -1,0 +1,436 @@
+[
+  {
+    "stationName": "ALBANY",
+    "matchedName": "ALBANY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALBERTON",
+    "matchedName": "ALBERTON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALLISTON",
+    "matchedName": "ALLISTON",
+    "distanceKm": "1367.62",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALLISTON",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.06666666666667,
+    "lonMaster": -62.6,
+    "latOfficial": 44.15,
+    "lonOfficial": -79.85
+  },
+  {
+    "stationName": "ARGYLE SHORE",
+    "matchedName": "ARGYLE SHORE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BANGOR",
+    "matchedName": "BANGOR",
+    "distanceKm": "2917.79",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BANGOR",
+    "note": "Conflicting provinceCode (master: PE, official: SK), using official one",
+    "latMaster": 46.35,
+    "lonMaster": -62.68333333333333,
+    "latOfficial": 50.9,
+    "lonOfficial": -102.28333333333333
+  },
+  {
+    "stationName": "BORDEN",
+    "matchedName": "BORDEN A",
+    "distanceKm": "1287.23",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BORDEN",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.25,
+    "lonMaster": -63.7,
+    "latOfficial": 44.266666666666666,
+    "lonOfficial": -79.93333333333334
+  },
+  {
+    "stationName": "BRACKLEY BEACH",
+    "matchedName": "BRACKLEY BEACH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHARLOTTETOWN",
+    "matchedName": "CHARLOTTETOWN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHARLOTTETOWN A",
+    "matchedName": "CHARLOTTETOWN",
+    "distanceKm": "6.81",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHARLOTTETOWN CDA",
+    "matchedName": "CHARLOTTETOWN CDA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHARLOTTETOWN SDU",
+    "matchedName": "CHARLOTTETOWN SDU",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "EAST BALTIC",
+    "matchedName": "EAST BALTIC",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELLERSLIE",
+    "matchedName": "ELLERSLIE",
+    "distanceKm": "3549.98",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELLERSLIE",
+    "note": "Conflicting provinceCode (master: PE, official: AB), using official one",
+    "latMaster": 46.61666666666667,
+    "lonMaster": -63.916666666666664,
+    "latOfficial": 53.416666666666664,
+    "lonOfficial": -113.55
+  },
+  {
+    "stationName": "GEORGETOWN",
+    "matchedName": "GEORGETOWN",
+    "distanceKm": "1393.18",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GEORGETOWN",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.18333333333333,
+    "lonMaster": -62.583333333333336,
+    "latOfficial": 43.65,
+    "lonOfficial": -79.95
+  },
+  {
+    "stationName": "HAMILTON",
+    "matchedName": "HAMILTON",
+    "distanceKm": "1314.20",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HAMILTON",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.416666666666664,
+    "lonMaster": -63.8,
+    "latOfficial": 43.266666666666666,
+    "lonOfficial": -79.9
+  },
+  {
+    "stationName": "HUNTER RIVER",
+    "matchedName": "HUNTER RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KILMAHUMAIG",
+    "matchedName": "KILMAHUMAIG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MONTAGUE",
+    "matchedName": "MONTAGUE",
+    "distanceKm": "1042.33",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MONTAGUE",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.2,
+    "lonMaster": -62.666666666666664,
+    "latOfficial": 44.93333333333333,
+    "lonOfficial": -75.95
+  },
+  {
+    "stationName": "MONTICELLO",
+    "matchedName": "MONTICELLO",
+    "distanceKm": "1428.65",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MONTICELLO",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.46666666666667,
+    "lonMaster": -62.46666666666667,
+    "latOfficial": 43.96666666666667,
+    "lonOfficial": -80.4
+  },
+  {
+    "stationName": "NEW GLASGOW",
+    "matchedName": "NEW GLASGOW",
+    "distanceKm": "1510.48",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NEW GLASGOW",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.40891111111111,
+    "lonMaster": -63.35028888888889,
+    "latOfficial": 42.51446166666667,
+    "lonOfficial": -81.63613666666667
+  },
+  {
+    "stationName": "LONG RIVER",
+    "matchedName": "LONG RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NEWTOWN CROSS",
+    "matchedName": "NEWTOWN CROSS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "O'LEARY",
+    "matchedName": "O'LEARY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSE VALLEY",
+    "matchedName": "ROSE VALLEY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SEA COW POND",
+    "matchedName": "SEA COW POND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOURIS",
+    "matchedName": "SOURIS",
+    "distanceKm": "2822.08",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOURIS",
+    "note": "Conflicting provinceCode (master: PE, official: MB), using official one",
+    "latMaster": 46.36666666666667,
+    "lonMaster": -62.21666666666667,
+    "latOfficial": 49.65,
+    "lonOfficial": -100.25
+  },
+  {
+    "stationName": "SOUTH PINETTE",
+    "matchedName": "SOUTH PINETTE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STANHOPE",
+    "matchedName": "STANHOPE",
+    "distanceKm": "692.77",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STANHOPE",
+    "note": "Conflicting provinceCode (master: PE, official: QC), using official one",
+    "latMaster": 46.41638888888889,
+    "lonMaster": -63.08305555555555,
+    "latOfficial": 45.016666666666666,
+    "lonOfficial": -71.78333333333333
+  },
+  {
+    "stationName": "SUMMERSIDE CDA",
+    "matchedName": "SUMMERSIDE CDA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SUMMERSIDE A",
+    "matchedName": "SUMMERSIDE A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TIGNISH",
+    "matchedName": "TIGNISH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TYNE VALLEY",
+    "matchedName": "TYNE VALLEY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WELLINGTON",
+    "matchedName": "WELLINGTON",
+    "distanceKm": "1076.13",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WELLINGTON",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.46666666666667,
+    "lonMaster": -64.05,
+    "latOfficial": 43.95,
+    "lonOfficial": -77.33333333333333
+  },
+  {
+    "stationName": "CHARLOTTETOWN CDA CS",
+    "matchedName": "CHARLOTTETOWN CDA CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELMWOOD",
+    "matchedName": "ELMWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST NICHOLAS",
+    "matchedName": "ST NICHOLAS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VICTORIA",
+    "matchedName": "VICTORIA",
+    "distanceKm": "1315.25",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VICTORIA",
+    "note": "Conflicting provinceCode (master: PE, official: ON), using official one",
+    "latMaster": 46.215555555555554,
+    "lonMaster": -63.4875,
+    "latOfficial": 43.766666666666666,
+    "lonOfficial": -79.88333333333334
+  },
+  {
+    "stationName": "EAST POINT (AUT)",
+    "matchedName": "EAST POINT (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SUMMERSIDE",
+    "matchedName": "SUMMERSIDE A",
+    "distanceKm": "0.55",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NORTH CAPE",
+    "matchedName": "NORTH CAPE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HARRINGTON CDA CS",
+    "matchedName": "HARRINGTON CDA CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KINGSBORO",
+    "matchedName": "KINGSBORO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VERNON BRIDGE",
+    "matchedName": "VERNON BRIDGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MAPLE PLAINS",
+    "matchedName": "MAPLE PLAINS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LONG RIVER",
+    "matchedName": "LONG RIVER",
+    "distanceKm": "1.57",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST. PETERS",
+    "matchedName": "ST. PETERS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALLISTON SNOW",
+    "matchedName": "ALLISTON SNOW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LONG CREEK SNOW",
+    "matchedName": "LONG CREEK SNOW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELMWOOD SNOW",
+    "matchedName": "ELMWOOD SNOW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KINGSBORO SNOW",
+    "matchedName": "KINGSBORO SNOW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORELL SNOW",
+    "matchedName": "MORELL SNOW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SUMMERSIDE SNOW 2",
+    "matchedName": "SUMMERSIDE SNOW 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TYNE VALLEY 2",
+    "matchedName": "TYNE VALLEY 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALBERTON SNOW",
+    "matchedName": "ALBERTON SNOW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHARLOTTETOWN A",
+    "matchedName": "CHARLOTTETOWN",
+    "distanceKm": "7.20",
+    "note": "Exact normalized name match"
+  }
+]

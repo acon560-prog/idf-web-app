@@ -6,9 +6,12 @@ import os
 import math
 import smtplib
 from email.message import EmailMessage
-from datetime import datetime, timedelta
-
+from datetime import datetime, timedelta, timezone
+import secrets
+import hashlib
+import stripe
 import bcrypt
+import logging
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -21,8 +24,13 @@ from flask_jwt_extended import (
 )
 from flask_pymongo import PyMongo
 from flask import send_from_directory
-
+def _get_env(key):
+    value = os.environ.get(key)
+    value = value.strip() if isinstance(value, str) else value
+    return value or None
+print(">>> app.py loaded from", __file__)
 app = Flask(__name__, static_folder='build', static_url_path='')
+app.logger.setLevel(logging.INFO)   # show info logs like success_url
 default_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -56,6 +64,7 @@ def handle_not_found(_error):
     return send_from_directory(app.static_folder, 'index.html')
 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
+print("Using MONGO_URI:", app.config['MONGO_URI'])
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
@@ -66,7 +75,17 @@ jwt = JWTManager(app)
 users_collection = mongo.db.users
 submissions_collection = mongo.db.submissions
 ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
-
+# Stripe configuration (optional but enabled when env vars present)
+stripe.api_key = _get_env('STRIPE_SECRET_KEY')
+STRIPE_PRICE_DAILY = _get_env('STRIPE_PRICE_DAILY')
+STRIPE_PRICE_MONTHLY = _get_env('STRIPE_PRICE_MONTHLY')
+STRIPE_PRICE_YEARLY = _get_env('STRIPE_PRICE_YEARLY')
+STRIPE_PRICE_MAP = {
+    'daily': STRIPE_PRICE_DAILY,
+    'monthly': STRIPE_PRICE_MONTHLY,
+    'yearly': STRIPE_PRICE_YEARLY,
+}
+app.logger.info("STRIPE_PRICE_DAILY1 => %r", STRIPE_PRICE_DAILY)
 # Define the provinces to load. Add more as you get the data for them.
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
 
@@ -96,9 +115,28 @@ def determine_role(user_doc) -> str:
 def isoformat_or_none(value):
     if isinstance(value, datetime):
         if value.tzinfo:
-            return value.isoformat()
+             # Normalize to UTC and emit a stable "Z" suffix.
+            return (
+                value.astimezone(timezone.utc)
+                .replace(microsecond=0)
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
+        # Treat naive datetimes as UTC for backwards compatibility.
         return value.replace(microsecond=0).isoformat() + 'Z'
     return None
+
+def utcnow() -> datetime:
+    """Timezone-aware current UTC time."""
+    return datetime.now(timezone.utc)
+
+
+def _frontend_base_url() -> str:
+    env = (os.environ.get("FRONTEND_BASE_URL") or "").strip().rstrip("/")
+    if env:
+        return env
+    # request.host_url includes trailing slash
+    return (request.host_url or "").rstrip("/")
 
 
 def serialize_user(user_doc):
@@ -161,6 +199,26 @@ def get_current_user():
         return None
     return get_user_by_id(identity)
 
+def _require_stripe_enabled():
+    if not stripe.api_key:
+        raise RuntimeError("Stripe is not configured. Missing STRIPE_SECRET_KEY.")
+
+
+def _ensure_stripe_customer(user_doc):
+    customer_id = user_doc.get("stripeCustomerId")
+    if customer_id:
+        return customer_id
+    customer = stripe.Customer.create(
+        email=user_doc.get("email"),
+        metadata={"userId": str(user_doc["_id"])},
+    )
+    customer_id = customer.get("id")
+    users_collection.update_one(
+        {"_id": user_doc["_id"]},
+        {"$set": {"stripeCustomerId": customer_id, "updatedAt": utcnow()}},
+    )
+    return customer_id
+
 
 def user_has_active_access(user_doc):
     if not user_doc:
@@ -171,7 +229,7 @@ def user_has_active_access(user_doc):
         return True
 
     trial_end = user_doc.get('trialEndsAt')
-    now = datetime.utcnow()
+    now = utcnow()
 
     if status == 'trialing':
         if isinstance(trial_end, datetime):
@@ -187,12 +245,68 @@ def user_has_active_access(user_doc):
 
     return False
 
+@app.route("/api/billing/create-checkout-session", methods=["POST"])
+@jwt_required()
+def create_checkout_session():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({"error": "Authentication required."}), 401
+
+    payload = request.get_json() or {}
+    plan = (payload.get("plan") or "").lower().strip()
+    price_id = STRIPE_PRICE_MAP.get(plan) or ""
+    if not price_id:
+        return jsonify({"error": "Unknown plan."}), 400
+
+    try:
+        _require_stripe_enabled()
+        customer_id = _ensure_stripe_customer(user_doc)
+        frontend_base = _frontend_base_url()
+        success_url = f"{frontend_base}/start?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{frontend_base}/pricing"
+
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            customer=customer_id,
+            client_reference_id=str(user_doc["_id"]),
+            line_items=[{"price": price_id, "quantity": 1}],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            allow_promotion_codes=True,
+        )
+        return jsonify({"checkoutUrl": session.url})
+    except Exception as exc:
+        print(f"Failed to create Stripe checkout session: {exc}")
+        return jsonify({"error": "Failed to create checkout session."}), 500
+
+
+@app.route("/api/billing/create-portal-session", methods=["POST"])
+@jwt_required()
+def create_billing_portal_session():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({"error": "Authentication required."}), 401
+    if not user_doc.get("stripeCustomerId"):
+        return jsonify({"error": "No Stripe customer on file."}), 400
+
+    try:
+        _require_stripe_enabled()
+        frontend_base = _frontend_base_url()
+        portal = stripe.billing_portal.Session.create(
+            customer=user_doc["stripeCustomerId"],
+            return_url=f"{frontend_base}/start",
+        )
+        return jsonify({"url": portal.url})
+    except Exception as exc:
+        print(f"Failed to create Stripe billing portal session: {exc}")
+        return jsonify({"error": "Failed to create billing portal session."}), 500
+
 
 def log_submission_to_file(name, email, message):
     log_path = os.path.join(os.path.dirname(__file__), '..', 'submissions.log')
     try:
         with open(log_path, 'a', encoding='utf-8') as f:
-            f.write(f"[{datetime.utcnow().isoformat()}] {name} <{email}>: {message}\n")
+            f.write(f"[{utcnow().isoformat()}] {name} <{email}>: {message}\n")
     except OSError as exc:
         print(f"Failed to write submission log: {exc}")
 
@@ -230,7 +344,31 @@ def send_contact_email(name, email, message, send_copy=False):
         return False
 
     return True
+def send_password_reset_email(recipient_email, reset_link):
+    email_user = os.environ.get('EMAIL_USER')
+    email_pass = os.environ.get('EMAIL_PASS')
+    
+    if not email_user or not email_pass:
+        print("Email credentials missing; cannot send reset email.")
+        return False
+    msg = EmailMessage()
+    msg['Subject'] = 'Reset your Civispec password'
+    msg['From'] = email_user
+    msg['To'] = recipient_email
+    msg.set_content(
+        "We received a request to reset your Civispec password.\n\n"
+        f"Use this link within the next hour: {reset_link}\n\n"
+        "If you didn't ask for this, you can ignore the email."
+    )
 
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(email_user, email_pass)
+            smtp.send_message(msg)
+        return True
+    except Exception as exc:
+        print(f"Failed to send reset email: {exc}")
+        return False
 for province_code in PROVINCES:
     # Construct file paths for each province.
     # Assumes your data is structured like this: data/QC/master...json
@@ -268,6 +406,53 @@ for province_code in PROVINCES:
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Could not load data for {province_code}: {e}")
         continue
+    
+# Fallback: some deploys may not include per-province subfolders.
+# If nothing loaded, try consolidated JSON files in server/data/.
+if not STATIONS_DATA:
+    consolidated_stations_path = os.path.join(
+        os.path.dirname(__file__),
+        "data",
+        "master_stations_enriched_validated.json",
+    )
+    try:
+        with open(consolidated_stations_path, "r", encoding="utf-8") as f:
+            stations = json.load(f)
+            STATIONS_DATA.extend(stations)
+            for station in stations:
+                sid = station.get("stationId")
+                if sid:
+                    STATION_LOOKUP[sid] = station
+        print(
+            f"Loaded consolidated stations metadata ({len(stations)}) from {consolidated_stations_path}."
+        )
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Could not load consolidated stations data: {e}")
+
+if not IDF_DATA:
+    consolidated_idf_path = os.path.join(
+        os.path.dirname(__file__),
+        "data",
+        "idf_data_by_station.json",
+    )
+    try:
+        with open(consolidated_idf_path, "r", encoding="utf-8") as f:
+            prov_idf_data = json.load(f)
+            IDF_DATA.update(prov_idf_data)
+            for key in prov_idf_data:
+                station_id_match = re.search(r"(\d{7}|\d{3}[A-Z]{2}\d)", key)
+                if station_id_match:
+                    station_id = station_id_match.group(1)
+                    IDF_KEY_MAPPING[station_id] = key
+                    IDF_STATION_IDS.add(station_id)
+                else:
+                    IDF_KEY_MAPPING[key] = key
+                    IDF_STATION_IDS.add(key)
+        print(
+            f"Loaded consolidated IDF data ({len(prov_idf_data)}) from {consolidated_idf_path}."
+        )
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Could not load consolidated IDF data: {e}")
 print(f"Total stations loaded: {len(STATIONS_DATA)}")
 print(f"Total IDF data sets loaded: {len(IDF_DATA)}")
 
@@ -345,7 +530,7 @@ def register():
         return jsonify({'error': 'An email or username is required.'}), 400
 
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    now = datetime.utcnow()
+    now = utcnow()
     trial_end = now + timedelta(days=7)
     role = 'admin' if email and email == ADMIN_EMAIL else 'user'
 
@@ -404,7 +589,7 @@ def login():
         return jsonify({'error': 'Invalid email or password.'}), 401
 
     role = determine_role(user_doc)
-    updates = {'updatedAt': datetime.utcnow()}
+    updates = {'updatedAt': datetime.now(timezone.utc)}
     if user_doc.get('role') != role:
         updates['role'] = role
     user_doc['role'] = role
@@ -420,8 +605,117 @@ def login():
         'user': serialize_user(user_doc),
         **tokens,
     })
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    payload = request.get_json() or {}
+    email = normalize_email(payload.get('email'))
+    print("Handling forgot-password for", email)
+    if not email:
+        return jsonify({'error': 'Email is required.'}), 400
 
+    generic_response = {'message': 'If that account exists, an email was sent.'}
+    user_doc = users_collection.find_one({'email': email})
+    if not user_doc:
+        return jsonify(generic_response)  # Don’t leak whether the email exists
 
+    raw_token = secrets.token_urlsafe(32)
+    hashed_token = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
+    expires_at = datetime.utcnow() + timedelta(hours=1)
+
+    users_collection.update_one(
+        {'_id': user_doc['_id']},
+        {'$set': {
+            'resetPasswordToken': hashed_token,
+            'resetPasswordExpires': expires_at,
+        }}
+    )
+
+    frontend_base = (os.environ.get('FRONTEND_BASE_URL') or request.host_url.rstrip('/'))
+    reset_link = f"{frontend_base}/reset-password?token={raw_token}"
+
+    send_password_reset_email(email, reset_link)
+    return jsonify(generic_response)
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    payload = request.get_json() or {}
+    raw_token = (payload.get('token') or '').strip()
+    new_password = (payload.get('password') or '').strip()
+
+    if not raw_token or not new_password:
+        return jsonify({'error': 'Token and new password are required.'}), 400
+    if len(new_password) < 8:
+        return jsonify({'error': 'Password must be at least 8 characters.'}), 400
+
+    hashed_token = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
+    now = datetime.utcnow()
+
+    user_doc = users_collection.find_one({
+        'resetPasswordToken': hashed_token,
+        'resetPasswordExpires': {'$gt': now},
+    })
+    if not user_doc:
+        return jsonify({'error': 'Invalid or expired reset token.'}), 400
+
+    password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    users_collection.update_one(
+        {'_id': user_doc['_id']},
+        {'$set': {
+            'passwordHash': password_hash,
+            'updatedAt': now,
+        }, '$unset': {
+            'resetPasswordToken': '',
+            'resetPasswordExpires': '',
+        }}
+    )
+
+    return jsonify({'message': 'Password updated successfully.'})
+@app.route('/api/billing/create-checkout-session', methods=['POST'])
+@jwt_required()
+def create_checkout_session_v2():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'User not found.'}), 404
+
+    payload = request.get_json() or {}
+    plan = (payload.get('plan') or '').lower()
+    price_id = STRIPE_PRICE_MAP.get(plan)
+    if not price_id:
+        return jsonify({'error': 'Unknown plan.'}), 400
+
+    frontend_base = _get_env('FRONTEND_BASE_URL') or request.host_url.rstrip('/')
+    if not frontend_base:
+        frontend_base = request.host_url.rstrip('/')
+    success_url = f"{frontend_base}/start?session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{frontend_base}/pricing"
+    app.logger.info("success_url => %r", success_url)
+    app.logger.info("cancel_url  => %r", cancel_url)
+    session = stripe.checkout.Session.create(
+        mode='subscription',
+        payment_method_types=['card'],
+        line_items=[{'price': price_id, 'quantity': 1}],
+        customer=user_doc.get('stripeCustomerId') or None,
+        client_reference_id=str(user_doc['_id']),
+        success_url=success_url,
+        cancel_url=cancel_url,
+    )
+    return jsonify({'checkoutUrl': session.url})
+@app.route('/api/billing/create-portal-session', methods=['POST'])
+@jwt_required()
+def create_portal_session():
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'User not found.'}), 404
+
+    customer_id = user_doc.get('stripeCustomerId')
+    if not customer_id:
+        return jsonify({'error': 'No Stripe customer linked to this account.'}), 400
+
+    portal_session = stripe.billing_portal.Session.create(
+        customer=customer_id,
+        return_url=f"{os.environ.get('FRONTEND_BASE_URL', request.host_url.rstrip('/'))}/start",
+    )
+    return jsonify({'portalUrl': portal_session.url})
 @app.route('/api/auth/me', methods=['GET'])
 @jwt_required()
 def auth_me():
@@ -638,7 +932,80 @@ def idf_curves():
     except Exception as e:
         print(f"An unexpected error occurred in idf_curves: {e}")
         return jsonify({"error": "An unexpected error occurred."}), 500
+def update_user_subscription(user_id, updates):
+    users_collection.update_one(
+        {'_id': ObjectId(user_id)},
+        {'$set': {**updates, 'updatedAt': datetime.utcnow()}}
+    )
 
+def plan_from_price_id(price_id):
+    for name, pid in STRIPE_PRICE_MAP.items():
+        if pid == price_id:
+            return name
+    return None
+
+@app.route('/api/webhooks/stripe', methods=['POST'])
+def stripe_webhook():
+    endpoint_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
+    payload = request.data
+    sig_header = request.headers.get('Stripe-Signature', '')
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except ValueError:
+        return "Invalid payload", 400
+    except stripe.error.SignatureVerificationError:
+        return "Invalid signature", 400
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        client_ref = session.get('client_reference_id')
+        sub_id = session.get('subscription')
+        price_id = None
+        if sub_id:
+            sub = stripe.Subscription.retrieve(sub_id, expand=["items.data.price"])
+            price_id = sub["items"]["data"][0]["price"]["id"]
+        #price_id = session.get('line_items', {}).get('data', [{}])[0]\
+            #.get('price', {}).get('id')
+        plan = plan_from_price_id(price_id)
+        if client_ref and plan:
+            update_user_subscription(client_ref, {
+                'stripeCustomerId': session.get('customer'),
+                'subscriptionStatus': 'active',
+                'plan': plan,
+                "updatedAt": datetime.now(timezone.utc),
+            })
+    elif event['type'] == 'customer.subscription.updated':
+        subscription = event['data']['object']
+        customer_id = subscription.get('customer')
+        plan = plan_from_price_id(subscription['items']['data'][0]['plan']['product'])
+        status = subscription.get('status')
+        users_collection.update_one(
+            {'stripeCustomerId': customer_id},
+            {'$set': {
+                'subscriptionStatus': status,
+                'plan': plan,
+                'updatedAt': datetime.now(timezone.utc),
+            }}
+        )
+    elif event['type'] == 'customer.subscription.updated':
+        subscription = event['data']['object']
+        customer_id = subscription.get('customer')
+
+        price_id = subscription["items"]["data"][0]["price"]["id"]
+        plan = plan_from_price_id(price_id)
+        status = subscription.get("status")
+
+        users_collection.update_one(
+            {'stripeCustomerId': customer_id},
+            {'$set': {
+                "subscriptionStatus": status,
+                "plan": plan,
+                "updatedAt": datetime.now(timezone.utc),
+            }}
+        )
+
+    return '', 200
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

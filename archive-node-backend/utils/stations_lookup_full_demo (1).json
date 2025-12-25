@@ -1,0 +1,82 @@
+[
+  {
+    "province": "AB",
+    "stationId": "3012200",
+    "name": "Calgary Int'l A",
+    "lat": 51.12,
+    "lon": -114.02,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/AB/3012200.csv"
+  },
+  {
+    "province": "BC",
+    "stationId": "1100030",
+    "name": "Vancouver Int'l A",
+    "lat": 49.18,
+    "lon": -123.17,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/BC/1100030.csv"
+  },
+  {
+    "province": "MB",
+    "stationId": "5023222",
+    "name": "Winnipeg Int'l A",
+    "lat": 49.91,
+    "lon": -97.23,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/MB/5023222.csv"
+  },
+  {
+    "province": "NB",
+    "stationId": "6100135",
+    "name": "Fredericton A",
+    "lat": 45.87,
+    "lon": -66.53,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/NB/6100135.csv"
+  },
+  {
+    "province": "NL",
+    "stationId": "8403500",
+    "name": "St. John's A",
+    "lat": 47.62,
+    "lon": -52.75,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/NL/8403500.csv"
+  },
+  {
+    "province": "NS",
+    "stationId": "8202250",
+    "name": "Halifax Int'l A",
+    "lat": 44.88,
+    "lon": -63.51,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/NS/8202250.csv"
+  },
+  {
+    "province": "ON",
+    "stationId": "6100970",
+    "name": "Toronto City",
+    "lat": 43.65,
+    "lon": -79.38,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/ON/6100970.csv"
+  },
+  {
+    "province": "PE",
+    "stationId": "8300300",
+    "name": "Charlottetown A",
+    "lat": 46.29,
+    "lon": -63.13,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/PE/8300300.csv"
+  },
+  {
+    "province": "QC",
+    "stationId": "82000000",
+    "name": "Arthabaska",
+    "lat": 46.08,
+    "lon": -71.95,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/QC/82000000.csv"
+  },
+  {
+    "province": "SK",
+    "stationId": "4016561",
+    "name": "Regina Int'l A",
+    "lat": 50.43,
+    "lon": -104.66,
+    "normalsCsvUrl": "https://dd.weather.gc.ca/climate/observations/normals/csv/SK/4016561.csv"
+  }
+]

@@ -1,11 +1,48 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";      // ❶ add this
+import { buildApiUrl } from "../utils/apiConfig";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, logout } = useAuth();                     // ❷ get user + logout
+  const [billingLoading, setBillingLoading] = useState(false);
+  const { user, logout, authFetch } = useAuth(); // ❷ get user + logout                     // ❷ get user + logout
   const isAdmin = user?.role === "admin";
+
+  const handleBillingClick = async () => {
+    if (!user || !authFetch || billingLoading) return;
+    setBillingLoading(true);
+    try {
+      if (user.subscriptionStatus === "active" && user.stripeCustomerId) {
+        const res = await authFetch(buildApiUrl("/billing/create-portal-session"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to open billing portal.");
+        }
+        window.location.assign(data.url);
+        return;
+      }
+
+      const res = await authFetch(buildApiUrl("/billing/create-checkout-session"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: "monthly" }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to start checkout.");
+      }
+      window.location.assign(data.checkoutUrl);
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || "Billing action failed.");
+    } finally {
+      setBillingLoading(false);
+    }
+  };
 
   return (
     <nav className="bg-gray-800 text-white">
@@ -18,6 +55,18 @@ function Navbar() {
           <li><Link to="/contact" className="hover:underline">Contact</Link></li>
           {isAdmin && <li><Link to="/admin" className="hover:underline">Admin</Link></li>}
           <li><Link to="/start" className="hover:underline text-yellow-300 font-semibold">Start</Link></li>
+          {user && (
+            <li>
+              <button
+                type="button"
+                onClick={handleBillingClick}
+                disabled={billingLoading}
+                className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {billingLoading ? "Working..." : "Subscribe / Manage billing"}
+              </button>
+            </li>
+          )}
           {user && (                                       // ❸ show logout when logged in
             <li>
               <button type="button" onClick={logout} className="hover:underline">
@@ -45,6 +94,21 @@ function Navbar() {
             <li><Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link></li>
           )}
           <li><Link to="/start" onClick={() => setMenuOpen(false)} className="text-yellow-300 font-semibold">Start</Link></li>
+          {user && (
+            <li>
+              <button
+                type="button"
+                onClick={() => {
+                                    handleBillingClick();
+                  setMenuOpen(false);
+                }}
+                disabled={billingLoading}
+                className="w-full text-left rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {billingLoading ? "Working..." : "Subscribe / Manage billing"}
+              </button>
+            </li>
+          )}
           {user && (
             <li>
               <button

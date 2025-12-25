@@ -1,0 +1,896 @@
+[
+  {
+    "stationName": "HOUR LAKE",
+    "matchedName": "HOUR LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KETZA RIVER MINE",
+    "matchedName": "KETZA RIVER MINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACPHERSON",
+    "matchedName": "MACPHERSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MIDWAY LODGE",
+    "matchedName": "MIDWAY LODGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "AISHIHIK A",
+    "matchedName": "AISHIHIK A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ANNIE LAKE ROBINSON",
+    "matchedName": "ANNIE LAKE ROBINSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ANVIL",
+    "matchedName": "ANVIL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEAVER CREEK A",
+    "matchedName": "BEAVER CREEK A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BLANCHARD RIVER",
+    "matchedName": "BLANCHARD RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BONANZA CREEK",
+    "matchedName": "BONANZA CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BOUNDARY",
+    "matchedName": "BOUNDARY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRAEBURN",
+    "matchedName": "BRAEBURN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRANDT PEAK",
+    "matchedName": "BRANDT PEAK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRYN MYRDDIN FARM",
+    "matchedName": "BRYN MYRDDIN FARM",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BURWASH A",
+    "matchedName": "BURWASH A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARCROSS",
+    "matchedName": "CARCROSS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARMACKS",
+    "matchedName": "CARMACKS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARMACKS TOWER",
+    "matchedName": "CARMACKS TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CASINO CREEK",
+    "matchedName": "CASINO CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CASINO MTN",
+    "matchedName": "CASINO MTN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CLINTON CREEK",
+    "matchedName": "CLINTON CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CLINTON CREEK",
+    "matchedName": "CLINTON CREEK",
+    "distanceKm": "6.41",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAWSON",
+    "matchedName": "DAWSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAWSON",
+    "matchedName": "DAWSON",
+    "distanceKm": "5.21",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAWSON A",
+    "matchedName": "DAWSON",
+    "distanceKm": "10.34",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAWSON TOWER",
+    "matchedName": "DAWSON TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DEMPSTER 177",
+    "matchedName": "DEMPSTER 177",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DEMPSTER 179",
+    "matchedName": "DEMPSTER 179",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DEMPSTER 203",
+    "matchedName": "DEMPSTER 203",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DESTRUCTION BAY",
+    "matchedName": "DESTRUCTION BAY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DEZADEASH",
+    "matchedName": "DEZADEASH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DRURY CREEK",
+    "matchedName": "DRURY CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "EAGLE PLAINS",
+    "matchedName": "EAGLE PLAINS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "EAGLE RIVER",
+    "matchedName": "EAGLE RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELSA",
+    "matchedName": "ELSA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FARO",
+    "matchedName": "FARO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FARO",
+    "matchedName": "FARO",
+    "distanceKm": "13.23",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FARO A",
+    "matchedName": "FARO",
+    "distanceKm": "15.97",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FISH LAKE ROAD",
+    "matchedName": "FISH LAKE ROAD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACPASS AIRSTRIP",
+    "matchedName": "MACPASS AIRSTRIP",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FORTY MILE",
+    "matchedName": "FORTY MILE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FRANCES LAKE",
+    "matchedName": "FRANCES LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GOLDEN HORN",
+    "matchedName": "GOLDEN HORN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HAECKEL HILL TOWER",
+    "matchedName": "HAECKEL HILL TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HAINES APPS #4",
+    "matchedName": "HAINES APPS #4",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HAINES JUNCTION",
+    "matchedName": "HAINES JUNCTION",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HAINES JUNCTION YTG",
+    "matchedName": "HAINES JUNCTION YTG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HART RIVER",
+    "matchedName": "HART RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HERSCHEL ISLAND",
+    "matchedName": "HERSCHEL ISLAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HERSCHEL ISLAND",
+    "matchedName": "HERSCHEL ISLAND",
+    "distanceKm": "15.13",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HOWARDS PASS",
+    "matchedName": "HOWARDS PASS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HUDSON BAY MINE",
+    "matchedName": "HUDSON BAY MINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "IRON CREEK",
+    "matchedName": "IRON CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "JOHNSONS CROSSING",
+    "matchedName": "JOHNSONS CROSSING",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KENO HILL",
+    "matchedName": "KENO HILL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KLONDIKE",
+    "matchedName": "KLONDIKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KLUANE LAKE",
+    "matchedName": "KLUANE LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KOMAKUK BEACH A",
+    "matchedName": "KOMAKUK BEACH A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LITTLE GOLD CREEK",
+    "matchedName": "LITTLE GOLD CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACMILLAN PASS",
+    "matchedName": "MACMILLAN PASS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACTUNG",
+    "matchedName": "MACTUNG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MAYO A",
+    "matchedName": "MAYO A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MAYO ROAD",
+    "matchedName": "MAYO ROAD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MCQUESTEN",
+    "matchedName": "MCQUESTEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MCQUESTEN",
+    "matchedName": "MCQUESTEN",
+    "distanceKm": "7.80",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MINTO",
+    "matchedName": "MINTO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOOSE CREEK",
+    "matchedName": "MOOSE CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORLEY RIVER",
+    "matchedName": "MORLEY RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOUNTAIN VIEW LODGE",
+    "matchedName": "MOUNTAIN VIEW LODGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NEW IMPERIAL",
+    "matchedName": "NEW IMPERIAL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OGILVIE RIVER",
+    "matchedName": "OGILVIE RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OLD CROW A",
+    "matchedName": "OLD CROW A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OTTER FALLS NCPC",
+    "matchedName": "OTTER FALLS NCPC",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PAINT MOUNTAIN TOWER",
+    "matchedName": "PAINT MOUNTAIN TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PARKIN",
+    "matchedName": "PARKIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PELLY RANCH",
+    "matchedName": "PELLY RANCH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORTER CREEK WAHL",
+    "matchedName": "PORTER CREEK WAHL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "QUIET LAKE",
+    "matchedName": "QUIET LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "QUILL CREEK",
+    "matchedName": "QUILL CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RAMPART HOUSE",
+    "matchedName": "RAMPART HOUSE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RANCHERIA",
+    "matchedName": "RANCHERIA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSS RIVER A",
+    "matchedName": "ROSS RIVER A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RUSSELL CREEK",
+    "matchedName": "RUSSELL CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SAM LAKE",
+    "matchedName": "SAM LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHELDON LAKE",
+    "matchedName": "SHELDON LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHINGLE POINT A",
+    "matchedName": "SHINGLE POINT A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SIMPSON TOWER",
+    "matchedName": "SIMPSON TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SNAG A",
+    "matchedName": "SNAG A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STEWART CROSSING",
+    "matchedName": "STEWART CROSSING",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STEWART CROSSING TOWER",
+    "matchedName": "STEWART CROSSING TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STEWART RIVER",
+    "matchedName": "STEWART RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STOKES POINT",
+    "matchedName": "STOKES POINT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SUNNYDALE",
+    "matchedName": "SUNNYDALE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SWEDE CREEK",
+    "matchedName": "SWEDE CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SWIFT RIVER",
+    "matchedName": "SWIFT RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TAGISH",
+    "matchedName": "TAGISH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TAGISH TOWER",
+    "matchedName": "TAGISH TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TAKHINI RIVER RANCH",
+    "matchedName": "TAKHINI RIVER RANCH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TESLIN",
+    "matchedName": "TESLIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TESLIN A",
+    "matchedName": "TESLIN",
+    "distanceKm": "1.14",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TOM CREEK TOWER",
+    "matchedName": "TOM CREEK TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TRANSPORT TOWER",
+    "matchedName": "TRANSPORT TOWER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TUCHITUA",
+    "matchedName": "TUCHITUA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TWO PETE CREEK",
+    "matchedName": "TWO PETE CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WATSON LAKE A",
+    "matchedName": "WATSON LAKE A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHITEHORSE",
+    "matchedName": "WHITEHORSE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHITEHORSE A",
+    "matchedName": "WHITEHORSE",
+    "distanceKm": "1.30",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHITEHORSE RIVERDALE",
+    "matchedName": "WHITEHORSE RIVERDALE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WOLF CREEK",
+    "matchedName": "WOLF CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WOLF CREEK",
+    "matchedName": "WOLF CREEK",
+    "distanceKm": "9.27",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEAVER CREEK YTG",
+    "matchedName": "BEAVER CREEK YTG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSS RIVER YTG",
+    "matchedName": "ROSS RIVER YTG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FARO (AUT)",
+    "matchedName": "FARO (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROCK RIVER",
+    "matchedName": "ROCK RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TESLIN (AUT)",
+    "matchedName": "TESLIN (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BURWASH",
+    "matchedName": "BURWASH A",
+    "distanceKm": "0.89",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAWSON",
+    "matchedName": "DAWSON",
+    "distanceKm": "10.07",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KOMAKUK BEACH",
+    "matchedName": "KOMAKUK BEACH A",
+    "distanceKm": "3.22",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WATSON LAKE YTG",
+    "matchedName": "WATSON LAKE YTG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SATAH RIVER",
+    "matchedName": "SATAH RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "IVVAVIK NAT. PARK",
+    "matchedName": "IVVAVIK NAT. PARK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OLD CROW RCS",
+    "matchedName": "OLD CROW RCS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHITEHORSE WSO",
+    "matchedName": "WHITEHORSE WSO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MARSH LAKE",
+    "matchedName": "MARSH LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MARGARET LAKE",
+    "matchedName": "MARGARET LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACMILLAN PASS",
+    "matchedName": "MACMILLAN PASS",
+    "distanceKm": "11.82",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARMACKS CS",
+    "matchedName": "CARMACKS CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BURWASH AWOS",
+    "matchedName": "BURWASH AWOS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WATSON LAKE (AUT)",
+    "matchedName": "WATSON LAKE (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHITEHORSE AUTO",
+    "matchedName": "WHITEHORSE AUTO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BURWASH A",
+    "matchedName": "BURWASH A",
+    "distanceKm": "0.69",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BURWASH A",
+    "matchedName": "BURWASH A",
+    "distanceKm": "0.69",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHITEHORSE A",
+    "matchedName": "WHITEHORSE",
+    "distanceKm": "1.23",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAWSON CITY A",
+    "matchedName": "DAWSON CITY A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MAYO A",
+    "matchedName": "MAYO A",
+    "distanceKm": "0.09",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OLD CROW A",
+    "matchedName": "OLD CROW A",
+    "distanceKm": "0.07",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BURWASH AIRPORT AUTO",
+    "matchedName": "BURWASH AIRPORT AUTO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FARO A",
+    "matchedName": "FARO",
+    "distanceKm": "15.97",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TESLIN A",
+    "matchedName": "TESLIN",
+    "distanceKm": "0.85",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAWSON CITY A",
+    "matchedName": "DAWSON CITY A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OLD CROW A",
+    "matchedName": "OLD CROW A",
+    "distanceKm": "0.07",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FARO A",
+    "matchedName": "FARO",
+    "distanceKm": "15.97",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TESLIN A",
+    "matchedName": "TESLIN",
+    "distanceKm": "0.85",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEAVER CREEK A",
+    "matchedName": "BEAVER CREEK A",
+    "distanceKm": "0.07",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEAVER CREEK A",
+    "matchedName": "BEAVER CREEK A",
+    "distanceKm": "0.07",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WATSON LAKE A",
+    "matchedName": "WATSON LAKE A",
+    "distanceKm": "0.02",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MAYO A",
+    "matchedName": "MAYO A",
+    "distanceKm": "0.11",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WATSON LAKE A",
+    "matchedName": "WATSON LAKE A",
+    "distanceKm": "0.02",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PELLY RANCH FORT SELKIRK",
+    "matchedName": "PELLY RANCH FORT SELKIRK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  }
+]

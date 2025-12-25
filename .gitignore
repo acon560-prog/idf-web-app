@@ -33,3 +33,14 @@ coverage/
 node_modules/
 client/dist/
 .vercel
+
+env.cloudrun.yaml
+env.cloudrun
+
+client/.env.production
+client/.env.*
+!.env.example
+
+client/.env
+client/.env.*
+stripeKeys.txt

@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import rainImage from "../assets/rain.jpg";
 
 const Hero = () => (
   <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-white to-white">
@@ -51,7 +52,7 @@ const Hero = () => (
       <div className="relative flex w-full max-w-md justify-center">
         <div className="relative overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200">
           <img
-            src="https://images.unsplash.com/photo-1521207418485-99c705420785?auto=format&fit=crop&w=900&q=80"
+            src={rainImage}
             alt="Rainfall chart preview"
             className="h-96 w-full object-cover"
           />

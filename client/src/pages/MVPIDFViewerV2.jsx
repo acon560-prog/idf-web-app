@@ -232,20 +232,21 @@ const MVPIDFViewerV2 = () => {
             );
     
           // Attach the listener and update the state when a place is selected
-          autocompleteRef.current.addListener("place_changed", () => {
-              const selectedPlace = autocompleteRef.current.getPlace();
-              console.log("Place selected:", selectedPlace);
-              setPlace(selectedPlace);
-              const formatted =
-                selectedPlace?.formatted_address ||
-                selectedPlace?.description ||
-                selectedPlace?.name ||
-                autocompleteInputRef.current?.value ||
-                "";
-              if (autocompleteInputRef.current) {
-                  autocompleteInputRef.current.value = formatted;
-                }
-            });
+         autocompleteRef.current.addListener("place_changed", () => {
+                const selectedPlace = autocompleteRef.current.getPlace();
+                console.log("Place selected:", selectedPlace);
+                setPlace(selectedPlace);
+                const formatted =
+                  selectedPlace?.formatted_address ||
+                  selectedPlace?.description ||
+                  selectedPlace?.name ||
+                  autocompleteInputRef.current?.value ||
+                  "";
+                // Keep the controlled input value in sync with Google Autocomplete.
+              // If we don't, React will re-render with the previous state value,
+              // which can look like the input only "keeps" the first character.
+                  setLocationInputValue(formatted);
+                });
         } else {
           // If the library is not yet ready, try again after a short delay
           setTimeout(initAutocomplete, 100);
@@ -365,7 +366,10 @@ const MVPIDFViewerV2 = () => {
           "Failed to fetch IDF data.",
         );
         if (!idfResponse.ok) {
-          if (idfResponse.status === 403 && idfJson?.code === "trial_expired") {
+          if (
+            (idfResponse.status === 402 || idfResponse.status === 403) &&
+            idfJson?.code === "trial_expired"
+          ) {
             setTrialMessage(
               "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
             );

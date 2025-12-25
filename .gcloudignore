@@ -1,0 +1,10 @@
+.gcloudignore
+.git/
+.gitignore
+node_modules/
+container image
+server/data/**
+archive-node-backend/**
+climate_normals/**
+data/**
+utils/download_verified_debug_dump.js

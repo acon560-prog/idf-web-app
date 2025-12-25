@@ -1,5 +1,6 @@
 import React from 'react';
 import Autocomplete from 'react-google-autocomplete';
+import { buildApiUrl } from "../utils/apiConfig";
 const GOOGLE_MAPS_API_KEY =
   process.env.REACT_APP_GOOGLE_PLACES_API_KEY || "";
 
@@ -10,7 +11,7 @@ const LocationSearch = ({ onStationSelected }) => {
       const lon = place.geometry.location.lng();
 
       // Make a call to the new server endpoint
-      fetch(`/api/nearest-station?lat=${lat}&lon=${lon}`)
+        fetch(buildApiUrl(`/nearest-station?lat=${lat}&lon=${lon}`))
         .then(response => {
           if (!response.ok) {
             throw new Error('Could not find nearest station');

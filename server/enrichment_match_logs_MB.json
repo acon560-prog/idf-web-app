@@ -1,0 +1,3528 @@
+[
+  {
+    "stationName": "RIVERS PETTAPIECE",
+    "matchedName": "RIVERS PETTAPIECE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSSBURN 4 NORTH",
+    "matchedName": "ROSSBURN 4 NORTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OAK LAKE",
+    "matchedName": "OAK LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELKHORN 2 EAST",
+    "matchedName": "ELKHORN 2 EAST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALEXANDER",
+    "matchedName": "ALEXANDER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ARROW RIVER",
+    "matchedName": "ARROW RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BALDUR",
+    "matchedName": "BALDUR",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEDE",
+    "matchedName": "BEDE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BELMONT",
+    "matchedName": "BELMONT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BELMONT",
+    "matchedName": "BELMONT",
+    "distanceKm": "11.18",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BINSCARTH",
+    "matchedName": "BINSCARTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BIRDTAIL",
+    "matchedName": "BIRDTAIL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BIRTLE",
+    "matchedName": "BIRTLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BOGGY CREEK",
+    "matchedName": "BOGGY CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRANDON A",
+    "matchedName": "BRANDON A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRANDON CDA",
+    "matchedName": "BRANDON CDA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRANDON SOUTH",
+    "matchedName": "BRANDON SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRANDON #1 WINTER BAY",
+    "matchedName": "BRANDON #1 WINTER BAY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARROLL 2W",
+    "matchedName": "CARROLL 2W",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BROOKDALE",
+    "matchedName": "BROOKDALE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CAMERON",
+    "matchedName": "CAMERON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARBERRY",
+    "matchedName": "CARBERRY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARDALE",
+    "matchedName": "CARDALE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARROLL",
+    "matchedName": "CARROLL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CYPRESS RIVER",
+    "matchedName": "CYPRESS RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DELORAINE",
+    "matchedName": "DELORAINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DELORAINE 2",
+    "matchedName": "DELORAINE 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DELORAINE 6 SE",
+    "matchedName": "DELORAINE 6 SE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "EDWIN",
+    "matchedName": "EDWIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELKHORN",
+    "matchedName": "ELKHORN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ERICKSON",
+    "matchedName": "ERICKSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ERICKSON",
+    "matchedName": "ERICKSON",
+    "distanceKm": "5.56",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FAIRFAX",
+    "matchedName": "FAIRFAX",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FORT ELLICE",
+    "matchedName": "FORT ELLICE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FOXWARREN",
+    "matchedName": "FOXWARREN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GLENBORO",
+    "matchedName": "GLENBORO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GOODLANDS CDA EPF",
+    "matchedName": "GOODLANDS CDA EPF",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRISWOLD",
+    "matchedName": "GRISWOLD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HAMIOTA",
+    "matchedName": "HAMIOTA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HAMIOTA 2",
+    "matchedName": "HAMIOTA 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HARDING",
+    "matchedName": "HARDING",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HARGRAVE CDA EPF",
+    "matchedName": "HARGRAVE CDA EPF",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HARTNEY",
+    "matchedName": "HARTNEY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HARTNEY",
+    "matchedName": "HARTNEY",
+    "distanceKm": "5.69",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HILLVIEW",
+    "matchedName": "HILLVIEW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "INGLIS",
+    "matchedName": "INGLIS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KENTON",
+    "matchedName": "KENTON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LYLETON",
+    "matchedName": "LYLETON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACDONALD A",
+    "matchedName": "MACDONALD A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MCCONNELL",
+    "matchedName": "MCCONNELL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MEDORA",
+    "matchedName": "MEDORA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MELITA",
+    "matchedName": "MELITA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MINNEDOSA",
+    "matchedName": "MINNEDOSA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MINTO",
+    "matchedName": "MINTO",
+    "distanceKm": "2679.72",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MINTO",
+    "note": "Conflicting provinceCode (master: MB, official: YT), using official one",
+    "latMaster": 49.45,
+    "lonMaster": -100.05,
+    "latOfficial": 62.63333333333333,
+    "lonOfficial": -137.25
+  },
+  {
+    "stationName": "NORQUAY",
+    "matchedName": "NORQUAY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OLHA",
+    "matchedName": "OLHA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OAKNER",
+    "matchedName": "OAKNER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PIERSON",
+    "matchedName": "PIERSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PIPESTONE",
+    "matchedName": "PIPESTONE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORTAGE LA PRAIRIE",
+    "matchedName": "PORTAGE LA PRAIRIE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORTAGE LA PRAIRIE",
+    "matchedName": "PORTAGE LA PRAIRIE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORTAGE SOUTHPORT A",
+    "matchedName": "PORTAGE SOUTHPORT A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORTAGE LA PRAIRIE CDA",
+    "matchedName": "PORTAGE LA PRAIRIE CDA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORTAGE LA PRAIRIE 2",
+    "matchedName": "PORTAGE LA PRAIRIE 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RAPID CITY",
+    "matchedName": "RAPID CITY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RAPID CITY FORREST",
+    "matchedName": "RAPID CITY FORREST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "REGENT",
+    "matchedName": "REGENT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RESTON",
+    "matchedName": "RESTON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RIDING MTN AUDY",
+    "matchedName": "RIDING MTN AUDY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RIVERS",
+    "matchedName": "RIVERS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RIVERS A",
+    "matchedName": "RIVERS",
+    "distanceKm": "6.23",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROBLIN",
+    "matchedName": "ROBLIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROBLIN",
+    "matchedName": "ROBLIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROBLIN NORTH",
+    "matchedName": "ROBLIN NORTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSSBURN",
+    "matchedName": "ROSSBURN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSSBURN 10N",
+    "matchedName": "ROSSBURN 10N",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RUSSELL",
+    "matchedName": "RUSSELL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST ALBANS",
+    "matchedName": "ST ALBANS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST ALPHONSE",
+    "matchedName": "ST ALPHONSE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST LAZARE",
+    "matchedName": "ST LAZARE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SANDY LAKE",
+    "matchedName": "SANDY LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHARPE LAKE",
+    "matchedName": "SHARPE LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHILO",
+    "matchedName": "SHILO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHOAL LAKE",
+    "matchedName": "SHOAL LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHOAL LAKE",
+    "matchedName": "SHOAL LAKE",
+    "distanceKm": "10.95",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHOAL LAKE",
+    "matchedName": "SHOAL LAKE",
+    "distanceKm": "1.85",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SILVERTON EXP ST",
+    "matchedName": "SILVERTON EXP ST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOMERSET",
+    "matchedName": "SOMERSET",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOURIS",
+    "matchedName": "SOURIS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOURIS",
+    "matchedName": "SOURIS",
+    "distanceKm": "3.90",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STRATHCLAIR",
+    "matchedName": "STRATHCLAIR",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SWAN LAKE",
+    "matchedName": "SWAN LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TREHERNE",
+    "matchedName": "TREHERNE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TREHERNE 8N",
+    "matchedName": "TREHERNE 8N",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN",
+    "matchedName": "TURTLE MOUNTAIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 1",
+    "matchedName": "TURTLE MOUNTAIN 1",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 2",
+    "matchedName": "TURTLE MOUNTAIN 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 3",
+    "matchedName": "TURTLE MOUNTAIN 3",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 4",
+    "matchedName": "TURTLE MOUNTAIN 4",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 5",
+    "matchedName": "TURTLE MOUNTAIN 5",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 6",
+    "matchedName": "TURTLE MOUNTAIN 6",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 7",
+    "matchedName": "TURTLE MOUNTAIN 7",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 8",
+    "matchedName": "TURTLE MOUNTAIN 8",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VIRDEN",
+    "matchedName": "VIRDEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VIRDEN SCARTH",
+    "matchedName": "VIRDEN SCARTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WASAGAMING",
+    "matchedName": "WASAGAMING",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WASKADA",
+    "matchedName": "WASKADA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WASKADA",
+    "matchedName": "WASKADA",
+    "distanceKm": "8.26",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WAWANESA",
+    "matchedName": "WAWANESA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WAWANESA EAST",
+    "matchedName": "WAWANESA EAST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG MCPHILLIPS SLEDGE BEDS",
+    "matchedName": "WINNIPEG MCPHILLIPS SLEDGE BEDS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG HURST RESERVOIR",
+    "matchedName": "WINNIPEG HURST RESERVOIR",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHITE HORSE PLAINS",
+    "matchedName": "WHITE HORSE PLAINS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARMAN 3",
+    "matchedName": "CARMAN 3",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALMASIPPI",
+    "matchedName": "ALMASIPPI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALTONA",
+    "matchedName": "ALTONA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALTONA CFAM",
+    "matchedName": "ALTONA CFAM",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALTONA SOUTH",
+    "matchedName": "ALTONA SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ANOLA",
+    "matchedName": "ANOLA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BIRDS HILL NURSERY",
+    "matchedName": "BIRDS HILL NURSERY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BIRDS HILL PINE RIDGE",
+    "matchedName": "BIRDS HILL PINE RIDGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BOISSEVAIN",
+    "matchedName": "BOISSEVAIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BOISSEVAIN 2",
+    "matchedName": "BOISSEVAIN 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARTWRIGHT 2",
+    "matchedName": "CARTWRIGHT 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARTWRIGHT",
+    "matchedName": "CARTWRIGHT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARMAN",
+    "matchedName": "CARMAN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARMAN 2",
+    "matchedName": "CARMAN 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARTWRIGHT",
+    "matchedName": "CARTWRIGHT",
+    "distanceKm": "7.38",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CRYSTAL CITY",
+    "matchedName": "CRYSTAL CITY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DACOTAH",
+    "matchedName": "DACOTAH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DARLINGFORD",
+    "matchedName": "DARLINGFORD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DARLINGFORD NORTH",
+    "matchedName": "DARLINGFORD NORTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DEERWOOD",
+    "matchedName": "DEERWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DOMAIN",
+    "matchedName": "DOMAIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DOMINION CITY",
+    "matchedName": "DOMINION CITY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DUFROST",
+    "matchedName": "DUFROST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DUGALD",
+    "matchedName": "DUGALD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELM CREEK",
+    "matchedName": "ELM CREEK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "EMERSON",
+    "matchedName": "EMERSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FANNYSTELLE",
+    "matchedName": "FANNYSTELLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FOXTON",
+    "matchedName": "FOXTON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MANITOU NORTH",
+    "matchedName": "MANITOU NORTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GLENLEA",
+    "matchedName": "GLENLEA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GLENORA",
+    "matchedName": "GLENORA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GNADENTHAL",
+    "matchedName": "GNADENTHAL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRAYSVILLE",
+    "matchedName": "GRAYSVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GREEN RIDGE",
+    "matchedName": "GREEN RIDGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GREENWOOD",
+    "matchedName": "GREENWOOD",
+    "distanceKm": "1544.52",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GREENWOOD",
+    "note": "Conflicting provinceCode (master: MB, official: BC), using official one",
+    "latMaster": 50.45,
+    "lonMaster": -97.2,
+    "latOfficial": 49.1,
+    "lonOfficial": -118.68333333333334
+  },
+  {
+    "stationName": "GRETNA (AUT)",
+    "matchedName": "GRETNA (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GROSSE ISLE",
+    "matchedName": "GROSSE ISLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GUNTON HATCHERY",
+    "matchedName": "GUNTON HATCHERY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HEADINGLY",
+    "matchedName": "HEADINGLY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HOLLAND",
+    "matchedName": "HOLLAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HOMEWOOD",
+    "matchedName": "HOMEWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KILLARNEY",
+    "matchedName": "KILLARNEY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LANDMARK",
+    "matchedName": "LANDMARK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LETELLIER",
+    "matchedName": "LETELLIER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MANITOU STRANGE",
+    "matchedName": "MANITOU STRANGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MANITOU",
+    "matchedName": "MANITOU",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MARCHAND",
+    "matchedName": "MARCHAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MARCHAND FORESTRY",
+    "matchedName": "MARCHAND FORESTRY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MARCHAND W4",
+    "matchedName": "MARCHAND W4",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MARQUETTE",
+    "matchedName": "MARQUETTE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MIAMI",
+    "matchedName": "MIAMI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MIAMI HAWKEN",
+    "matchedName": "MIAMI HAWKEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MIAMI ORCHARD",
+    "matchedName": "MIAMI ORCHARD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MIAMI THIESSEN",
+    "matchedName": "MIAMI THIESSEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOOSE LAKE",
+    "matchedName": "MOOSE LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORDEN",
+    "matchedName": "MORDEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORDEN CDA",
+    "matchedName": "MORDEN CDA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORDEN RADIO",
+    "matchedName": "MORDEN RADIO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORRIS",
+    "matchedName": "MORRIS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORRIS EXP ST",
+    "matchedName": "MORRIS EXP ST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORRIS 2",
+    "matchedName": "MORRIS 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MYRTLE",
+    "matchedName": "MYRTLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MYRTLE 2",
+    "matchedName": "MYRTLE 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NAROL",
+    "matchedName": "NAROL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STE ANNE SE5",
+    "matchedName": "STE ANNE SE5",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SNOWFLAKE 4NE",
+    "matchedName": "SNOWFLAKE 4NE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NINETTE COLE",
+    "matchedName": "NINETTE COLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NINETTE 1 NW",
+    "matchedName": "NINETTE 1 NW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NINETTE",
+    "matchedName": "NINETTE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NINGA",
+    "matchedName": "NINGA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NIVERVILLE",
+    "matchedName": "NIVERVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OAKBANK",
+    "matchedName": "OAKBANK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OTTERBURNE",
+    "matchedName": "OTTERBURNE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PEACE GARDENS",
+    "matchedName": "PEACE GARDENS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PEMBINA CROSSING",
+    "matchedName": "PEMBINA CROSSING",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PETERSFIELD",
+    "matchedName": "PETERSFIELD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PIGEON LAKE",
+    "matchedName": "PIGEON LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PILOT MOUND",
+    "matchedName": "PILOT MOUND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PILOT MOUND",
+    "matchedName": "PILOT MOUND",
+    "distanceKm": "11.07",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PILOT MOUND (AUT)",
+    "matchedName": "PILOT MOUND (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PILOT MOUND 2",
+    "matchedName": "PILOT MOUND 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINEY",
+    "matchedName": "PINEY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINEY",
+    "matchedName": "PINEY",
+    "distanceKm": "6.05",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PLUM COULEE",
+    "matchedName": "PLUM COULEE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RATHWELL",
+    "matchedName": "RATHWELL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RICHER",
+    "matchedName": "RICHER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROLAND",
+    "matchedName": "ROLAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSEAU RIVER",
+    "matchedName": "ROSEAU RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSEBANK",
+    "matchedName": "ROSEBANK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST ANDREWS A",
+    "matchedName": "ST ANDREWS A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSSER",
+    "matchedName": "ROSSER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STE ANNE",
+    "matchedName": "STE ANNE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST ANDREWS",
+    "matchedName": "ST ANDREWS A",
+    "distanceKm": "5.15",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST BONIFACE BENTWOOD",
+    "matchedName": "ST BONIFACE BENTWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST CLAUDE",
+    "matchedName": "ST CLAUDE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STE ELIZABETH",
+    "matchedName": "STE ELIZABETH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST EUSTACHE",
+    "matchedName": "ST EUSTACHE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST LABRE",
+    "matchedName": "ST LABRE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST MALO",
+    "matchedName": "ST MALO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST NORBERT",
+    "matchedName": "ST NORBERT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SELKIRK",
+    "matchedName": "SELKIRK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SNOWFLAKE",
+    "matchedName": "SNOWFLAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SPERLING",
+    "matchedName": "SPERLING",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SPRAGUE",
+    "matchedName": "SPRAGUE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STARBUCK",
+    "matchedName": "STARBUCK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STEINBACH",
+    "matchedName": "STEINBACH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STONEWALL",
+    "matchedName": "STONEWALL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STONY MOUNTAIN",
+    "matchedName": "STONY MOUNTAIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STONY MOUNTAIN",
+    "matchedName": "STONY MOUNTAIN",
+    "distanceKm": "7.32",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SUNDOWN",
+    "matchedName": "SUNDOWN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TEULON",
+    "matchedName": "TEULON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 10",
+    "matchedName": "TURTLE MOUNTAIN 10",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 11",
+    "matchedName": "TURTLE MOUNTAIN 11",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TURTLE MOUNTAIN 12",
+    "matchedName": "TURTLE MOUNTAIN 12",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VITA",
+    "matchedName": "VITA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VITA",
+    "matchedName": "VITA",
+    "distanceKm": "5.69",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG CHARLESWOOD LAGOON",
+    "matchedName": "WINNIPEG CHARLESWOOD LAGOON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WARREN",
+    "matchedName": "WARREN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHITEMOUTH LAKE",
+    "matchedName": "WHITEMOUTH LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG ANDERSON AVE",
+    "matchedName": "WINNIPEG ANDERSON AVE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG ASSINIBOINE PARK",
+    "matchedName": "WINNIPEG ASSINIBOINE PARK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG BLUMBERG GOLF COURSE",
+    "matchedName": "WINNIPEG BLUMBERG GOLF COURSE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG BROOKLANDS",
+    "matchedName": "WINNIPEG BROOKLANDS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG CHARLESWOOD",
+    "matchedName": "WINNIPEG CHARLESWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG FORT WHYTE",
+    "matchedName": "WINNIPEG FORT WHYTE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG CLARE AVE",
+    "matchedName": "WINNIPEG CLARE AVE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG E KILDONAN",
+    "matchedName": "WINNIPEG E KILDONAN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG FLORA AVE",
+    "matchedName": "WINNIPEG FLORA AVE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG RICHARDSON INT'L A",
+    "matchedName": "WINNIPEG RICHARDSON INT'L A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG PERTH",
+    "matchedName": "WINNIPEG PERTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG ST BONIFACE",
+    "matchedName": "WINNIPEG ST BONIFACE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG ST BONIFACE WW",
+    "matchedName": "WINNIPEG ST BONIFACE WW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG ST JAMES",
+    "matchedName": "WINNIPEG ST JAMES",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG ST JOHNS COLL",
+    "matchedName": "WINNIPEG ST JOHNS COLL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG SHERBROOK ST",
+    "matchedName": "WINNIPEG SHERBROOK ST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG SHERBURN ST",
+    "matchedName": "WINNIPEG SHERBURN ST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG STP",
+    "matchedName": "WINNIPEG STP",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG TRANSCONA",
+    "matchedName": "WINNIPEG TRANSCONA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG U OF MANITOBA",
+    "matchedName": "WINNIPEG U OF MANITOBA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG U OF MANITOBA",
+    "matchedName": "WINNIPEG U OF MANITOBA",
+    "distanceKm": "10.05",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG WINDSOR GOLF COURSE",
+    "matchedName": "WINNIPEG WINDSOR GOLF COURSE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG W KILDONAN",
+    "matchedName": "WINNIPEG W KILDONAN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WOODRIDGE",
+    "matchedName": "WOODRIDGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ZHODA",
+    "matchedName": "ZHODA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NORTH JULIUS",
+    "matchedName": "NORTH JULIUS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OSTENFELD",
+    "matchedName": "OSTENFELD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HODGSON 6N",
+    "matchedName": "HODGSON 6N",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ARBORG",
+    "matchedName": "ARBORG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEAUSEJOUR",
+    "matchedName": "BEAUSEJOUR",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEAUSEJOUR 2",
+    "matchedName": "BEAUSEJOUR 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BERENS RIVER",
+    "matchedName": "BERENS RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BERENS RIVER CS",
+    "matchedName": "BERENS RIVER CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BISSETT",
+    "matchedName": "BISSETT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BISSETT",
+    "matchedName": "BISSETT",
+    "distanceKm": "8.76",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRAINTREE 1",
+    "matchedName": "BRAINTREE 1",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRAINTREE 2",
+    "matchedName": "BRAINTREE 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BROAD VALLEY",
+    "matchedName": "BROAD VALLEY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BROKENHEAD",
+    "matchedName": "BROKENHEAD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHANNEL ISLAND",
+    "matchedName": "CHANNEL ISLAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHATFIELD",
+    "matchedName": "CHATFIELD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ELMA",
+    "matchedName": "ELMA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FALCON LAKE TCPL 45",
+    "matchedName": "FALCON LAKE TCPL 45",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FISHER BRANCH",
+    "matchedName": "FISHER BRANCH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FISHER BRANCH SOUTH",
+    "matchedName": "FISHER BRANCH SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FRASERWOOD",
+    "matchedName": "FRASERWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GEORGE ISLAND",
+    "matchedName": "GEORGE ISLAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GIMLI",
+    "matchedName": "GIMLI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GIMLI A",
+    "matchedName": "GIMLI",
+    "distanceKm": "2.35",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GIMLI WRB",
+    "matchedName": "GIMLI WRB",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRAND BEACH PARK",
+    "matchedName": "GRAND BEACH PARK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRAND RAPIDS",
+    "matchedName": "GRAND RAPIDS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRAND RAPIDS HYDRO",
+    "matchedName": "GRAND RAPIDS HYDRO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GREAT FALLS",
+    "matchedName": "GREAT FALLS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HNAUSA",
+    "matchedName": "HNAUSA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HODGSON",
+    "matchedName": "HODGSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HODGSON 2",
+    "matchedName": "HODGSON 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "INDIAN BAY",
+    "matchedName": "INDIAN BAY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MATHESON ISLAND",
+    "matchedName": "MATHESON ISLAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOSS SPUR",
+    "matchedName": "MOSS SPUR",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NARCISSE",
+    "matchedName": "NARCISSE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINAWA",
+    "matchedName": "PINAWA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINAWA WNRE",
+    "matchedName": "PINAWA WNRE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINE DOCK",
+    "matchedName": "PINE DOCK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINE FALLS",
+    "matchedName": "PINE FALLS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "POINTE DU BOIS",
+    "matchedName": "POINTE DU BOIS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RENNIE",
+    "matchedName": "RENNIE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RIVERTON",
+    "matchedName": "RIVERTON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSS",
+    "matchedName": "ROSS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STE GENEVIEVE",
+    "matchedName": "STE GENEVIEVE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SEVEN SISTERS FALLS",
+    "matchedName": "SEVEN SISTERS FALLS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SEVEN SISTERS OYES",
+    "matchedName": "SEVEN SISTERS OYES",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SPRUCE TCPL 43",
+    "matchedName": "SPRUCE TCPL 43",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HILBRE SOUTH",
+    "matchedName": "HILBRE SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GYPSUMVILLE",
+    "matchedName": "GYPSUMVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OAK POINT",
+    "matchedName": "OAK POINT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CAYER",
+    "matchedName": "CAYER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "COWAN",
+    "matchedName": "COWAN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ASHERN NORTHWEST",
+    "matchedName": "ASHERN NORTHWEST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FORK RIVER NORTH",
+    "matchedName": "FORK RIVER NORTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ALONSA",
+    "matchedName": "ALONSA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "AMARANTH",
+    "matchedName": "AMARANTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ASHERN",
+    "matchedName": "ASHERN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ASHVILLE",
+    "matchedName": "ASHVILLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "AUSTIN",
+    "matchedName": "AUSTIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEAVER",
+    "matchedName": "BEAVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BEAVER",
+    "matchedName": "BEAVER",
+    "distanceKm": "3.71",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BIG VALLEY",
+    "matchedName": "BIG VALLEY",
+    "distanceKm": "940.52",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BIG VALLEY",
+    "note": "Conflicting provinceCode (master: MB, official: AB), using official one",
+    "latMaster": 50.46666666666667,
+    "lonMaster": -99.45,
+    "latOfficial": 52.03333333333333,
+    "lonOfficial": -112.75
+  },
+  {
+    "stationName": "BIRCH RIVER",
+    "matchedName": "BIRCH RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BIRNIE",
+    "matchedName": "BIRNIE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAUPHIN",
+    "matchedName": "DAUPHIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAUPHIN A",
+    "matchedName": "DAUPHIN",
+    "distanceKm": "5.68",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAUPHIN NORTH",
+    "matchedName": "DAUPHIN NORTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAUPHIN SOUTH",
+    "matchedName": "DAUPHIN SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DELTA MARSH CS",
+    "matchedName": "DELTA MARSH CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DELTA WATERFOWL RS",
+    "matchedName": "DELTA WATERFOWL RS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DURBAN CDA EPF",
+    "matchedName": "DURBAN CDA EPF",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "EDDYSTONE",
+    "matchedName": "EDDYSTONE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ERIKSDALE",
+    "matchedName": "ERIKSDALE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ERIKSDALE 1",
+    "matchedName": "ERIKSDALE 1",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ERIKSDALE 2",
+    "matchedName": "ERIKSDALE 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ETHELBERT",
+    "matchedName": "ETHELBERT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FAIRFORD",
+    "matchedName": "FAIRFORD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FORK RIVER",
+    "matchedName": "FORK RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GILBERT PLAINS",
+    "matchedName": "GILBERT PLAINS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GILBERT PLAINS 2",
+    "matchedName": "GILBERT PLAINS 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HILBRE",
+    "matchedName": "HILBRE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GLADSTONE SOUTH",
+    "matchedName": "GLADSTONE SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GLADSTONE",
+    "matchedName": "GLADSTONE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GLADSTONE",
+    "matchedName": "GLADSTONE",
+    "distanceKm": "16.72",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRANDVIEW",
+    "matchedName": "GRANDVIEW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRANDVIEW CDA EPF",
+    "matchedName": "GRANDVIEW CDA EPF",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRASS RIVER",
+    "matchedName": "GRASS RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GYPSUMVILLE",
+    "matchedName": "GYPSUMVILLE",
+    "distanceKm": "13.08",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GYPSUMVILLE 2",
+    "matchedName": "GYPSUMVILLE 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GYPSUMVILLE EAST",
+    "matchedName": "GYPSUMVILLE EAST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GYPSUMVILLE OLENDER",
+    "matchedName": "GYPSUMVILLE OLENDER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KATRIME EXP ST",
+    "matchedName": "KATRIME EXP ST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KELWOOD",
+    "matchedName": "KELWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KENVILLE EXP ST",
+    "matchedName": "KENVILLE EXP ST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KERGWENAN",
+    "matchedName": "KERGWENAN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LAKE DAUPHIN",
+    "matchedName": "LAKE DAUPHIN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LAKELAND",
+    "matchedName": "LAKELAND",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LAKE MANITOBA NARROWS",
+    "matchedName": "LAKE MANITOBA NARROWS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LANGRUTH",
+    "matchedName": "LANGRUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LENSWOOD EXP ST",
+    "matchedName": "LENSWOOD EXP ST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LUNDAR",
+    "matchedName": "LUNDAR",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LUNDAR 4SW",
+    "matchedName": "LUNDAR 4SW",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACDONALD",
+    "matchedName": "MACDONALD A",
+    "distanceKm": "9.93",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACGREGOR",
+    "matchedName": "MACGREGOR",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACGREGOR",
+    "matchedName": "MACGREGOR",
+    "distanceKm": "8.56",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MAFEKING",
+    "matchedName": "MAFEKING",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MAGNET",
+    "matchedName": "MAGNET",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MCCREARY",
+    "matchedName": "MCCREARY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MEADOW PORTAGE",
+    "matchedName": "MEADOW PORTAGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOOSEHORN",
+    "matchedName": "MOOSEHORN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOOSEHORN",
+    "matchedName": "MOOSEHORN",
+    "distanceKm": "15.18",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOOSEHORN COOK",
+    "matchedName": "MOOSEHORN COOK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOUNTAIN GAP",
+    "matchedName": "MOUNTAIN GAP",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OCHRE RIVER",
+    "matchedName": "OCHRE RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NEEPAWA A",
+    "matchedName": "NEEPAWA A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NEEPAWA CSC",
+    "matchedName": "NEEPAWA CSC",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NEEPAWA MURRAY 6 SOUTHWEST",
+    "matchedName": "NEEPAWA MURRAY 6 SOUTHWEST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NEEPAWA WATER",
+    "matchedName": "NEEPAWA WATER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OCHRE RIVER SOUTH",
+    "matchedName": "OCHRE RIVER SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OVERFLOWING RIVER",
+    "matchedName": "OVERFLOWING RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PAULSON",
+    "matchedName": "PAULSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINE RIVER",
+    "matchedName": "PINE RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINE RIVER",
+    "matchedName": "PINE RIVER",
+    "distanceKm": "5.56",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINE RIVER",
+    "matchedName": "PINE RIVER",
+    "distanceKm": "19.54",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PLUMAS",
+    "matchedName": "PLUMAS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PLUMAS",
+    "matchedName": "PLUMAS",
+    "distanceKm": "6.59",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RIDING MOUNTAIN PARK",
+    "matchedName": "RIDING MOUNTAIN PARK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RORKETON WEST",
+    "matchedName": "RORKETON WEST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RUSSELL BARNARDO",
+    "matchedName": "RUSSELL BARNARDO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST AMBROISE",
+    "matchedName": "ST AMBROISE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST LAURENT",
+    "matchedName": "ST LAURENT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STE ROSE",
+    "matchedName": "STE ROSE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SIDNEY",
+    "matchedName": "SIDNEY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STEEP ROCK",
+    "matchedName": "STEEP ROCK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SWAN RIVER",
+    "matchedName": "SWAN RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SWAN RIVER 2",
+    "matchedName": "SWAN RIVER 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TOBARMORE",
+    "matchedName": "TOBARMORE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VOGAR",
+    "matchedName": "VOGAR",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MCCREARY",
+    "matchedName": "MCCREARY",
+    "distanceKm": "8.33",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEGOSIS",
+    "matchedName": "WINNIPEGOSIS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEGOSIS SOUTH EAST",
+    "matchedName": "WINNIPEGOSIS SOUTH EAST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CRANBERRY PORTAGE",
+    "matchedName": "CRANBERRY PORTAGE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FLIN FLON",
+    "matchedName": "FLIN FLON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FLIN FLON A",
+    "matchedName": "FLIN FLON",
+    "distanceKm": "15.84",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FLIN FLON CFB",
+    "matchedName": "FLIN FLON CFB",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NAMEW LAKE",
+    "matchedName": "NAMEW LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OONIKUP",
+    "matchedName": "OONIKUP",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PASQUIA PROJECT",
+    "matchedName": "PASQUIA PROJECT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THE PAS",
+    "matchedName": "THE PAS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THE PAS A",
+    "matchedName": "THE PAS",
+    "distanceKm": "19.36",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THE PAS CDA EPF",
+    "matchedName": "THE PAS CDA EPF",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WANLESS",
+    "matchedName": "WANLESS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NORWAY HOUSE FORESTRY",
+    "matchedName": "NORWAY HOUSE FORESTRY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NORWAY HOUSE A",
+    "matchedName": "NORWAY HOUSE A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BIRD",
+    "matchedName": "BIRD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BROCHET A",
+    "matchedName": "BROCHET A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHURCHILL A",
+    "matchedName": "CHURCHILL A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHURCHILL MARINE",
+    "matchedName": "CHURCHILL MARINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CONLIN LAKE WABOWDEN",
+    "matchedName": "CONLIN LAKE WABOWDEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CROSS LAKE A",
+    "matchedName": "CROSS LAKE",
+    "distanceKm": "1037.15",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CROSS LAKE A",
+    "note": "Conflicting provinceCode (master: MB, official: AB), using official one",
+    "latMaster": 54.61666666666667,
+    "lonMaster": -97.76666666666667,
+    "latOfficial": 54.632780277777776,
+    "lonOfficial": -113.9136125
+  },
+  {
+    "stationName": "CROSS LAKE JENPEG",
+    "matchedName": "CROSS LAKE JENPEG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DENBEIGH POINT",
+    "matchedName": "DENBEIGH POINT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GILLAM",
+    "matchedName": "GILLAM",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GILLAM A",
+    "matchedName": "GILLAM",
+    "distanceKm": "1.06",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GODS LAKE NARROWS A",
+    "matchedName": "GODS LAKE NARROWS A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ISLAND LAKE A",
+    "matchedName": "ISLAND LAKE A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KELSEY HYDRO",
+    "matchedName": "KELSEY HYDRO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KETTLE GS",
+    "matchedName": "KETTLE GS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LAURIE RIVER POWER SITE",
+    "matchedName": "LAURIE RIVER POWER SITE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LIMESTONE GS",
+    "matchedName": "LIMESTONE GS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LONG SPRUCE GEN STN",
+    "matchedName": "LONG SPRUCE GEN STN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LYNN LAKE",
+    "matchedName": "LYNN LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LYNN LAKE A",
+    "matchedName": "LYNN LAKE",
+    "distanceKm": "3.02",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MISSI FALLS",
+    "matchedName": "MISSI FALLS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MOAK LAKE",
+    "matchedName": "MOAK LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NORWAY HOUSE",
+    "matchedName": "NORWAY HOUSE A",
+    "distanceKm": "3.86",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NOTIGI",
+    "matchedName": "NOTIGI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OXFORD HOUSE A",
+    "matchedName": "OXFORD HOUSE A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PICKEREL NARROWS",
+    "matchedName": "PICKEREL NARROWS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PIKWITONEI A",
+    "matchedName": "PIKWITONEI A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PONTON",
+    "matchedName": "PONTON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORT NELSON",
+    "matchedName": "PORT NELSON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RED SUCKER LAKE A",
+    "matchedName": "RED SUCKER LAKE A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RUTTAN LAKE",
+    "matchedName": "RUTTAN LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RUTTAN LAKE",
+    "matchedName": "RUTTAN LAKE",
+    "distanceKm": "14.97",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHAMATTAWA A",
+    "matchedName": "SHAMATTAWA A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SNOW LAKE",
+    "matchedName": "SNOW LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOUTH BAY",
+    "matchedName": "SOUTH BAY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOUTH INDIAN LAKE",
+    "matchedName": "SOUTH INDIAN LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOUTH INDIAN LAKE AIRPORT",
+    "matchedName": "SOUTH INDIAN LAKE AIRPORT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THOMPSON A",
+    "matchedName": "THOMPSON A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THOMPSON NRC",
+    "matchedName": "THOMPSON NRC",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THOMPSON SOUTH",
+    "matchedName": "THOMPSON SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THOMPSON ZOO",
+    "matchedName": "THOMPSON ZOO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WABOWDEN",
+    "matchedName": "WABOWDEN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WABOWDEN",
+    "matchedName": "WABOWDEN",
+    "distanceKm": "1.07",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WHISKEY JACK",
+    "matchedName": "WHISKEY JACK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "YORK FACTORY",
+    "matchedName": "YORK FACTORY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DUCK BAY",
+    "matchedName": "DUCK BAY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROBLIN FRIESEN 3 NORTHWEST",
+    "matchedName": "ROBLIN FRIESEN 3 NORTHWEST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BALDUR 5 NORTHEAST",
+    "matchedName": "BALDUR 5 NORTHEAST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MELITA 2",
+    "matchedName": "MELITA 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SOURIS 2",
+    "matchedName": "SOURIS 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STONEWALL",
+    "matchedName": "STONEWALL",
+    "distanceKm": "11.18",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "POPLAR POINT",
+    "matchedName": "POPLAR POINT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KALEIDA",
+    "matchedName": "KALEIDA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROSE ISLE",
+    "matchedName": "ROSE ISLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST JEAN BAPTISTE",
+    "matchedName": "ST JEAN BAPTISTE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ST PIERRE JOLYS",
+    "matchedName": "ST PIERRE JOLYS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SCHANZENFELD",
+    "matchedName": "SCHANZENFELD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "STUARTBURN",
+    "matchedName": "STUARTBURN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TOLSTOI",
+    "matchedName": "TOLSTOI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GIMLI",
+    "matchedName": "GIMLI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LA BROQUERIE",
+    "matchedName": "LA BROQUERIE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BASSWOOD",
+    "matchedName": "BASSWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MULVILHILL",
+    "matchedName": "MULVILHILL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LEAF RAPIDS",
+    "matchedName": "LEAF RAPIDS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NAPINKA",
+    "matchedName": "NAPINKA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "INWOOD",
+    "matchedName": "INWOOD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GRAND RAPIDS (AUT)",
+    "matchedName": "GRAND RAPIDS (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINE RIVER",
+    "matchedName": "PINE RIVER",
+    "distanceKm": "19.54",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ISLAND LAKE (AUT)",
+    "matchedName": "ISLAND LAKE (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GEORGE ISLAND (AUT)",
+    "matchedName": "GEORGE ISLAND (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FISHER BRANCH (AUT)",
+    "matchedName": "FISHER BRANCH (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VICTORIA BEACH (AUT)",
+    "matchedName": "VICTORIA BEACH (AUT)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MELITA",
+    "matchedName": "MELITA",
+    "distanceKm": "5.87",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINAWA",
+    "matchedName": "PINAWA",
+    "distanceKm": "11.41",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SWAN RIVER RCS",
+    "matchedName": "SWAN RIVER RCS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SPRAGUE",
+    "matchedName": "SPRAGUE",
+    "distanceKm": "0.78",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FLIN FLON",
+    "matchedName": "FLIN FLON",
+    "distanceKm": "15.84",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GILLAM",
+    "matchedName": "GILLAM",
+    "distanceKm": "1.02",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GIMLI INDUSTRIAL PARK",
+    "matchedName": "GIMLI INDUSTRIAL PARK",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHURCHILL UA",
+    "matchedName": "CHURCHILL UA",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OAKPOINT MARINE",
+    "matchedName": "OAKPOINT MARINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BACHELORS ISLAND MARINE",
+    "matchedName": "BACHELORS ISLAND MARINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORTAGE SOUTHPORT",
+    "matchedName": "PORTAGE SOUTHPORT A",
+    "distanceKm": "1.30",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HUNTERS POINT MARINE",
+    "matchedName": "HUNTERS POINT MARINE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SHOAL LAKE CS",
+    "matchedName": "SHOAL LAKE CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OAKVILLE",
+    "matchedName": "OAKVILLE",
+    "distanceKm": "1569.37",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "OAKVILLE",
+    "note": "Conflicting provinceCode (master: MB, official: ON), using official one",
+    "latMaster": 49.9,
+    "lonMaster": -98.03333333333333,
+    "latOfficial": 43.416666666666664,
+    "lonOfficial": -79.68333333333334
+  },
+  {
+    "stationName": "ROSEISLE",
+    "matchedName": "ROSEISLE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARMAN U OF M CS",
+    "matchedName": "CARMAN U OF M CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAUPHIN CS",
+    "matchedName": "DAUPHIN CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "EMERSON AUT",
+    "matchedName": "EMERSON AUT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BERENS RIVER A",
+    "matchedName": "BERENS RIVER",
+    "distanceKm": "1.42",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG HANGARLINE ROAD",
+    "matchedName": "WINNIPEG HANGARLINE ROAD",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ROBLIN",
+    "matchedName": "ROBLIN",
+    "distanceKm": "5.74",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG PACIFIC AVENUE",
+    "matchedName": "WINNIPEG PACIFIC AVENUE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG A CS",
+    "matchedName": "WINNIPEG A CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG SOUTH",
+    "matchedName": "WINNIPEG SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG A FIRE HALL",
+    "matchedName": "WINNIPEG A FIRE HALL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FOXWARREN NORTH",
+    "matchedName": "FOXWARREN NORTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CARBERRY CS",
+    "matchedName": "CARBERRY CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GIMLI HARBOUR CS",
+    "matchedName": "GIMLI HARBOUR CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CLANWILLIAM",
+    "matchedName": "CLANWILLIAM",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SNOW LAKE ANDERSON BAY",
+    "matchedName": "SNOW LAKE ANDERSON BAY",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG THE FORKS",
+    "matchedName": "WINNIPEG THE FORKS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KELSEY DAM CS",
+    "matchedName": "KELSEY DAM CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WALKER LAKE",
+    "matchedName": "WALKER LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WASKWATIM LAKE",
+    "matchedName": "WASKWATIM LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MORDEN CDA CS",
+    "matchedName": "MORDEN CDA CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BURNTWOOD RIVER",
+    "matchedName": "BURNTWOOD RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LITTLE BEAVER RIVER",
+    "matchedName": "LITTLE BEAVER RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MISSI",
+    "matchedName": "MISSI",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "RAT RIVER",
+    "matchedName": "RAT RIVER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "REINDEER LAKE",
+    "matchedName": "REINDEER LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SPLIT LAKE",
+    "matchedName": "SPLIT LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DEERWOOD RCS",
+    "matchedName": "DEERWOOD RCS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TADOULE LAKE CS",
+    "matchedName": "TADOULE LAKE CS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LUNDAR EAST",
+    "matchedName": "LUNDAR EAST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LA BROQUERIE",
+    "matchedName": "LA BROQUERIE",
+    "distanceKm": "1.30",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LANGRUTH WEST",
+    "matchedName": "LANGRUTH WEST",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "MACGREGOR SOUTH",
+    "matchedName": "MACGREGOR SOUTH",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WABOWDEN 2",
+    "matchedName": "WABOWDEN 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FORT WHYTE CENTRE",
+    "matchedName": "FORT WHYTE CENTRE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG CHARLESWOOD 2",
+    "matchedName": "WINNIPEG CHARLESWOOD 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG GRACE HOSPITAL",
+    "matchedName": "WINNIPEG GRACE HOSPITAL",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG CANGENE",
+    "matchedName": "WINNIPEG CANGENE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG WTC STAPON",
+    "matchedName": "WINNIPEG WTC STAPON",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG FED LAB",
+    "matchedName": "WINNIPEG FED LAB",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GREAT FALLS CLIMATE",
+    "matchedName": "GREAT FALLS CLIMATE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CFB SHILO CCOC",
+    "matchedName": "CFB SHILO CCOC",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PINAWA CANWARN",
+    "matchedName": "PINAWA CANWARN",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THE PAS CLIMATE",
+    "matchedName": "THE PAS CLIMATE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NORWAY HOUSE",
+    "matchedName": "NORWAY HOUSE A",
+    "distanceKm": "1.85",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LYNN LAKE",
+    "matchedName": "LYNN LAKE",
+    "distanceKm": "3.02",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHURCHILL CLIMATE",
+    "matchedName": "CHURCHILL CLIMATE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GIMLI CLIMATE",
+    "matchedName": "GIMLI CLIMATE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "PORTAGE ROMANCE",
+    "matchedName": "PORTAGE ROMANCE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "VIRDEN WATER",
+    "matchedName": "VIRDEN WATER",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG RICHARDSON AWOS",
+    "matchedName": "WINNIPEG RICHARDSON AWOS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHURCHILL AWOS",
+    "matchedName": "CHURCHILL AWOS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "EMERSON AUTO",
+    "matchedName": "EMERSON AUTO",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CYPRESS RIVER RCS",
+    "matchedName": "CYPRESS RIVER RCS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LYNN LAKE",
+    "matchedName": "LYNN LAKE",
+    "distanceKm": "3.02",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "LYNN LAKE RCS",
+    "matchedName": "LYNN LAKE RCS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "DAUPHIN",
+    "matchedName": "DAUPHIN",
+    "distanceKm": "5.63",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "NORWAY HOUSE",
+    "matchedName": "NORWAY HOUSE A",
+    "distanceKm": "1.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHURCHILL A",
+    "matchedName": "CHURCHILL A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "TADOULE LAKE",
+    "matchedName": "TADOULE LAKE",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRANDON RCS",
+    "matchedName": "BRANDON RCS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CHURCHILL A",
+    "matchedName": "CHURCHILL A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRANDON MUNI A",
+    "matchedName": "BRANDON MUNI A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "KLEEFELD (MAFRI)",
+    "matchedName": "KLEEFELD (MAFRI)",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG INTL A",
+    "matchedName": "WINNIPEG INTL A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THE PAS A",
+    "matchedName": "THE PAS",
+    "distanceKm": "20.11",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FLIN FLON A",
+    "matchedName": "FLIN FLON",
+    "distanceKm": "16.26",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GILLAM A",
+    "matchedName": "GILLAM",
+    "distanceKm": "1.09",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "HODGSON 3",
+    "matchedName": "HODGSON 3",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "FLIN FLON A",
+    "matchedName": "FLIN FLON",
+    "distanceKm": "16.26",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THOMPSON A",
+    "matchedName": "THOMPSON A",
+    "distanceKm": "0.15",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BERENS RIVER A",
+    "matchedName": "BERENS RIVER",
+    "distanceKm": "1.43",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BERENS RIVER A",
+    "matchedName": "BERENS RIVER",
+    "distanceKm": "1.43",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ISLAND LAKE A",
+    "matchedName": "ISLAND LAKE A",
+    "distanceKm": "0.84",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "GILLAM A",
+    "matchedName": "GILLAM",
+    "distanceKm": "1.09",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ISLAND LAKE A",
+    "matchedName": "ISLAND LAKE A",
+    "distanceKm": "0.84",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THE PAS A",
+    "matchedName": "THE PAS",
+    "distanceKm": "20.11",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "CROSS LAKE JENPEG 2",
+    "matchedName": "CROSS LAKE JENPEG 2",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "THOMPSON AIRPORT",
+    "matchedName": "THOMPSON AIRPORT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "SNOW LAKE",
+    "matchedName": "SNOW LAKE",
+    "distanceKm": "1.45",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "JENPEG",
+    "matchedName": "JENPEG",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "ISLAND LAKE AIRPORT",
+    "matchedName": "ISLAND LAKE AIRPORT",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "WINNIPEG ST ANDREWS",
+    "matchedName": "WINNIPEG ST ANDREWS",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  },
+  {
+    "stationName": "BRANDON MUNI A",
+    "matchedName": "BRANDON MUNI A",
+    "distanceKm": "0.00",
+    "note": "Exact normalized name match"
+  }
+]
