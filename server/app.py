@@ -67,6 +67,13 @@ def handle_method_not_allowed(_error):
         return jsonify({'error': 'Method Not Allowed'}), 405
     return _error
 
+@app.errorhandler(400)
+def handle_bad_request(_error):
+    # Prevent Flask's default HTML 400 page for API routes (often triggered by invalid JSON).
+    if request.path.startswith("/api"):
+        return jsonify({'error': 'Bad Request'}), 400
+    return _error
+
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
@@ -337,7 +344,7 @@ def find_nearest_station_with_idf(station_id):
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    payload = request.get_json() or {}
+    payload = request.get_json(silent=True) or {}
     email = normalize_email(payload.get('email'))
     username = payload.get('username')
     password = payload.get('password')
@@ -390,7 +397,7 @@ def register():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    payload = request.get_json() or {}
+    payload = request.get_json(silent=True) or {}
     identifier = payload.get('email') or payload.get('username')
     password = payload.get('password')
 
