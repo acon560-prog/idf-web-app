@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { buildApiUrl } from "../utils/apiConfig";
+import { buildApiUrl, readJsonResponse } from "../utils/apiConfig";
 import { useAuth } from "../context/AuthContext.jsx";
 
 function Signup() {
@@ -32,7 +32,7 @@ function Signup() {
         }),
       });
 
-      const data = await response.json();
+      const data = await readJsonResponse(response, "Sign up failed.");
 
       if (!response.ok) throw new Error(data.error || "Sign up failed.");
 
