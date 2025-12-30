@@ -16,7 +16,9 @@
   },
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "npm --prefix client install && npm --prefix client run build",
+    "postinstall": "npm --prefix client install && npm --prefix client run build"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
