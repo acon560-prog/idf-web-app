@@ -12,6 +12,7 @@ import hashlib
 import stripe
 import bcrypt
 import logging
+from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -53,16 +54,32 @@ CORS(
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
+    # Never serve the SPA shell for API routes.
+    # Without this, missing API endpoints (or wrong HTTP methods) can return HTML,
+    # which breaks the frontend when it tries to parse JSON.
+    if request.path.startswith("/api"):
+        return jsonify({'error': 'Not Found'}), 404
     file_path = os.path.join(app.static_folder, path)
     if path and os.path.exists(file_path):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, 'index.html')
+
 @app.errorhandler(404)
 def handle_not_found(_error):
     if request.path.startswith("/api"):
         return jsonify({'error': 'Not Found'}), 404
     return send_from_directory(app.static_folder, 'index.html')
-
+@app.errorhandler(400)
+def handle_bad_request(_error):
+    if request.path.startswith("/api"):
+        return jsonify({'error': 'Bad Request'}), 400
+    return _error
+@app.errorhandler(405)
+def handle_method_not_allowed(_error):
+    # Prevent Flask's default HTML 405 page for API routes.
+    if request.path.startswith("/api"):
+        return jsonify({'error': 'Method Not Allowed'}), 405
+    return _error
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
 print("Using MONGO_URI:", app.config['MONGO_URI'])
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
@@ -510,33 +527,34 @@ def find_nearest_station_with_idf(station_id):
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    payload = request.get_json() or {}
+    payload = request.get_json(silent=True) or {}
     email = normalize_email(payload.get('email'))
-    username = payload.get('username')
+ 
+    raw_username = payload.get('username')
+    username = (raw_username or '').strip() or None
+ 
     password = payload.get('password')
-    name = payload.get('name', '')
-
+    name = (payload.get('name') or '').strip()
+ 
     if not password:
         return jsonify({'error': 'Password is required.'}), 400
-
-    if email:
-        if users_collection.find_one({'email': email}):
-            return jsonify({'error': 'An account with this email already exists.'}), 409
-    if username:
-        if users_collection.find_one({'username': username}):
-            return jsonify({'error': 'An account with this username already exists.'}), 409
-
+ 
     if not email and not username:
         return jsonify({'error': 'An email or username is required.'}), 400
-
+ 
+    if email and users_collection.find_one({'email': email}):
+        return jsonify({'error': 'An account with this email already exists.'}), 409
+ 
+    if username and users_collection.find_one({'username': username}):
+        return jsonify({'error': 'An account with this username already exists.'}), 409
+ 
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     now = utcnow()
     trial_end = now + timedelta(days=7)
     role = 'admin' if email and email == ADMIN_EMAIL else 'user'
-
+ 
     user_doc = {
-        'email': email if email else None,
-        'username': username if username else None,
+        'email': email or None,
         'name': name,
         'passwordHash': password_hash,
         'subscriptionStatus': 'trialing',
@@ -548,13 +566,17 @@ def register():
         'updatedAt': now,
         'role': role,
     }
-
-    result = users_collection.insert_one(user_doc)
+    if username:
+        user_doc['username'] = username
+ 
+    try:
+        result = users_collection.insert_one(user_doc)
+    except DuplicateKeyError:
+        return jsonify({'error': 'Account already exists.'}), 409
+ 
     user_doc['_id'] = result.inserted_id
-    user_doc['role'] = role
-
     tokens = generate_tokens(user_doc)
-
+ 
     return jsonify({
         'user': serialize_user(user_doc),
         **tokens,
@@ -563,7 +585,7 @@ def register():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    payload = request.get_json() or {}
+    payload = request.get_json(silent=True) or {}
     identifier = payload.get('email') or payload.get('username')
     password = payload.get('password')
 
