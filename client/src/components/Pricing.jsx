@@ -7,6 +7,7 @@ const plans = [
     name: "Consultant Monthly",
     price: "$59",
     cadence: "per month",
+    trial: "7-day free trial",
     description: "Unlimited station lookups, IDF curves, and PDF exports.",
     perks: [
       "Unlimited rainfall station access",
@@ -18,6 +19,7 @@ const plans = [
     name: "Municipal Annual",
     price: "$499",
     cadence: "per year",
+    trial: "7-day free trial",
     description: "Best for municipalities and agencies needing broad access.",
     perks: [
       "Up to 10 seats included",
@@ -55,6 +57,12 @@ const Pricing = () => (
               <span className="text-4xl font-bold">{plan.price}</span>
               <span className="text-sm text-slate-500">{plan.cadence}</span>
             </div>
+            {plan.trial && (
+              <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <div className="text-sm font-semibold text-slate-900">{plan.trial}</div>
+                <div className="mt-0.5 text-xs text-slate-600">Try everything before you’re billed.</div>
+              </div>
+            )}
             <p className="mt-4 text-sm text-slate-600">{plan.description}</p>
 
             <ul className="mt-6 space-y-3 text-sm text-slate-600">
@@ -74,7 +82,7 @@ const Pricing = () => (
                   : "border border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 focus:ring-slate-400"
               }`}
             >
-              Start free trial
+              Start 7-day free trial
             </Link>
           </Card>
         ))}
