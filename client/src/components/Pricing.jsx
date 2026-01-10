@@ -67,8 +67,9 @@ const Pricing = () => {
             {plan.trial && (
               <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="text-sm font-semibold text-slate-900">{plan.trial}</div>
-              <div className="mt-0.5 text-xs text-slate-600">Try everything before you’re billed.</div>
-                </div>
+                <div className="mt-0.5 text-xs text-slate-600">Try everything before you’re billed.
+            </div>
+              </div>
             )}
             <p className="mt-4 text-sm text-slate-600">{plan.description}</p>
 
