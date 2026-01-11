@@ -9,6 +9,7 @@ from email.message import EmailMessage
 from datetime import datetime, timedelta
 
 import bcrypt
+import stripe
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -67,6 +68,16 @@ users_collection = mongo.db.users
 submissions_collection = mongo.db.submissions
 ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
 
+# Stripe config (required for card-based trials)
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
+STRIPE_PRICE_CONSULTANT_MONTHLY = os.environ.get("STRIPE_PRICE_CONSULTANT_MONTHLY")
+STRIPE_PRICE_MUNICIPAL_ANNUAL = os.environ.get("STRIPE_PRICE_MUNICIPAL_ANNUAL")
+FRONTEND_URL = (os.environ.get("FRONTEND_URL") or "http://localhost:3000").rstrip("/")
+
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
+
 # Define the provinces to load. Add more as you get the data for them.
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
 
@@ -114,6 +125,7 @@ def serialize_user(user_doc):
         'trialStartsAt': isoformat_or_none(user_doc.get('trialStartsAt')),
         'trialEndsAt': isoformat_or_none(user_doc.get('trialEndsAt')),
         'stripeCustomerId': user_doc.get('stripeCustomerId'),
+        'trialUsed': bool(user_doc.get('trialUsed')),
         'role': role,
     }
 
@@ -182,10 +194,38 @@ def user_has_active_access(user_doc):
                 {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
             )
             return False
-        # Legacy users might not have a recorded trial end. Treat as active trial.
-        return True
+        # If trial end is unknown, treat as expired for safety (no free access without an end date).
+        users_collection.update_one(
+            {'_id': user_doc['_id']},
+            {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
+        )
+        return False
 
     return False
+
+def trial_already_used(user_doc) -> bool:
+    """
+    One-trial-per-email enforcement.
+    Treat any existing trial history as "used", even if legacy documents don't have trialUsed flag.
+    """
+    if not user_doc:
+        return False
+    if user_doc.get('trialUsed') is True:
+        return True
+    if isinstance(user_doc.get('trialStartsAt'), datetime):
+        return True
+    if user_doc.get('subscriptionStatus') in ('trialing', 'trial_expired', 'active', 'canceled', 'past_due', 'incomplete'):
+        # If they've ever had a subscription lifecycle state recorded, don't grant another trial.
+        return True
+    return False
+
+def ensure_user_indexes():
+    try:
+        users_collection.create_index('email', unique=True, sparse=True)
+    except Exception as exc:
+        print(f"Failed to ensure user indexes: {exc}")
+
+ensure_user_indexes()
 
 
 def log_submission_to_file(name, email, message):
@@ -346,7 +386,6 @@ def register():
 
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     now = datetime.utcnow()
-    trial_end = now + timedelta(days=7)
     role = 'admin' if email and email == ADMIN_EMAIL else 'user'
 
     user_doc = {
@@ -354,11 +393,13 @@ def register():
         'username': username if username else None,
         'name': name,
         'passwordHash': password_hash,
-        'subscriptionStatus': 'trialing',
+        # Trial is started only after card collection via Stripe Checkout.
+        'subscriptionStatus': 'trial_pending',
         'plan': None,
         'stripeCustomerId': None,
-        'trialStartsAt': now,
-        'trialEndsAt': trial_end,
+        'trialUsed': False,
+        'trialStartsAt': None,
+        'trialEndsAt': None,
         'createdAt': now,
         'updatedAt': now,
         'role': role,
@@ -374,6 +415,186 @@ def register():
         'user': serialize_user(user_doc),
         **tokens,
     }), 201
+
+
+def _price_id_for_plan(plan: str):
+    plan = (plan or "").strip().lower()
+    if plan in ("consultant", "consultant_monthly", "monthly"):
+        return STRIPE_PRICE_CONSULTANT_MONTHLY, "consultant_monthly"
+    if plan in ("municipal", "municipal_annual", "annual"):
+        return STRIPE_PRICE_MUNICIPAL_ANNUAL, "municipal_annual"
+    return None, None
+
+
+@app.route('/api/billing/create-checkout-session', methods=['POST'])
+@jwt_required()
+def create_checkout_session():
+    """
+    Creates a Stripe Checkout session for a subscription with a 7-day trial.
+    Requires a payment method up-front (card on file), then starts the trial.
+
+    Enforces one trial per email: if the user has ever used a trial, we create a paid subscription session (no trial).
+    """
+    if not STRIPE_SECRET_KEY:
+        return jsonify({'error': 'Stripe is not configured.'}), 500
+
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'Authentication required.'}), 401
+
+    payload = request.get_json() or {}
+    plan = payload.get('plan') or 'consultant_monthly'
+    price_id, plan_key = _price_id_for_plan(plan)
+    if not price_id:
+        return jsonify({'error': 'Unknown plan.'}), 400
+    if not STRIPE_PRICE_CONSULTANT_MONTHLY or not STRIPE_PRICE_MUNICIPAL_ANNUAL:
+        return jsonify({'error': 'Stripe price IDs are not configured.'}), 500
+
+    email = normalize_email(user_doc.get('email'))
+    if not email:
+        return jsonify({'error': 'A valid email is required for billing.'}), 400
+
+    used_trial = trial_already_used(user_doc)
+
+    success_url = f"{FRONTEND_URL}/start?checkout=success"
+    cancel_url = f"{FRONTEND_URL}/?checkout=cancel"
+
+    session = stripe.checkout.Session.create(
+        mode="subscription",
+        customer_email=email,
+        client_reference_id=str(user_doc["_id"]),
+        line_items=[{"price": price_id, "quantity": 1}],
+        subscription_data={
+            # Require card collection now; trial starts after checkout.
+            "trial_period_days": 0 if used_trial else 7,
+            "metadata": {
+                "userId": str(user_doc["_id"]),
+                "plan": plan_key,
+                "usedTrial": "true" if used_trial else "false",
+            },
+        },
+        payment_method_collection="always",
+        allow_promotion_codes=True,
+        success_url=success_url,
+        cancel_url=cancel_url,
+    )
+
+    return jsonify({"url": session.url})
+
+
+@app.route('/api/billing/stripe-webhook', methods=['POST'])
+def stripe_webhook():
+    """
+    Stripe webhook handler to sync subscription/trial status to MongoDB.
+    """
+    if not STRIPE_WEBHOOK_SECRET:
+        return jsonify({'error': 'Stripe webhook secret not configured.'}), 500
+
+    payload = request.data
+    sig_header = request.headers.get("Stripe-Signature")
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+    except Exception as exc:
+        print(f"Stripe webhook verification failed: {exc}")
+        return jsonify({'error': 'Invalid signature'}), 400
+
+    event_type = event.get("type")
+    data_object = (event.get("data") or {}).get("object") or {}
+    now = datetime.utcnow()
+
+    def _update_user_by_email_or_id(user_id: str | None, email: str | None, updates: dict):
+        query = None
+        if user_id:
+            try:
+                query = {"_id": ObjectId(user_id)}
+            except Exception:
+                query = None
+        if not query and email:
+            query = {"email": normalize_email(email)}
+        if not query:
+            return
+        users_collection.update_one(query, {"$set": {**updates, "updatedAt": now}})
+
+    try:
+        if event_type == "checkout.session.completed":
+            # Checkout session includes the subscription and customer IDs.
+            session = data_object
+            subscription_id = session.get("subscription")
+            customer_id = session.get("customer")
+            email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+            user_id = session.get("client_reference_id")
+
+            trial_start = None
+            trial_end = None
+            subscription_status = None
+            plan_key = None
+
+            if subscription_id:
+                sub = stripe.Subscription.retrieve(subscription_id)
+                subscription_status = sub.get("status")
+                trial_start_unix = sub.get("trial_start")
+                trial_end_unix = sub.get("trial_end")
+                if trial_start_unix:
+                    trial_start = datetime.utcfromtimestamp(trial_start_unix)
+                if trial_end_unix:
+                    trial_end = datetime.utcfromtimestamp(trial_end_unix)
+                plan_key = (sub.get("metadata") or {}).get("plan")
+
+            updates = {
+                "stripeCustomerId": customer_id,
+                "stripeSubscriptionId": subscription_id,
+                "plan": plan_key,
+                "subscriptionStatus": subscription_status or "active",
+            }
+
+            # Mark trial as used if a trial was granted (or if it was ever started).
+            if trial_end:
+                updates["trialStartsAt"] = trial_start or now
+                updates["trialEndsAt"] = trial_end
+                updates["trialUsed"] = True
+                # If Stripe says trialing, keep it; otherwise it might already be active.
+                if updates["subscriptionStatus"] == "trialing":
+                    pass
+            else:
+                # No trial on this checkout (e.g., user already used it)
+                updates["trialUsed"] = True if trial_already_used(get_user_by_id(user_id) if user_id else None) else bool(
+                    updates.get("trialUsed")
+                )
+
+            _update_user_by_email_or_id(user_id, email, updates)
+
+        elif event_type in ("customer.subscription.updated", "customer.subscription.deleted", "customer.subscription.created"):
+            sub = data_object
+            customer_id = sub.get("customer")
+            subscription_id = sub.get("id")
+            status = sub.get("status")
+            trial_start_unix = sub.get("trial_start")
+            trial_end_unix = sub.get("trial_end")
+            plan_key = (sub.get("metadata") or {}).get("plan")
+
+            updates = {
+                "stripeCustomerId": customer_id,
+                "stripeSubscriptionId": subscription_id,
+                "subscriptionStatus": status,
+                "plan": plan_key,
+            }
+
+            if trial_start_unix:
+                updates["trialStartsAt"] = datetime.utcfromtimestamp(trial_start_unix)
+            if trial_end_unix:
+                updates["trialEndsAt"] = datetime.utcfromtimestamp(trial_end_unix)
+                updates["trialUsed"] = True
+
+            users_collection.update_one(
+                {"stripeCustomerId": customer_id},
+                {"$set": {**updates, "updatedAt": now}},
+            )
+
+    except Exception as exc:
+        print(f"Stripe webhook handler error ({event_type}): {exc}")
+        return jsonify({'error': 'Webhook handler error'}), 500
+
+    return jsonify({'received': True})
 
 
 @app.route('/api/auth/login', methods=['POST'])
