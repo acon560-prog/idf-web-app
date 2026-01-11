@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import Card from "./ui/Card";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { buildApiUrl, readJsonResponse } from "../utils/apiConfig.js";
 
 const plans = [
   {
@@ -9,6 +10,7 @@ const plans = [
     price: "$59",
     cadence: "per month",
     trial: "7-day free trial",
+    planKey: "consultant_monthly",
     description: "Unlimited station lookups, IDF curves, and PDF exports.",
     perks: [
       "Unlimited rainfall station access",
@@ -21,6 +23,7 @@ const plans = [
     price: "$499",
     cadence: "per year",
     trial: "7-day free trial",
+    planKey: "municipal_annual",
     description: "Best for municipalities and agencies needing broad access.",
     perks: [
       "Up to 10 seats included",
@@ -32,10 +35,52 @@ const plans = [
 ];
 
 const Pricing = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const [checkoutPlanKey, setCheckoutPlanKey] = useState(null);
+  const [checkoutError, setCheckoutError] = useState("");
 
   const primaryHref = user ? "/start" : "/signup";
-  const primaryLabel = user ? "Subscribe to unlock" : "Start 7-day free trial";
+  const primaryLabel = user ? "Continue to checkout" : "Create account";
+
+  const startCheckout = async (planKey) => {
+    if (!user) return;
+    if (!token) {
+      window.location.assign("/login");
+      return;
+    }
+
+    try {
+      setCheckoutError("");
+      setCheckoutPlanKey(planKey || "consultant_monthly");
+
+      const res = await fetch(buildApiUrl("/billing/create-checkout-session"), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ plan: planKey || "consultant_monthly" }),
+      });
+
+      if (!res.ok) {
+        const data = await readJsonResponse(res, "Unable to start checkout.");
+        setCheckoutError(data?.error || "Unable to start checkout.");
+        return;
+      }
+
+      const data = await readJsonResponse(res, "Unable to start checkout.");
+      if (!data?.url) {
+        setCheckoutError("Unable to start checkout.");
+        return;
+      }
+
+      window.location.assign(data.url);
+    } catch (err) {
+      setCheckoutError(err?.message || "Unable to start checkout.");
+    } finally {
+      setCheckoutPlanKey(null);
+    }
+  };
 
   return (
     <section className="bg-white py-24">
@@ -81,16 +126,37 @@ const Pricing = () => {
                 ))}
               </ul>
 
-              <Link
-                to={primaryHref}
-                className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                  plan.highlight
-                    ? "bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500"
-                    : "border border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 focus:ring-slate-400"
-                }`}
-              >
-                {primaryLabel}
-              </Link>
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => startCheckout(plan.planKey)}
+                  disabled={checkoutPlanKey === plan.planKey}
+                  className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70 ${
+                    plan.highlight
+                      ? "bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500"
+                      : "border border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 focus:ring-slate-400"
+                  }`}
+                >
+                  {checkoutPlanKey === plan.planKey ? "Opening checkout…" : primaryLabel}
+                </button>
+              ) : (
+                <Link
+                  to={primaryHref}
+                  className={`mt-8 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                    plan.highlight
+                      ? "bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500"
+                      : "border border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 focus:ring-slate-400"
+                  }`}
+                >
+                  {primaryLabel}
+                </Link>
+              )}
+
+              {checkoutError && user && (
+                <p className="mt-3 text-sm text-rose-600" role="alert">
+                  {checkoutError}
+                </p>
+              )}
             </Card>
           ))}
         </div>
