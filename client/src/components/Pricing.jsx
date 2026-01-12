@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 const plans = [
   {
     name: "Consultant Monthly",
-    price: "$59",
+    price: "$32",
     cadence: "per month",
     trial: "7-day free trial",
     description: "Unlimited station lookups, IDF curves, and PDF exports.",
@@ -18,7 +18,7 @@ const plans = [
   },
   {
     name: "Municipal Annual",
-    price: "$499",
+    price: "$300",
     cadence: "per year",
     trial: "7-day free trial",
     description: "Best for municipalities and agencies needing broad access.",
@@ -35,7 +35,7 @@ const Pricing = () => {
   const { user } = useAuth();
 
   const primaryHref = user ? "/start" : "/signup";
-  const primaryLabel = user ? "Subscribe to unlock" : "Start 7-day free trial";
+  const primaryLabel = user ? "Subscribe to unlock" : "Create account";
 
   return (
     <section className="bg-white py-24">
