@@ -1,0 +1,16 @@
+.git
+**/.git
+
+**/node_modules
+npm-debug.log
+yarn-error.log
+
+server/data/**/*.pdf
+server/data/**/*.png
+server/data/**/*.zip
+server/data/**/__pycache__
+server/data/**/*.pyc
+server/__pycache__
+
+.env
+**/.env

@@ -269,40 +269,6 @@ def user_has_active_access(user_doc):
 
     return False
 
-@app.route("/api/billing/create-checkout-session", methods=["POST"])
-@jwt_required()
-def create_checkout_session():
-    user_doc = get_current_user()
-    if not user_doc:
-        return jsonify({"error": "Authentication required."}), 401
-
-    payload = request.get_json() or {}
-    plan = (payload.get("plan") or "").lower().strip()
-    price_id = STRIPE_PRICE_MAP.get(plan) or ""
-    if not price_id:
-        return jsonify({"error": "Unknown plan."}), 400
-
-    try:
-        _require_stripe_enabled()
-        customer_id = _ensure_stripe_customer(user_doc)
-        frontend_base = _frontend_base_url()
-        success_url = f"{frontend_base}/start?session_id={{CHECKOUT_SESSION_ID}}"
-        cancel_url = f"{frontend_base}/pricing"
-
-        session = stripe.checkout.Session.create(
-            mode="subscription",
-            customer=customer_id,
-            client_reference_id=str(user_doc["_id"]),
-            line_items=[{"price": price_id, "quantity": 1}],
-            success_url=success_url,
-            cancel_url=cancel_url,
-            allow_promotion_codes=True,
-        )
-        return jsonify({"checkoutUrl": session.url})
-    except Exception as exc:
-        print(f"Failed to create Stripe checkout session: {exc}")
-        return jsonify({"error": "Failed to create checkout session."}), 500
-
 
 @app.route("/api/billing/create-portal-session", methods=["POST"])
 @jwt_required()
@@ -874,7 +840,7 @@ def reset_password():
     )
 
     return jsonify({'message': 'Password updated successfully.'})
-@app.route('/api/billing/create-checkout-session', methods=['POST'])
+@app.route('/api/billing/create-checkout-session-v2', methods=['POST'])
 @jwt_required()
 def create_checkout_session_v2():
     user_doc = get_current_user()
