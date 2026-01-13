@@ -1115,7 +1115,7 @@ def plan_from_price_id(price_id):
     return None
 
 @app.route('/api/webhooks/stripe-disabled', methods=['POST'])
-def stripe_webhook():
+def stripe_webhook_disabled():
     endpoint_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
     payload = request.data
     sig_header = request.headers.get('Stripe-Signature', '')
