@@ -88,7 +88,7 @@ const Pricing = () => {
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-            Choose the plan that fits your team (DEPLOY-TEST-20260113)
+            Choose the plan that fits your team
           </h2>
           <p className="mt-4 text-lg text-slate-600">
             Simple subscription tiers for individual consultants, engineering firms, and municipal departments. Cancel anytime.
