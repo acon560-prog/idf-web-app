@@ -1,8 +1,3 @@
-Worked for 1m 12s
-You’re right: this Pricing.jsx cannot start Stripe Checkout because it never calls your /api/billing/create-checkout-session endpoint. It only renders a <Link> to /start or /signup, so clicking the pricing buttons will never make a network request.
-
-Replace your client/src/components/Pricing.jsx with this working version (it adds planKey and a real checkout button for logged-in users):
-
 import React, { useState } from "react";
 import Card from "./ui/Card";
 import { Link } from "react-router-dom";
