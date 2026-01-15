@@ -594,8 +594,10 @@ def create_checkout_session():
     payload = request.get_json() or {}
     plan = payload.get('plan') or 'consultant_monthly'
     price_id, plan_key = _price_id_for_plan(plan)
+    if plan_key is None:
+        return jsonify({'error': f'Unknown plan: {plan}'}), 400
     if not price_id:
-        return jsonify({'error': 'Unknown plan.'}), 400
+        return jsonify({'error': f'Missing Stripe price ID for plan: {plan_key}'}), 500
     if not STRIPE_PRICE_CONSULTANT_MONTHLY or not STRIPE_PRICE_MUNICIPAL_ANNUAL:
         return jsonify({'error': 'Stripe price IDs are not configured.'}), 500
  
