@@ -100,10 +100,10 @@ STRIPE_WEBHOOK_SECRET = _get_env('STRIPE_WEBHOOK_SECRET')
 
 STRIPE_PRICE_DAILY = _get_env('STRIPE_PRICE_DAILY')
 STRIPE_PRICE_MONTHLY = _get_env('STRIPE_PRICE_MONTHLY')
-STRIPE_PRICE_CONSULTANT_MONTHLY = STRIPE_PRICE_MONTHLY
+STRIPE_PRICE_CONSULTANT_MONTHLY = _get_env('STRIPE_PRICE_CONSULTANT_MONTHLY') or STRIPE_PRICE_MONTHLY
 
 STRIPE_PRICE_YEARLY = _get_env('STRIPE_PRICE_YEARLY')
-STRIPE_PRICE_MUNICIPAL_ANNUAL = STRIPE_PRICE_YEARLY
+STRIPE_PRICE_MUNICIPAL_ANNUAL = _get_env('STRIPE_PRICE_MUNICIPAL_ANNUAL') or STRIPE_PRICE_YEARLY
 STRIPE_PRICE_MAP = {
     'daily': STRIPE_PRICE_DAILY,
     'monthly': STRIPE_PRICE_MONTHLY,
@@ -598,8 +598,7 @@ def create_checkout_session():
         return jsonify({'error': f'Unknown plan: {plan}'}), 400
     if not price_id:
         return jsonify({'error': f'Missing Stripe price ID for plan: {plan_key}'}), 500
-    if not STRIPE_PRICE_CONSULTANT_MONTHLY or not STRIPE_PRICE_MUNICIPAL_ANNUAL:
-        return jsonify({'error': 'Stripe price IDs are not configured.'}), 500
+   
  
     email = normalize_email(user_doc.get('email'))
     if not email:
