@@ -44,3 +44,5 @@ client/.env.*
 client/.env
 client/.env.*
 stripeKeys.txtbuildlog.txt
+buildlog.txt
+stripeKeys.txt
