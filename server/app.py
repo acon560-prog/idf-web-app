@@ -74,6 +74,8 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
 STRIPE_PRICE_CONSULTANT_MONTHLY = os.environ.get("STRIPE_PRICE_CONSULTANT_MONTHLY")
 STRIPE_PRICE_MUNICIPAL_ANNUAL = os.environ.get("STRIPE_PRICE_MUNICIPAL_ANNUAL")
 FRONTEND_URL = (os.environ.get("FRONTEND_URL") or "http://localhost:3000").rstrip("/")
+STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS = int(os.environ.get("STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS") or "100")
+STRIPE_CURRENCY = (os.environ.get("STRIPE_CURRENCY") or "cad").lower().strip()
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -430,10 +432,8 @@ def _price_id_for_plan(plan: str):
 @jwt_required()
 def create_checkout_session():
     """
-    Creates a Stripe Checkout session for a subscription with a 7-day trial.
-    Requires a payment method up-front (card on file), then starts the trial.
-
-    Enforces one trial per email: if the user has ever used a trial, we create a paid subscription session (no trial).
+    Creates a Stripe Checkout session for a paid subscription (no trial).
+    Trial access is started separately via the $1 refundable card verification flow.
     """
     if not STRIPE_SECRET_KEY:
         return jsonify({'error': 'Stripe is not configured.'}), 500
@@ -445,36 +445,99 @@ def create_checkout_session():
     payload = request.get_json() or {}
     plan = payload.get('plan') or 'consultant_monthly'
     price_id, plan_key = _price_id_for_plan(plan)
+    if plan_key is None:
+        return jsonify({'error': f'Unknown plan: {plan}'}), 400
     if not price_id:
-        return jsonify({'error': 'Unknown plan.'}), 400
-    if not STRIPE_PRICE_CONSULTANT_MONTHLY or not STRIPE_PRICE_MUNICIPAL_ANNUAL:
-        return jsonify({'error': 'Stripe price IDs are not configured.'}), 500
+        return jsonify({'error': f'Missing Stripe price ID for plan: {plan_key}'}), 500
 
     email = normalize_email(user_doc.get('email'))
     if not email:
         return jsonify({'error': 'A valid email is required for billing.'}), 400
 
-    used_trial = trial_already_used(user_doc)
-
     success_url = f"{FRONTEND_URL}/start?checkout=success"
     cancel_url = f"{FRONTEND_URL}/?checkout=cancel"
 
-    session = stripe.checkout.Session.create(
-        mode="subscription",
-        customer_email=email,
-        client_reference_id=str(user_doc["_id"]),
-        line_items=[{"price": price_id, "quantity": 1}],
-        subscription_data={
-            # Require card collection now; trial starts after checkout.
-            "trial_period_days": 0 if used_trial else 7,
+    customer_id = user_doc.get("stripeCustomerId")
+    session_kwargs = {
+        "mode": "subscription",
+        "client_reference_id": str(user_doc["_id"]),
+        "line_items": [{"price": price_id, "quantity": 1}],
+        "subscription_data": {
             "metadata": {
                 "userId": str(user_doc["_id"]),
                 "plan": plan_key,
-                "usedTrial": "true" if used_trial else "false",
             },
         },
-        payment_method_collection="always",
-        allow_promotion_codes=True,
+        "payment_method_collection": "always",
+        "allow_promotion_codes": True,
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+    }
+
+    # Reuse an existing Stripe customer if available (e.g., after card verification)
+    if customer_id:
+        session_kwargs["customer"] = customer_id
+    else:
+        session_kwargs["customer_email"] = email
+
+    session = stripe.checkout.Session.create(
+        **session_kwargs,
+    )
+
+    return jsonify({"url": session.url})
+
+
+@app.route('/api/billing/create-trial-verification-session', methods=['POST'])
+@jwt_required()
+def create_trial_verification_session():
+    """
+    Creates a Stripe Checkout session to verify a card with a $1 refundable payment.
+    After successful payment, we refund the $1 and start a 7-day trial.
+    """
+    if not STRIPE_SECRET_KEY:
+        return jsonify({'error': 'Stripe is not configured.'}), 500
+
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'Authentication required.'}), 401
+
+    if trial_already_used(user_doc):
+        return jsonify({'error': 'Trial already used for this account.'}), 409
+
+    email = normalize_email(user_doc.get('email'))
+    if not email:
+        return jsonify({'error': 'A valid email is required for billing.'}), 400
+
+    success_url = f"{FRONTEND_URL}/start?trial=success"
+    cancel_url = f"{FRONTEND_URL}/?trial=cancel"
+
+    session = stripe.checkout.Session.create(
+        mode="payment",
+        customer_creation="always",
+        customer_email=email,
+        client_reference_id=str(user_doc["_id"]),
+        payment_intent_data={
+            # Save payment method for later subscription checkout.
+            "setup_future_usage": "off_session",
+            "metadata": {
+                "userId": str(user_doc["_id"]),
+                "purpose": "trial_verification",
+            },
+        },
+        metadata={
+            "userId": str(user_doc["_id"]),
+            "purpose": "trial_verification",
+        },
+        line_items=[
+            {
+                "price_data": {
+                    "currency": STRIPE_CURRENCY,
+                    "unit_amount": STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS,
+                    "product_data": {"name": "Trial verification (refunded)"},
+                },
+                "quantity": 1,
+            }
+        ],
         success_url=success_url,
         cancel_url=cancel_url,
     )
@@ -519,6 +582,40 @@ def stripe_webhook():
         if event_type == "checkout.session.completed":
             # Checkout session includes the subscription and customer IDs.
             session = data_object
+            metadata = session.get("metadata") or {}
+            purpose = (metadata.get("purpose") or "").strip().lower()
+
+            # Trial verification checkout (mode=payment)
+            if purpose == "trial_verification":
+                customer_id = session.get("customer")
+                email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+                user_id = session.get("client_reference_id") or metadata.get("userId")
+                payment_intent_id = session.get("payment_intent")
+
+                # Refund the verification payment (idempotent by event id).
+                if payment_intent_id:
+                    try:
+                        stripe.Refund.create(
+                            payment_intent=payment_intent_id,
+                            idempotency_key=event.get("id"),
+                        )
+                    except Exception as refund_exc:
+                        print(f"Failed to refund trial verification payment: {refund_exc}")
+
+                trial_start = now
+                trial_end = now + timedelta(days=7)
+
+                updates = {
+                    "stripeCustomerId": customer_id,
+                    "subscriptionStatus": "trialing",
+                    "trialStartsAt": trial_start,
+                    "trialEndsAt": trial_end,
+                    "trialUsed": True,
+                    "updatedAt": now,
+                }
+                _update_user_by_email_or_id(user_id, email, updates)
+                return jsonify({'received': True})
+
             subscription_id = session.get("subscription")
             customer_id = session.get("customer")
             email = session.get("customer_details", {}).get("email") or session.get("customer_email")
