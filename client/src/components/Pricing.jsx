@@ -1,14 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Card from "./ui/Card";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { buildApiUrl, readJsonResponse } from "../utils/apiConfig.js";
+
+const TRIAL_TERMS = `Trial terms
+
+A valid credit/debit card is required to start the 7-day trial. A temporary $1 verification charge will be placed and refunded after successful verification.
+
+Trial access is limited to one per email/account. We may decline or revoke trial access for suspected abuse or fraud.
+
+Your trial ends after 7 days unless you purchase a paid plan.`;
+
+const LIFETIME_TERMS = `Lifetime terms
+
+Lifetime membership is a one-time purchase that grants access to the Civispec application for one account, for as long as the service is offered.
+
+Offer is limited to the first 300 completed purchases and may be modified or ended at any time before purchase.
+
+Membership is non-transferable and intended for a single account/user. Access may be suspended for violations of our Terms of Service or suspected fraud. Taxes may apply. Refunds are subject to our refund policy.`;
 
 const trialOption = {
   name: "7-day trial",
   price: "$1",
   cadence: "refundable verification",
   description: "Start a 7-day trial after verifying your card. We refund the $1 after verification.",
+  termsTitle: "Trial terms",
+  termsBody: TRIAL_TERMS,
   perks: ["Card required", "Refunded after verification", "One trial per email"],
   highlight: false,
 };
@@ -32,6 +50,8 @@ const plans = [
     cadence: "one-time",
     planKey: "lifetime",
     description: "Lifetime access for the first 300 purchasers. Conditions apply.",
+    termsTitle: "Lifetime terms",
+    termsBody: LIFETIME_TERMS,
     perks: [
       "One-time payment (no renewal)",
       "Lifetime access for 1 account",
@@ -47,11 +67,46 @@ const Pricing = () => {
   const [checkoutError, setCheckoutError] = useState("");
   const [trialLoading, setTrialLoading] = useState(false);
   const [trialError, setTrialError] = useState("");
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [termsTitle, setTermsTitle] = useState("");
+  const [termsBody, setTermsBody] = useState("");
 
   const primaryHref = user ? "/start" : "/signup";
   const loggedOutLabel = "Create account";
   const subscribeLabel = "Subscribe";
   const trialLabel = "Verify card & start 7-day trial";
+
+  const openTerms = (title, body) => {
+    setTermsTitle(title || "Terms");
+    setTermsBody(body || "");
+    setTermsOpen(true);
+  };
+
+  const closeTerms = () => {
+    setTermsOpen(false);
+  };
+
+  useEffect(() => {
+    if (!termsOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        closeTerms();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [termsOpen]);
+
+  useEffect(() => {
+    if (termsOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [termsOpen]);
+
+  const termsLines = useMemo(() => (termsBody ? termsBody.split("\n") : []), [termsBody]);
 
   const startCheckout = async (planKey) => {
     if (!user) return;
@@ -151,6 +206,13 @@ const Pricing = () => {
               <span className="text-sm text-slate-500">{trialOption.cadence}</span>
             </div>
             <p className="mt-4 text-sm text-slate-600">{trialOption.description}</p>
+            <button
+              type="button"
+              onClick={() => openTerms(trialOption.termsTitle, trialOption.termsBody)}
+              className="mt-2 inline-flex text-sm font-semibold text-sky-700 underline decoration-sky-300 underline-offset-4 hover:text-sky-800"
+            >
+              Terms
+            </button>
 
             <ul className="mt-6 space-y-3 text-sm text-slate-600">
               {trialOption.perks.map((perk) => (
@@ -201,6 +263,15 @@ const Pricing = () => {
               </div>
 
               <p className="mt-4 text-sm text-slate-600">{plan.description}</p>
+              {plan.termsBody && (
+                <button
+                  type="button"
+                  onClick={() => openTerms(plan.termsTitle, plan.termsBody)}
+                  className="mt-2 inline-flex text-sm font-semibold text-sky-700 underline decoration-sky-300 underline-offset-4 hover:text-sky-800"
+                >
+                  Terms
+                </button>
+              )}
 
               <ul className="mt-6 space-y-3 text-sm text-slate-600">
                 {plan.perks.map((perk) => (
@@ -246,6 +317,41 @@ const Pricing = () => {
           ))}
         </div>
       </div>
+
+      {termsOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={termsTitle || "Terms"}
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-900/40"
+            aria-label="Close terms"
+            onClick={closeTerms}
+          />
+          <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <h3 className="text-lg font-semibold text-slate-900">{termsTitle || "Terms"}</h3>
+              <button
+                type="button"
+                onClick={closeTerms}
+                className="rounded-lg px-2 py-1 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-4 space-y-3 text-sm text-slate-700">
+              {termsLines.map((line, idx) => {
+                const trimmed = line.trim();
+                if (!trimmed) return <div key={idx} />;
+                return <p key={idx}>{trimmed}</p>;
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
