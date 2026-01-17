@@ -613,54 +613,7 @@ def _price_id_for_plan(plan: str):
     return None, None
  
  
-@app.route('/api/billing/create-checkout-session', methods=['POST'])
-@jwt_required()
-def create_checkout_session():
-    if not STRIPE_SECRET_KEY:
-        return jsonify({'error': 'Stripe is not configured.'}), 500
- 
-    user_doc = get_current_user()
-    if not user_doc:
-        return jsonify({'error': 'Authentication required.'}), 401
- 
-    payload = request.get_json() or {}
-    plan = payload.get('plan') or 'consultant_monthly'
-    price_id, plan_key = _price_id_for_plan(plan)
-    if plan_key is None:
-        return jsonify({'error': f'Unknown plan: {plan}'}), 400
-    if not price_id:
-        return jsonify({'error': f'Missing Stripe price ID for plan: {plan_key}'}), 500
-   
- 
-    email = normalize_email(user_doc.get('email'))
-    if not email:
-        return jsonify({'error': 'A valid email is required for billing.'}), 400
- 
-    used_trial = trial_already_used(user_doc)
- 
-    success_url = f"{FRONTEND_URL}/start?checkout=success"
-    cancel_url = f"{FRONTEND_URL}/?checkout=cancel"
- 
-    session = stripe.checkout.Session.create(
-        mode="subscription",
-        customer_email=email,
-        client_reference_id=str(user_doc["_id"]),
-        line_items=[{"price": price_id, "quantity": 1}],
-        subscription_data={
-            "trial_period_days": 0 if used_trial else 7,
-            "metadata": {
-                "userId": str(user_doc["_id"]),
-                "plan": plan_key,
-                "usedTrial": "true" if used_trial else "false",
-            },
-        },
-        payment_method_collection="always",
-        allow_promotion_codes=True,
-        success_url=success_url,
-        cancel_url=cancel_url,
-    )
- 
-    return jsonify({"url": session.url})
+
  
  
 @app.route('/api/billing/stripe-webhook', methods=['POST'])
