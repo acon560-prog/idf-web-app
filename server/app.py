@@ -73,9 +73,11 @@ STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
 STRIPE_PRICE_CONSULTANT_MONTHLY = os.environ.get("STRIPE_PRICE_CONSULTANT_MONTHLY")
 STRIPE_PRICE_MUNICIPAL_ANNUAL = os.environ.get("STRIPE_PRICE_MUNICIPAL_ANNUAL")
+STRIPE_PRICE_LIFETIME = os.environ.get("STRIPE_PRICE_LIFETIME")
 FRONTEND_URL = (os.environ.get("FRONTEND_URL") or "http://localhost:3000").rstrip("/")
 STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS = int(os.environ.get("STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS") or "100")
 STRIPE_CURRENCY = (os.environ.get("STRIPE_CURRENCY") or "cad").lower().strip()
+LIFETIME_MEMBERSHIP_LIMIT = int(os.environ.get("LIFETIME_MEMBERSHIP_LIMIT") or "300")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
@@ -425,6 +427,8 @@ def _price_id_for_plan(plan: str):
         return STRIPE_PRICE_CONSULTANT_MONTHLY, "consultant_monthly"
     if plan in ("municipal", "municipal_annual", "annual"):
         return STRIPE_PRICE_MUNICIPAL_ANNUAL, "municipal_annual"
+    if plan in ("lifetime", "lifetime_membership", "lifetime-membership"):
+        return STRIPE_PRICE_LIFETIME, "lifetime"
     return None, None
 
 
@@ -458,6 +462,43 @@ def create_checkout_session():
     cancel_url = f"{FRONTEND_URL}/?checkout=cancel"
 
     customer_id = user_doc.get("stripeCustomerId")
+    # Lifetime is a one-time purchase (not a subscription).
+    if plan_key == "lifetime":
+        sold_count = users_collection.count_documents({"plan": "lifetime"})
+        if sold_count >= LIFETIME_MEMBERSHIP_LIMIT:
+            return jsonify({"error": "Lifetime membership is sold out."}), 409
+
+        session_kwargs = {
+            "mode": "payment",
+            "client_reference_id": str(user_doc["_id"]),
+            "line_items": [{"price": price_id, "quantity": 1}],
+            "metadata": {
+                "userId": str(user_doc["_id"]),
+                "purpose": "lifetime_purchase",
+                "plan": "lifetime",
+            },
+            "payment_intent_data": {
+                "metadata": {
+                    "userId": str(user_doc["_id"]),
+                    "purpose": "lifetime_purchase",
+                    "plan": "lifetime",
+                },
+            },
+            "allow_promotion_codes": True,
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+        }
+
+        customer_id = user_doc.get("stripeCustomerId")
+        if customer_id:
+            session_kwargs["customer"] = customer_id
+        else:
+            session_kwargs["customer_creation"] = "always"
+            session_kwargs["customer_email"] = email
+
+        session = stripe.checkout.Session.create(**session_kwargs)
+        return jsonify({"url": session.url})
+
     session_kwargs = {
         "mode": "subscription",
         "client_reference_id": str(user_doc["_id"]),
@@ -611,6 +652,27 @@ def stripe_webhook():
                     "trialStartsAt": trial_start,
                     "trialEndsAt": trial_end,
                     "trialUsed": True,
+                    "updatedAt": now,
+                }
+                _update_user_by_email_or_id(user_id, email, updates)
+                return jsonify({'received': True})
+
+            # Lifetime membership purchase (mode=payment)
+            if purpose == "lifetime_purchase":
+                customer_id = session.get("customer")
+                email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+                user_id = session.get("client_reference_id") or metadata.get("userId")
+
+                sold_count = users_collection.count_documents({"plan": "lifetime"})
+                if sold_count >= LIFETIME_MEMBERSHIP_LIMIT:
+                    # Do not grant access if sold out; manual resolution/refund may be needed.
+                    return jsonify({'received': True})
+
+                updates = {
+                    "stripeCustomerId": customer_id,
+                    "subscriptionStatus": "active",
+                    "plan": "lifetime",
+                    "lifetimePurchasedAt": now,
                     "updatedAt": now,
                 }
                 _update_user_by_email_or_id(user_id, email, updates)
