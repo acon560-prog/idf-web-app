@@ -6,17 +6,10 @@ import os
 import math
 import smtplib
 from email.message import EmailMessage
-from datetime import datetime, timedelta, timezone
-import secrets
-import hashlib
-import stripe
+from datetime import datetime, timedelta
+
 import bcrypt
-
-import logging
-from pymongo.errors import DuplicateKeyError
-
 import stripe
-
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -29,13 +22,8 @@ from flask_jwt_extended import (
 )
 from flask_pymongo import PyMongo
 from flask import send_from_directory
-def _get_env(key):
-    value = os.environ.get(key)
-    value = value.strip() if isinstance(value, str) else value
-    return value or None
-print(">>> app.py loaded from", __file__)
+
 app = Flask(__name__, static_folder='build', static_url_path='')
-app.logger.setLevel(logging.INFO)   # show info logs like success_url
 default_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -58,34 +46,17 @@ CORS(
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
-    # Never serve the SPA shell for API routes.
-    # Without this, missing API endpoints (or wrong HTTP methods) can return HTML,
-    # which breaks the frontend when it tries to parse JSON.
-    if request.path.startswith("/api"):
-        return jsonify({'error': 'Not Found'}), 404
     file_path = os.path.join(app.static_folder, path)
     if path and os.path.exists(file_path):
         return send_from_directory(app.static_folder, path)
     return send_from_directory(app.static_folder, 'index.html')
-
 @app.errorhandler(404)
 def handle_not_found(_error):
     if request.path.startswith("/api"):
         return jsonify({'error': 'Not Found'}), 404
     return send_from_directory(app.static_folder, 'index.html')
-@app.errorhandler(400)
-def handle_bad_request(_error):
-    if request.path.startswith("/api"):
-        return jsonify({'error': 'Bad Request'}), 400
-    return _error
-@app.errorhandler(405)
-def handle_method_not_allowed(_error):
-    # Prevent Flask's default HTML 405 page for API routes.
-    if request.path.startswith("/api"):
-        return jsonify({'error': 'Method Not Allowed'}), 405
-    return _error
+
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
-print("Using MONGO_URI:", app.config['MONGO_URI'])
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
@@ -97,19 +68,19 @@ users_collection = mongo.db.users
 submissions_collection = mongo.db.submissions
 ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
 
-
 # Stripe config (required for card-based trials)
-STRIPE_SECRET_KEY = (os.environ.get("STRIPE_SECRET_KEY") or "").strip()
-STRIPE_WEBHOOK_SECRET = (os.environ.get("STRIPE_WEBHOOK_SECRET") or "").strip()
-STRIPE_PRICE_CONSULTANT_MONTHLY = (os.environ.get("STRIPE_PRICE_CONSULTANT_MONTHLY") or "").strip()
-STRIPE_PRICE_MUNICIPAL_ANNUAL = (os.environ.get("STRIPE_PRICE_MUNICIPAL_ANNUAL") or "").strip()
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
+STRIPE_PRICE_CONSULTANT_MONTHLY = os.environ.get("STRIPE_PRICE_CONSULTANT_MONTHLY")
+STRIPE_PRICE_MUNICIPAL_ANNUAL = os.environ.get("STRIPE_PRICE_MUNICIPAL_ANNUAL")
+STRIPE_PRICE_LIFETIME = os.environ.get("STRIPE_PRICE_LIFETIME")
 FRONTEND_URL = (os.environ.get("FRONTEND_URL") or "http://localhost:3000").rstrip("/")
 STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS = int(os.environ.get("STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS") or "100")
 STRIPE_CURRENCY = (os.environ.get("STRIPE_CURRENCY") or "cad").lower().strip()
+LIFETIME_MEMBERSHIP_LIMIT = int(os.environ.get("LIFETIME_MEMBERSHIP_LIMIT") or "300")
 
 if STRIPE_SECRET_KEY:
     stripe.api_key = STRIPE_SECRET_KEY
-
 
 # Define the provinces to load. Add more as you get the data for them.
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
@@ -140,28 +111,9 @@ def determine_role(user_doc) -> str:
 def isoformat_or_none(value):
     if isinstance(value, datetime):
         if value.tzinfo:
-             # Normalize to UTC and emit a stable "Z" suffix.
-            return (
-                value.astimezone(timezone.utc)
-                .replace(microsecond=0)
-                .isoformat()
-                .replace("+00:00", "Z")
-            )
-        # Treat naive datetimes as UTC for backwards compatibility.
+            return value.isoformat()
         return value.replace(microsecond=0).isoformat() + 'Z'
     return None
-
-def utcnow() -> datetime:
-    """Timezone-aware current UTC time."""
-    return datetime.now(timezone.utc)
-
-
-def _frontend_base_url() -> str:
-    env = (os.environ.get("FRONTEND_BASE_URL") or "").strip().rstrip("/")
-    if env:
-        return env
-    # request.host_url includes trailing slash
-    return (request.host_url or "").rstrip("/")
 
 
 def serialize_user(user_doc):
@@ -225,26 +177,6 @@ def get_current_user():
         return None
     return get_user_by_id(identity)
 
-def _require_stripe_enabled():
-    if not stripe.api_key:
-        raise RuntimeError("Stripe is not configured. Missing STRIPE_SECRET_KEY.")
-
-
-def _ensure_stripe_customer(user_doc):
-    customer_id = user_doc.get("stripeCustomerId")
-    if customer_id:
-        return customer_id
-    customer = stripe.Customer.create(
-        email=user_doc.get("email"),
-        metadata={"userId": str(user_doc["_id"])},
-    )
-    customer_id = customer.get("id")
-    users_collection.update_one(
-        {"_id": user_doc["_id"]},
-        {"$set": {"stripeCustomerId": customer_id, "updatedAt": utcnow()}},
-    )
-    return customer_id
-
 
 def user_has_active_access(user_doc):
     if not user_doc:
@@ -255,7 +187,7 @@ def user_has_active_access(user_doc):
         return True
 
     trial_end = user_doc.get('trialEndsAt')
-    now = utcnow()
+    now = datetime.utcnow()
 
     if status == 'trialing':
         if isinstance(trial_end, datetime):
@@ -300,33 +232,11 @@ def ensure_user_indexes():
 ensure_user_indexes()
 
 
-@app.route("/api/billing/create-portal-session", methods=["POST"])
-@jwt_required()
-def create_billing_portal_session():
-    user_doc = get_current_user()
-    if not user_doc:
-        return jsonify({"error": "Authentication required."}), 401
-    if not user_doc.get("stripeCustomerId"):
-        return jsonify({"error": "No Stripe customer on file."}), 400
-
-    try:
-        _require_stripe_enabled()
-        frontend_base = _frontend_base_url()
-        portal = stripe.billing_portal.Session.create(
-            customer=user_doc["stripeCustomerId"],
-            return_url=f"{frontend_base}/start",
-        )
-        return jsonify({"url": portal.url})
-    except Exception as exc:
-        print(f"Failed to create Stripe billing portal session: {exc}")
-        return jsonify({"error": "Failed to create billing portal session."}), 500
-
-
 def log_submission_to_file(name, email, message):
     log_path = os.path.join(os.path.dirname(__file__), '..', 'submissions.log')
     try:
         with open(log_path, 'a', encoding='utf-8') as f:
-            f.write(f"[{utcnow().isoformat()}] {name} <{email}>: {message}\n")
+            f.write(f"[{datetime.utcnow().isoformat()}] {name} <{email}>: {message}\n")
     except OSError as exc:
         print(f"Failed to write submission log: {exc}")
 
@@ -364,31 +274,7 @@ def send_contact_email(name, email, message, send_copy=False):
         return False
 
     return True
-def send_password_reset_email(recipient_email, reset_link):
-    email_user = os.environ.get('EMAIL_USER')
-    email_pass = os.environ.get('EMAIL_PASS')
-    
-    if not email_user or not email_pass:
-        print("Email credentials missing; cannot send reset email.")
-        return False
-    msg = EmailMessage()
-    msg['Subject'] = 'Reset your Civispec password'
-    msg['From'] = email_user
-    msg['To'] = recipient_email
-    msg.set_content(
-        "We received a request to reset your Civispec password.\n\n"
-        f"Use this link within the next hour: {reset_link}\n\n"
-        "If you didn't ask for this, you can ignore the email."
-    )
 
-    try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-            smtp.login(email_user, email_pass)
-            smtp.send_message(msg)
-        return True
-    except Exception as exc:
-        print(f"Failed to send reset email: {exc}")
-        return False
 for province_code in PROVINCES:
     # Construct file paths for each province.
     # Assumes your data is structured like this: data/QC/master...json
@@ -426,53 +312,6 @@ for province_code in PROVINCES:
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print(f"Could not load data for {province_code}: {e}")
         continue
-    
-# Fallback: some deploys may not include per-province subfolders.
-# If nothing loaded, try consolidated JSON files in server/data/.
-if not STATIONS_DATA:
-    consolidated_stations_path = os.path.join(
-        os.path.dirname(__file__),
-        "data",
-        "master_stations_enriched_validated.json",
-    )
-    try:
-        with open(consolidated_stations_path, "r", encoding="utf-8") as f:
-            stations = json.load(f)
-            STATIONS_DATA.extend(stations)
-            for station in stations:
-                sid = station.get("stationId")
-                if sid:
-                    STATION_LOOKUP[sid] = station
-        print(
-            f"Loaded consolidated stations metadata ({len(stations)}) from {consolidated_stations_path}."
-        )
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Could not load consolidated stations data: {e}")
-
-if not IDF_DATA:
-    consolidated_idf_path = os.path.join(
-        os.path.dirname(__file__),
-        "data",
-        "idf_data_by_station.json",
-    )
-    try:
-        with open(consolidated_idf_path, "r", encoding="utf-8") as f:
-            prov_idf_data = json.load(f)
-            IDF_DATA.update(prov_idf_data)
-            for key in prov_idf_data:
-                station_id_match = re.search(r"(\d{7}|\d{3}[A-Z]{2}\d)", key)
-                if station_id_match:
-                    station_id = station_id_match.group(1)
-                    IDF_KEY_MAPPING[station_id] = key
-                    IDF_STATION_IDS.add(station_id)
-                else:
-                    IDF_KEY_MAPPING[key] = key
-                    IDF_STATION_IDS.add(key)
-        print(
-            f"Loaded consolidated IDF data ({len(prov_idf_data)}) from {consolidated_idf_path}."
-        )
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Could not load consolidated IDF data: {e}")
 print(f"Total stations loaded: {len(STATIONS_DATA)}")
 print(f"Total IDF data sets loaded: {len(IDF_DATA)}")
 
@@ -530,38 +369,35 @@ def find_nearest_station_with_idf(station_id):
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json() or {}
     email = normalize_email(payload.get('email'))
- 
-    raw_username = payload.get('username')
-    username = (raw_username or '').strip() or None
- 
+    username = payload.get('username')
     password = payload.get('password')
-    name = (payload.get('name') or '').strip()
- 
+    name = payload.get('name', '')
+
     if not password:
         return jsonify({'error': 'Password is required.'}), 400
- 
+
+    if email:
+        if users_collection.find_one({'email': email}):
+            return jsonify({'error': 'An account with this email already exists.'}), 409
+    if username:
+        if users_collection.find_one({'username': username}):
+            return jsonify({'error': 'An account with this username already exists.'}), 409
+
     if not email and not username:
         return jsonify({'error': 'An email or username is required.'}), 400
- 
-    if email and users_collection.find_one({'email': email}):
-        return jsonify({'error': 'An account with this email already exists.'}), 409
- 
-    if username and users_collection.find_one({'username': username}):
-        return jsonify({'error': 'An account with this username already exists.'}), 409
- 
-    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    now = utcnow()
-    
-   
+    password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    now = datetime.utcnow()
     role = 'admin' if email and email == ADMIN_EMAIL else 'user'
- 
+
     user_doc = {
-        'email': email or None,
+        'email': email if email else None,
+        'username': username if username else None,
         'name': name,
         'passwordHash': password_hash,
+        # Trial is started only after card collection via Stripe Checkout.
         'subscriptionStatus': 'trial_pending',
         'plan': None,
         'stripeCustomerId': None,
@@ -572,51 +408,18 @@ def register():
         'updatedAt': now,
         'role': role,
     }
-    if username:
-        user_doc['username'] = username
- 
-    try:
-        result = users_collection.insert_one(user_doc)
-    except DuplicateKeyError:
-        return jsonify({'error': 'Account already exists.'}), 409
- 
+
+    result = users_collection.insert_one(user_doc)
     user_doc['_id'] = result.inserted_id
+    user_doc['role'] = role
+
     tokens = generate_tokens(user_doc)
- 
+
     return jsonify({
         'user': serialize_user(user_doc),
         **tokens,
     }), 201
 
-def trial_already_used(user_doc) -> bool:
-    """
-    One-trial-per-email enforcement.
-    Treat any existing trial history as "used", even if legacy documents don't have trialUsed flag.
-    """
-    if not user_doc:
-        return False
-    if user_doc.get('trialUsed') is True:
-        return True
-    if isinstance(user_doc.get('trialStartsAt'), datetime):
-        return True
-    if user_doc.get('subscriptionStatus') in ('trialing', 'trial_expired', 'active', 'canceled', 'past_due', 'incomplete'):
-        return True
-    return False
- 
- 
-def _price_id_for_plan(plan: str):
-    plan = (plan or "").strip().lower()
-    if plan in ("consultant", "consultant_monthly", "monthly"):
-        return STRIPE_PRICE_CONSULTANT_MONTHLY, "consultant_monthly"
-    if plan in ("municipal", "municipal_annual", "annual"):
-        return STRIPE_PRICE_MUNICIPAL_ANNUAL, "municipal_annual"
-    return None, None
- 
- 
-
- 
- 
-
 
 def _price_id_for_plan(plan: str):
     plan = (plan or "").strip().lower()
@@ -624,6 +427,8 @@ def _price_id_for_plan(plan: str):
         return STRIPE_PRICE_CONSULTANT_MONTHLY, "consultant_monthly"
     if plan in ("municipal", "municipal_annual", "annual"):
         return STRIPE_PRICE_MUNICIPAL_ANNUAL, "municipal_annual"
+    if plan in ("lifetime", "lifetime_membership", "lifetime-membership"):
+        return STRIPE_PRICE_LIFETIME, "lifetime"
     return None, None
 
 
@@ -657,6 +462,43 @@ def create_checkout_session():
     cancel_url = f"{FRONTEND_URL}/?checkout=cancel"
 
     customer_id = user_doc.get("stripeCustomerId")
+    # Lifetime is a one-time purchase (not a subscription).
+    if plan_key == "lifetime":
+        sold_count = users_collection.count_documents({"plan": "lifetime"})
+        if sold_count >= LIFETIME_MEMBERSHIP_LIMIT:
+            return jsonify({"error": "Lifetime membership is sold out."}), 409
+
+        session_kwargs = {
+            "mode": "payment",
+            "client_reference_id": str(user_doc["_id"]),
+            "line_items": [{"price": price_id, "quantity": 1}],
+            "metadata": {
+                "userId": str(user_doc["_id"]),
+                "purpose": "lifetime_purchase",
+                "plan": "lifetime",
+            },
+            "payment_intent_data": {
+                "metadata": {
+                    "userId": str(user_doc["_id"]),
+                    "purpose": "lifetime_purchase",
+                    "plan": "lifetime",
+                },
+            },
+            "allow_promotion_codes": True,
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+        }
+
+        customer_id = user_doc.get("stripeCustomerId")
+        if customer_id:
+            session_kwargs["customer"] = customer_id
+        else:
+            session_kwargs["customer_creation"] = "always"
+            session_kwargs["customer_email"] = email
+
+        session = stripe.checkout.Session.create(**session_kwargs)
+        return jsonify({"url": session.url})
+
     session_kwargs = {
         "mode": "subscription",
         "client_reference_id": str(user_doc["_id"]),
@@ -815,6 +657,27 @@ def stripe_webhook():
                 _update_user_by_email_or_id(user_id, email, updates)
                 return jsonify({'received': True})
 
+            # Lifetime membership purchase (mode=payment)
+            if purpose == "lifetime_purchase":
+                customer_id = session.get("customer")
+                email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+                user_id = session.get("client_reference_id") or metadata.get("userId")
+
+                sold_count = users_collection.count_documents({"plan": "lifetime"})
+                if sold_count >= LIFETIME_MEMBERSHIP_LIMIT:
+                    # Do not grant access if sold out; manual resolution/refund may be needed.
+                    return jsonify({'received': True})
+
+                updates = {
+                    "stripeCustomerId": customer_id,
+                    "subscriptionStatus": "active",
+                    "plan": "lifetime",
+                    "lifetimePurchasedAt": now,
+                    "updatedAt": now,
+                }
+                _update_user_by_email_or_id(user_id, email, updates)
+                return jsonify({'received': True})
+
             subscription_id = session.get("subscription")
             customer_id = session.get("customer")
             email = session.get("customer_details", {}).get("email") or session.get("customer_email")
@@ -895,7 +758,7 @@ def stripe_webhook():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    payload = request.get_json(silent=True) or {}
+    payload = request.get_json() or {}
     identifier = payload.get('email') or payload.get('username')
     password = payload.get('password')
 
@@ -921,7 +784,7 @@ def login():
         return jsonify({'error': 'Invalid email or password.'}), 401
 
     role = determine_role(user_doc)
-    updates = {'updatedAt': datetime.now(timezone.utc)}
+    updates = {'updatedAt': datetime.utcnow()}
     if user_doc.get('role') != role:
         updates['role'] = role
     user_doc['role'] = role
@@ -937,117 +800,8 @@ def login():
         'user': serialize_user(user_doc),
         **tokens,
     })
-@app.route('/api/auth/forgot-password', methods=['POST'])
-def forgot_password():
-    payload = request.get_json() or {}
-    email = normalize_email(payload.get('email'))
-    print("Handling forgot-password for", email)
-    if not email:
-        return jsonify({'error': 'Email is required.'}), 400
 
-    generic_response = {'message': 'If that account exists, an email was sent.'}
-    user_doc = users_collection.find_one({'email': email})
-    if not user_doc:
-        return jsonify(generic_response)  # Don’t leak whether the email exists
 
-    raw_token = secrets.token_urlsafe(32)
-    hashed_token = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
-    expires_at = datetime.utcnow() + timedelta(hours=1)
-
-    users_collection.update_one(
-        {'_id': user_doc['_id']},
-        {'$set': {
-            'resetPasswordToken': hashed_token,
-            'resetPasswordExpires': expires_at,
-        }}
-    )
-
-    frontend_base = (os.environ.get('FRONTEND_BASE_URL') or request.host_url.rstrip('/'))
-    reset_link = f"{frontend_base}/reset-password?token={raw_token}"
-
-    send_password_reset_email(email, reset_link)
-    return jsonify(generic_response)
-@app.route('/api/auth/reset-password', methods=['POST'])
-def reset_password():
-    payload = request.get_json() or {}
-    raw_token = (payload.get('token') or '').strip()
-    new_password = (payload.get('password') or '').strip()
-
-    if not raw_token or not new_password:
-        return jsonify({'error': 'Token and new password are required.'}), 400
-    if len(new_password) < 8:
-        return jsonify({'error': 'Password must be at least 8 characters.'}), 400
-
-    hashed_token = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()
-    now = datetime.utcnow()
-
-    user_doc = users_collection.find_one({
-        'resetPasswordToken': hashed_token,
-        'resetPasswordExpires': {'$gt': now},
-    })
-    if not user_doc:
-        return jsonify({'error': 'Invalid or expired reset token.'}), 400
-
-    password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-    users_collection.update_one(
-        {'_id': user_doc['_id']},
-        {'$set': {
-            'passwordHash': password_hash,
-            'updatedAt': now,
-        }, '$unset': {
-            'resetPasswordToken': '',
-            'resetPasswordExpires': '',
-        }}
-    )
-
-    return jsonify({'message': 'Password updated successfully.'})
-@app.route('/api/billing/create-checkout-session-v2', methods=['POST'])
-@jwt_required()
-def create_checkout_session_v2():
-    user_doc = get_current_user()
-    if not user_doc:
-        return jsonify({'error': 'User not found.'}), 404
-
-    payload = request.get_json() or {}
-    plan = (payload.get('plan') or '').lower()
-    price_id = STRIPE_PRICE_MAP.get(plan)
-    if not price_id:
-        return jsonify({'error': 'Unknown plan.'}), 400
-
-    frontend_base = _get_env('FRONTEND_BASE_URL') or request.host_url.rstrip('/')
-    if not frontend_base:
-        frontend_base = request.host_url.rstrip('/')
-    success_url = f"{frontend_base}/start?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{frontend_base}/pricing"
-    app.logger.info("success_url => %r", success_url)
-    app.logger.info("cancel_url  => %r", cancel_url)
-    session = stripe.checkout.Session.create(
-        mode='subscription',
-        payment_method_types=['card'],
-        line_items=[{'price': price_id, 'quantity': 1}],
-        customer=user_doc.get('stripeCustomerId') or None,
-        client_reference_id=str(user_doc['_id']),
-        success_url=success_url,
-        cancel_url=cancel_url,
-    )
-    return jsonify({'checkoutUrl': session.url})
-@app.route('/api/billing/create-portal-session', methods=['POST'])
-@jwt_required()
-def create_portal_session():
-    user_doc = get_current_user()
-    if not user_doc:
-        return jsonify({'error': 'User not found.'}), 404
-
-    customer_id = user_doc.get('stripeCustomerId')
-    if not customer_id:
-        return jsonify({'error': 'No Stripe customer linked to this account.'}), 400
-
-    portal_session = stripe.billing_portal.Session.create(
-        customer=customer_id,
-        return_url=f"{os.environ.get('FRONTEND_BASE_URL', request.host_url.rstrip('/'))}/start",
-    )
-    return jsonify({'portalUrl': portal_session.url})
 @app.route('/api/auth/me', methods=['GET'])
 @jwt_required()
 def auth_me():
@@ -1264,80 +1018,7 @@ def idf_curves():
     except Exception as e:
         print(f"An unexpected error occurred in idf_curves: {e}")
         return jsonify({"error": "An unexpected error occurred."}), 500
-def update_user_subscription(user_id, updates):
-    users_collection.update_one(
-        {'_id': ObjectId(user_id)},
-        {'$set': {**updates, 'updatedAt': datetime.utcnow()}}
-    )
 
-def plan_from_price_id(price_id):
-    for name, pid in STRIPE_PRICE_MAP.items():
-        if pid == price_id:
-            return name
-    return None
-
-@app.route('/api/webhooks/stripe-disabled', methods=['POST'])
-def stripe_webhook_disabled():
-    endpoint_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
-    payload = request.data
-    sig_header = request.headers.get('Stripe-Signature', '')
-
-    try:
-        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-    except ValueError:
-        return "Invalid payload", 400
-    except stripe.error.SignatureVerificationError:
-        return "Invalid signature", 400
-
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        client_ref = session.get('client_reference_id')
-        sub_id = session.get('subscription')
-        price_id = None
-        if sub_id:
-            sub = stripe.Subscription.retrieve(sub_id, expand=["items.data.price"])
-            price_id = sub["items"]["data"][0]["price"]["id"]
-        #price_id = session.get('line_items', {}).get('data', [{}])[0]\
-            #.get('price', {}).get('id')
-        plan = plan_from_price_id(price_id)
-        if client_ref and plan:
-            update_user_subscription(client_ref, {
-                'stripeCustomerId': session.get('customer'),
-                'subscriptionStatus': 'active',
-                'plan': plan,
-                "updatedAt": datetime.now(timezone.utc),
-            })
-    elif event['type'] == 'customer.subscription.updated':
-        subscription = event['data']['object']
-        customer_id = subscription.get('customer')
-        plan = plan_from_price_id(subscription['items']['data'][0]['plan']['product'])
-        status = subscription.get('status')
-        users_collection.update_one(
-            {'stripeCustomerId': customer_id},
-            {'$set': {
-                'subscriptionStatus': status,
-                'plan': plan,
-                'updatedAt': datetime.now(timezone.utc),
-            }}
-        )
-    elif event['type'] == 'customer.subscription.updated':
-        subscription = event['data']['object']
-        customer_id = subscription.get('customer')
-
-        price_id = subscription["items"]["data"][0]["price"]["id"]
-        plan = plan_from_price_id(price_id)
-        status = subscription.get("status")
-
-        users_collection.update_one(
-            {'stripeCustomerId': customer_id},
-            {'$set': {
-                "subscriptionStatus": status,
-                "plan": plan,
-                "updatedAt": datetime.now(timezone.utc),
-            }}
-        )
-
-    return '', 200
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

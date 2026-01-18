@@ -34,7 +34,7 @@ const trialOption = {
 const plans = [
   {
     name: "Consultant Monthly",
-    price: "$32",
+    price: "$59",
     cadence: "per month",
     planKey: "consultant_monthly",
     description: "Unlimited station lookups, IDF curves, and PDF exports.",
@@ -53,27 +53,60 @@ const plans = [
     termsTitle: "Lifetime terms",
     termsBody: LIFETIME_TERMS,
     perks: [
-     "One-time payment (no renewal)",
+      "One-time payment (no renewal)",
       "Lifetime access for 1 account",
       "Limited to first 300 purchasers",
     ],
     highlight: true,
   },
 ];
- 
+
 const Pricing = () => {
   const { user, token } = useAuth();
   const [checkoutPlanKey, setCheckoutPlanKey] = useState(null);
   const [checkoutError, setCheckoutError] = useState("");
-
   const [trialLoading, setTrialLoading] = useState(false);
   const [trialError, setTrialError] = useState("");
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [termsTitle, setTermsTitle] = useState("");
+  const [termsBody, setTermsBody] = useState("");
 
   const primaryHref = user ? "/start" : "/signup";
   const loggedOutLabel = "Create account";
   const subscribeLabel = "Subscribe";
   const trialLabel = "Verify card & start 7-day trial";
 
+  const openTerms = (title, body) => {
+    setTermsTitle(title || "Terms");
+    setTermsBody(body || "");
+    setTermsOpen(true);
+  };
+
+  const closeTerms = () => {
+    setTermsOpen(false);
+  };
+
+  useEffect(() => {
+    if (!termsOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        closeTerms();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [termsOpen]);
+
+  useEffect(() => {
+    if (termsOpen) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [termsOpen]);
+
+  const termsLines = useMemo(() => (termsBody ? termsBody.split("\n") : []), [termsBody]);
 
   const startCheckout = async (planKey) => {
     if (!user) return;
@@ -92,7 +125,6 @@ const Pricing = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({ plan: planKey || "consultant_monthly" }),
       });
 
@@ -103,11 +135,11 @@ const Pricing = () => {
       }
 
       const data = await readJsonResponse(res, "Unable to start checkout.");
-
       if (!data?.url) {
         setCheckoutError("Unable to start checkout.");
         return;
       }
+
       window.location.assign(data.url);
     } catch (err) {
       setCheckoutError(err?.message || "Unable to start checkout.");
@@ -115,7 +147,6 @@ const Pricing = () => {
       setCheckoutPlanKey(null);
     }
   };
-
 
   const startTrialVerification = async () => {
     if (!user) return;
@@ -156,16 +187,14 @@ const Pricing = () => {
     }
   };
 
-
   return (
     <section className="bg-white py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-            Choose the plan that fits your team
-          </h2>
+          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Choose the plan that fits your team</h2>
           <p className="mt-4 text-lg text-slate-600">
-            Simple subscription tiers for individual consultants, engineering firms, and municipal departments. Cancel anytime.
+            Simple subscription tiers for individual consultants, engineering firms, and municipal departments. Cancel
+            anytime.
           </p>
         </div>
 
@@ -177,6 +206,13 @@ const Pricing = () => {
               <span className="text-sm text-slate-500">{trialOption.cadence}</span>
             </div>
             <p className="mt-4 text-sm text-slate-600">{trialOption.description}</p>
+            <button
+              type="button"
+              onClick={() => openTerms(trialOption.termsTitle, trialOption.termsBody)}
+              className="mt-2 inline-flex text-sm font-semibold text-sky-700 underline decoration-sky-300 underline-offset-4 hover:text-sky-800"
+            >
+              Terms
+            </button>
 
             <ul className="mt-6 space-y-3 text-sm text-slate-600">
               {trialOption.perks.map((perk) => (
@@ -213,26 +249,30 @@ const Pricing = () => {
           </Card>
 
           {plans.map((plan) => (
-            <Card
-              key={plan.name}
-              className={`relative ${plan.highlight ? "border-sky-500 shadow-lg" : ""}`}
-            >
+            <Card key={plan.name} className={`relative ${plan.highlight ? "border-sky-500 shadow-lg" : ""}`}>
               {plan.highlight && (
                 <span className="absolute -top-3 right-6 rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 shadow">
                   Popular
                 </span>
               )}
- 
+
               <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
- 
               <div className="mt-4 flex items-end gap-1 text-slate-900">
                 <span className="text-4xl font-bold">{plan.price}</span>
                 <span className="text-sm text-slate-500">{plan.cadence}</span>
               </div>
 
-
               <p className="mt-4 text-sm text-slate-600">{plan.description}</p>
- 
+              {plan.termsBody && (
+                <button
+                  type="button"
+                  onClick={() => openTerms(plan.termsTitle, plan.termsBody)}
+                  className="mt-2 inline-flex text-sm font-semibold text-sky-700 underline decoration-sky-300 underline-offset-4 hover:text-sky-800"
+                >
+                  Terms
+                </button>
+              )}
+
               <ul className="mt-6 space-y-3 text-sm text-slate-600">
                 {plan.perks.map((perk) => (
                   <li key={perk} className="flex items-start gap-2">
@@ -253,7 +293,7 @@ const Pricing = () => {
                       : "border border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 focus:ring-slate-400"
                   }`}
                 >
-
+                  {checkoutPlanKey === plan.planKey ? "Opening checkout…" : subscribeLabel}
                 </button>
               ) : (
                 <Link
@@ -277,8 +317,43 @@ const Pricing = () => {
           ))}
         </div>
       </div>
+
+      {termsOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={termsTitle || "Terms"}
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-900/40"
+            aria-label="Close terms"
+            onClick={closeTerms}
+          />
+          <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <h3 className="text-lg font-semibold text-slate-900">{termsTitle || "Terms"}</h3>
+              <button
+                type="button"
+                onClick={closeTerms}
+                className="rounded-lg px-2 py-1 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-4 space-y-3 text-sm text-slate-700">
+              {termsLines.map((line, idx) => {
+                const trimmed = line.trim();
+                if (!trimmed) return <div key={idx} />;
+                return <p key={idx}>{trimmed}</p>;
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
- 
+
 export default Pricing;
