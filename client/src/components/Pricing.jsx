@@ -1,15 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Card from "./ui/Card";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { buildApiUrl, readJsonResponse } from "../utils/apiConfig.js";
 
+const TRIAL_TERMS = `Trial terms
+
+A valid credit/debit card is required to start the 7-day trial. A temporary $1 verification charge will be placed and refunded after successful verification.
+
+Trial access is limited to one per email/account. We may decline or revoke trial access for suspected abuse or fraud.
+
+Your trial ends after 7 days unless you purchase a paid plan.`;
+
+const LIFETIME_TERMS = `Lifetime terms
+
+Lifetime membership is a one-time purchase that grants access to the Civispec application for one account, for as long as the service is offered.
+
+Offer is limited to the first 300 completed purchases and may be modified or ended at any time before purchase.
+
+Membership is non-transferable and intended for a single account/user. Access may be suspended for violations of our Terms of Service or suspected fraud. Taxes may apply. Refunds are subject to our refund policy.`;
 
 const trialOption = {
   name: "7-day trial",
   price: "$1",
   cadence: "refundable verification",
   description: "Start a 7-day trial after verifying your card. We refund the $1 after verification.",
+  termsTitle: "Trial terms",
+  termsBody: TRIAL_TERMS,
   perks: ["Card required", "Refunded after verification", "One trial per email"],
   highlight: false,
 };
@@ -28,15 +45,17 @@ const plans = [
     ],
   },
   {
-    name: "Municipal Annual",
+    name: "Lifetime Membership (limited-time)",
     price: "$300",
-    cadence: "per year",
-    planKey: "municipal_annual",
-    description: "Best for municipalities and agencies needing broad access.",
+    cadence: "one-time",
+    planKey: "lifetime",
+    description: "Lifetime access for the first 300 purchasers. Conditions apply.",
+    termsTitle: "Lifetime terms",
+    termsBody: LIFETIME_TERMS,
     perks: [
-      "Up to 10 seats included",
-      "Priority webhook & API support",
-      "Custom reporting templates",
+     "One-time payment (no renewal)",
+      "Lifetime access for 1 account",
+      "Limited to first 300 purchasers",
     ],
     highlight: true,
   },
