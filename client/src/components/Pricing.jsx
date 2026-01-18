@@ -34,7 +34,7 @@ const trialOption = {
 const plans = [
   {
     name: "Consultant Monthly",
-    price: "$59",
+    price: "$30",
     cadence: "per month",
     planKey: "consultant_monthly",
     description: "Unlimited station lookups, IDF curves, and PDF exports.",
