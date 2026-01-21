@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-
+import rainHero from "../assets/rain-hero.jpg";
 const Hero = () => {
   const { user } = useAuth();
   const [featuresOpen, setFeaturesOpen] = useState(false);
@@ -82,7 +82,7 @@ const Hero = () => {
         <div className="relative flex w-full max-w-md justify-center">
           <div className="relative overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200">
             <img
-              src="https://images.unsplash.com/photo-1521207418485-99c705420785?auto=format&fit=crop&w=900&q=80"
+              src={rainHero}
               alt="Rainfall chart preview"
               className="h-96 w-full object-cover"
             />
