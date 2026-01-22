@@ -15,8 +15,10 @@ import Signup from "./pages/Signup.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
-import RequireSubscription from "./components/RequireSubscription.jsx";
-import Start from "./pages/Start.jsx";
+
+import FeaturesRoadmap from "./pages/FeaturesRoadmap.jsx";
+
+
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -27,6 +29,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/features" element={<FeaturesRoadmap />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           {/* Entry gate: explains pricing and routes user to login/signup/subscribe */}
