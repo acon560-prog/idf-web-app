@@ -13,6 +13,7 @@ import TestAutocomplete from "./pages/TestAutocomplete.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
+import FeaturesRoadmap from "./pages/FeaturesRoadmap.jsx";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/features" element={<FeaturesRoadmap />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route
