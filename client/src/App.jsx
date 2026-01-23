@@ -33,7 +33,13 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           {/* Entry gate: explains pricing and routes user to login/signup/subscribe */}
-          <Route path="/start" element={<Start />} />
+          <Route
+          path="/start"
+          element={
+            <RequireAuth>
+              <MVPIDFViewerV2 />
+            </RequireAuth>
+          } />
           {/* IDF Viewer is a paid feature: requires login + active subscription */}
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
@@ -41,13 +47,11 @@ function App() {
             path="/idf-viewer"
             element={
               <RequireAuth>
-                 <RequireSubscription>
-                 <MVPIDFViewerV2 />
-                 </RequireSubscription>
+                <MVPIDFViewerV2 />
               </RequireAuth>
             }
           />
-          <Route path="/reset-password" element={<ResetPassword />} />
+          
           
           <Route path="/test-autocomplete" element={<TestAutocomplete />} />
           <Route path="/admin" element={<AdminDashboard />} />
