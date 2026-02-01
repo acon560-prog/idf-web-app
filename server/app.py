@@ -5,6 +5,8 @@ import json
 import os
 import math
 import smtplib
+import statistics
+from functools import lru_cache
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 
@@ -90,6 +92,215 @@ STATION_LOOKUP = {}
 IDF_DATA = {}
 IDF_KEY_MAPPING = {}
 IDF_STATION_IDS = set() 
+
+# Optional: IDF_CC (climate change) exports (per-station)
+IDF_CC_ROOT = os.path.join(os.path.dirname(__file__), "data", "idf_cc")
+
+
+def _median(values):
+    clean = [v for v in values if v is not None]
+    if not clean:
+        return None
+    try:
+        return statistics.median(clean)
+    except Exception:
+        clean.sort()
+        mid = len(clean) // 2
+        if len(clean) % 2 == 1:
+            return clean[mid]
+        return (clean[mid - 1] + clean[mid]) / 2.0
+
+
+def _parse_idf_cc_station_id(header_line: str):
+    if not isinstance(header_line, str):
+        return None
+    m = re.search(r"Station ID:\s*([0-9A-Za-z]+)", header_line)
+    return m.group(1).strip() if m else None
+
+
+def _parse_idf_cc_final_year(line: str):
+    if not isinstance(line, str):
+        return None
+    m = re.search(r"final year:\s*([0-9]{4})", line, flags=re.IGNORECASE)
+    try:
+        return int(m.group(1)) if m else None
+    except Exception:
+        return None
+
+
+def _parse_idf_cc_intensity_table(lines, start_index):
+    """
+    Parses an "Intensity (mm/h)" table starting at or after start_index.
+    Returns (table_dict, next_index, return_periods)
+    table_dict: {duration_minutes(int): {rp(str): value(float)}}
+    """
+    i = start_index
+    # find header line starting with t\T
+    while i < len(lines) and "t\\T" not in (lines[i] or ""):
+        i += 1
+    if i >= len(lines):
+        return None, start_index, None
+
+    header_tokens = str(lines[i]).strip().split()
+    # header like: ["t\\T","2","5","10",...]
+    rps = [t.strip() for t in header_tokens[1:] if t.strip()]
+    i += 1
+
+    table = {}
+    while i < len(lines):
+        raw = lines[i]
+        line = (raw or "").strip()
+        if not line:
+            break
+        if line.lower().startswith("precipitation") or line.lower().startswith("model:") or line.startswith("-"):
+            break
+        tokens = line.split()
+        if not tokens:
+            break
+        # duration is first token (minutes)
+        try:
+            dur = int(float(tokens[0]))
+        except Exception:
+            break
+        row = {}
+        for idx, rp in enumerate(rps):
+            if idx + 1 >= len(tokens):
+                continue
+            try:
+                row[rp] = float(tokens[idx + 1])
+            except Exception:
+                continue
+        if row:
+            table[dur] = row
+        i += 1
+
+    return table, i, rps
+
+
+@lru_cache(maxsize=1)
+def _idf_cc_index():
+    """
+    Maps stationId -> path to IDF_CC export file.
+    We scan once on first use to keep runtime cost low.
+    """
+    mapping = {}
+    if not os.path.isdir(IDF_CC_ROOT):
+        return mapping
+    for root, _dirs, files in os.walk(IDF_CC_ROOT):
+        for filename in files:
+            if not filename.lower().endswith(".csv"):
+                continue
+            path = os.path.join(root, filename)
+            try:
+                with open(path, "r", encoding="utf-8", errors="ignore") as fp:
+                    # station id is usually on the first few lines
+                    for _ in range(30):
+                        line = fp.readline()
+                        if not line:
+                            break
+                        sid = _parse_idf_cc_station_id(line)
+                        if sid:
+                            mapping[str(sid)] = path
+                            break
+            except Exception:
+                continue
+    return mapping
+
+
+@lru_cache(maxsize=64)
+def _load_idf_cc_export(path: str):
+    """
+    Parses an IDF_CC v8-style export and returns:
+      {
+        stationId, finalYear,
+        baseline: {dur: {rp: val}},
+        scenarios: { 'ssp585': [table1, table2, ...], ... },
+        modelsPerScenario: { 'ssp585': N, ... }
+      }
+    """
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as fp:
+            lines = [line.rstrip("\n") for line in fp.readlines()]
+    except Exception:
+        return None
+
+    station_id = None
+    final_year = None
+    baseline = None
+    scenarios = {}
+
+    # Try to capture station id and final year from header
+    for j in range(min(40, len(lines))):
+        if station_id is None:
+            station_id = _parse_idf_cc_station_id(lines[j])
+        if final_year is None:
+            final_year = _parse_idf_cc_final_year(lines[j])
+
+    # Baseline historical intensity table: first "Intensity (mm/h)" section in file
+    for i, line in enumerate(lines[:200]):
+        if str(line).strip().lower().startswith("intensity (mm/h)"):
+            baseline, _next_i, _rps = _parse_idf_cc_intensity_table(lines, i)
+            break
+
+    # Model/scenario tables
+    i = 0
+    while i < len(lines):
+        line = (lines[i] or "").strip()
+        if line.lower().startswith("model:"):
+            # read forward to find Experiment and then Intensity table
+            experiment = None
+            j = i
+            while j < len(lines) and j < i + 20:
+                l2 = (lines[j] or "").strip()
+                if l2.lower().startswith("experiment:"):
+                    experiment = l2.split(":", 1)[1].strip()
+                if l2.lower().startswith("intensity (mm/h)"):
+                    break
+                j += 1
+            if experiment and j < len(lines) and (lines[j] or "").strip().lower().startswith("intensity (mm/h)"):
+                table, next_idx, _rps = _parse_idf_cc_intensity_table(lines, j)
+                # experiment is like "historical,ssp585" -> scenario is last token
+                scenario = experiment.split(",")[-1].strip().lower()
+                if table:
+                    scenarios.setdefault(scenario, []).append(table)
+                i = next_idx
+                continue
+        i += 1
+
+    models_per = {k: len(v) for k, v in scenarios.items()}
+    return {
+        "stationId": station_id,
+        "finalYear": final_year,
+        "baseline": baseline,
+        "scenarios": scenarios,
+        "modelsPerScenario": models_per,
+    }
+
+
+def _idf_cc_ensemble_median(table_list):
+    if not table_list:
+        return None
+    out = {}
+    durations = set()
+    rps = set()
+    for t in table_list:
+        durations.update(t.keys())
+        for d, row in t.items():
+            rps.update(row.keys())
+    for d in sorted(durations):
+        out_row = {}
+        for rp in sorted(rps, key=lambda x: int(x) if str(x).isdigit() else 10**9):
+            vals = []
+            for t in table_list:
+                v = t.get(d, {}).get(rp)
+                if isinstance(v, (int, float)) and math.isfinite(v):
+                    vals.append(float(v))
+            med = _median(vals)
+            if med is not None:
+                out_row[str(rp)] = float(med)
+        if out_row:
+            out[int(d)] = out_row
+    return out
 
 
 def normalize_email(email: str) -> str:
@@ -1010,9 +1221,68 @@ def idf_curves():
 
         processed_data.sort(key=lambda x: x['duration'])
         
+        # Optional climate-change adjustment
+        climate = (request.args.get("climate") or "").strip().lower()
+        climate_mode = (request.args.get("climateMode") or "factor").strip().lower()
+        climate_meta = None
+
+        if climate in ("cc_2050_high", "idf_cc_2050_high", "cmip6_2050_ssp585"):
+            station_id_str = str(stationId)
+            idf_cc_path = _idf_cc_index().get(station_id_str)
+            if idf_cc_path:
+                export = _load_idf_cc_export(idf_cc_path)
+                if export:
+                    scenario = "ssp585"
+                    future_tables = export.get("scenarios", {}).get(scenario) or []
+                    baseline = export.get("baseline") or {}
+                    future_median = _idf_cc_ensemble_median(future_tables) or {}
+
+                    applied_count = 0
+                    for point in processed_data:
+                        dur = point.get("duration")
+                        if not isinstance(dur, int):
+                            continue
+                        base_row = baseline.get(dur) or {}
+                        fut_row = future_median.get(dur) or {}
+                        for rp, val in list(point.items()):
+                            if rp == "duration":
+                                continue
+                            if not isinstance(val, (int, float)) or not math.isfinite(val):
+                                continue
+                            # Only apply where we have matching baseline+future values
+                            b = base_row.get(str(rp))
+                            f = fut_row.get(str(rp))
+                            if not isinstance(b, (int, float)) or not isinstance(f, (int, float)) or b <= 0:
+                                continue
+                            if climate_mode == "override":
+                                point[rp] = float(f)
+                            else:
+                                factor = float(f) / float(b)
+                                point[rp] = float(val) * factor
+                            applied_count += 1
+
+                    climate_meta = {
+                        "requested": climate,
+                        "applied": True if applied_count > 0 else False,
+                        "mode": climate_mode,
+                        "scenario": "SSP5-8.5",
+                        "finalYear": export.get("finalYear"),
+                        "stationId": export.get("stationId"),
+                        "modelsUsed": export.get("modelsPerScenario", {}).get(scenario, 0),
+                        "note": "IDF_CC v8 export; ensemble-median SSP5-8.5 vs station baseline used to adjust returned values.",
+                    }
+            else:
+                climate_meta = {
+                    "requested": climate,
+                    "applied": False,
+                    "reason": "No IDF_CC export found for this stationId on server.",
+                }
+
         response_payload = {"data": processed_data}
         if fallback_meta:
             response_payload['fallback'] = fallback_meta
+        if climate_meta:
+            response_payload["climate"] = climate_meta
         return jsonify(response_payload)
 
     except Exception as e:
