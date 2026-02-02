@@ -118,6 +118,7 @@ const MVPIDFViewerV2 = () => {
   const [trialMessage, setTrialMessage] = useState("");
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
+  const [applyClimate2050High, setApplyClimate2050High] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isStationInfoVisible, setIsStationInfoVisible] = useState(false);
@@ -353,12 +354,15 @@ const MVPIDFViewerV2 = () => {
         setIsStationInfoVisible(true);
         console.log("Found nearest station:", nearestStation);
 
+       const idfUrlBase = `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`;
+       const idfUrl = applyClimate2050High ? `${idfUrlBase}&climate=cc_2050_high` : idfUrlBase;
+
        const idfResponse = await (authFetch
         ? authFetch(
-            `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`,
+            idfUrl,
           )
         : fetch(
-            `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`,
+            idfUrl,
           ));
 
         const idfJson = await readJsonResponse(
@@ -680,6 +684,23 @@ const MVPIDFViewerV2 = () => {
              Enter a location to find the nearest weather station and its
             Intensity-Duration-Frequency (IDF) curves.
           </p>
+
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={applyClimate2050High}
+                onChange={(e) => setApplyClimate2050High(e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                Apply climate change (Ontario): <span className="font-semibold">2050 + high emissions (SSP5-8.5)</span>
+              </span>
+            </label>
+            <p className="mt-2 text-xs text-gray-500">
+              This applies only when an IDF_CC export exists for the selected station.
+            </p>
+          </div>
 
           <form onSubmit={handleSearch} className="space-y-4">
              <div>
