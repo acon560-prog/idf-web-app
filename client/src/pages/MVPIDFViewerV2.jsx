@@ -119,6 +119,7 @@ const MVPIDFViewerV2 = () => {
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
   const [applyClimate2050High, setApplyClimate2050High] = useState(false);
+  const [climateInfo, setClimateInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isStationInfoVisible, setIsStationInfoVisible] = useState(false);
@@ -300,6 +301,7 @@ const MVPIDFViewerV2 = () => {
       e.preventDefault();
         setError(null);
         setIDFData([]);
+        setClimateInfo(null);
         setStation(null);
         setShowChart(false);
         setIsStationInfoVisible(false);
@@ -376,6 +378,7 @@ const MVPIDFViewerV2 = () => {
           }
           throw new Error(idfJson?.error || "Failed to fetch IDF data.");
         }
+        setClimateInfo(idfJson?.climate || null);
         console.log("Raw IDF data from API:", idfJson.data);
 
         const processedData = idfJson.data
@@ -481,7 +484,7 @@ const MVPIDFViewerV2 = () => {
           setLoading(false);
         }
       },
-      [authFetch, place],
+      [authFetch, place, applyClimate2050High],
     );
 
   const handleCheckboxChange = useCallback((event) => {
@@ -696,6 +699,21 @@ const MVPIDFViewerV2 = () => {
             <p className="mt-2 text-xs text-gray-500">
               This applies only when an IDF_CC export exists for the selected station.
             </p>
+            {applyClimate2050High && (
+              <div className="mt-2 text-xs">
+                {climateInfo?.applied ? (
+                  <div className="text-emerald-700">
+                    Climate applied: <span className="font-semibold">Yes</span>
+                    {climateInfo?.modelsUsed ? ` (models: ${climateInfo.modelsUsed})` : ""}
+                  </div>
+                ) : (
+                  <div className="text-amber-700">
+                    Climate applied: <span className="font-semibold">No</span>
+                    {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSearch} className="space-y-4">
