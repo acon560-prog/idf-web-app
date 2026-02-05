@@ -224,6 +224,9 @@ const MVPIDFViewerV2 = () => {
       const initAutocomplete = () => {
           if (window.google?.maps?.places) {
             console.log("Initializing Autocomplete.");
+            if (autocompleteRef.current) {
+              return;
+            }
             // Create and store the autocomplete instance in a ref
             autocompleteRef.current = new window.google.maps.places.Autocomplete(
               autocompleteInputRef.current,
@@ -244,9 +247,7 @@ const MVPIDFViewerV2 = () => {
                 selectedPlace?.name ||
                 autocompleteInputRef.current?.value ||
                 "";
-              if (autocompleteInputRef.current) {
-                  autocompleteInputRef.current.value = formatted;
-                }
+              setLocationInputValue(formatted);
             });
         } else {
           // If the library is not yet ready, try again after a short delay
