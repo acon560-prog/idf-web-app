@@ -1112,6 +1112,33 @@ def haversine(lat1, lon1, lat2, lon2):
     a = math.sin(delta_phi / 2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
+
+
+def _norm_name_tokens(station):
+    """
+    Extracts tokens from station name for loose matching against IDF keys.
+    """
+    raw = station.get("normalizedName") or station.get("name") or ""
+    raw = str(raw).lower()
+    # keep alphanumerics, turn separators into spaces
+    raw = re.sub(r"[^a-z0-9]+", " ", raw).strip()
+    tokens = [t for t in raw.split() if len(t) >= 4]  # ignore very short tokens
+    return tokens
+
+
+def _idf_key_seems_to_match_station(station, idf_key: str) -> bool:
+    """
+    Heuristic: does the IDF key string contain at least one meaningful token
+    from the station name? This helps avoid mismatches where a stationId points
+    to an IDF file for a different station.
+    """
+    if not idf_key:
+        return False
+    key = str(idf_key).lower()
+    tokens = _norm_name_tokens(station)
+    if not tokens:
+        return False
+    return any(t in key for t in tokens)
     
 @app.route('/api/stations', methods=['GET'])
 def get_stations():
@@ -1139,6 +1166,7 @@ def nearest_station():
 
     closest_station = None
     min_distance = float('inf')
+    best_quality = 10  # lower is better
 
     for station in candidates:
         station_lat = station.get('lat')
@@ -1150,7 +1178,18 @@ def nearest_station():
                 station_lon = float(station_lon)
                 distance = haversine(lat, lon, station_lat, station_lon)
 
-                if distance < min_distance:
+                # Prefer stations whose stationId maps to an IDF key that matches the station name
+                candidate_id = station.get("stationId")
+                idf_key = IDF_KEY_MAPPING.get(str(candidate_id)) if candidate_id else None
+                if candidate_id and idf_key and _idf_key_seems_to_match_station(station, idf_key):
+                    quality = 0
+                elif candidate_id and idf_key:
+                    quality = 1
+                else:
+                    quality = 2
+
+                if quality < best_quality or (quality == best_quality and distance < min_distance):
+                    best_quality = quality
                     min_distance = distance
                     closest_station = station
 
