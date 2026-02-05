@@ -1125,13 +1125,22 @@ def nearest_station():
     except (ValueError, TypeError):
         return jsonify({"error": "Invalid latitude or longitude."}), 400
 
+    # Optional province filter (helps avoid cross-province duplicates in merged datasets)
+    province = (request.args.get("province") or "").strip().upper()
+
     if not isinstance(STATIONS_DATA, list) or not STATIONS_DATA:
         return jsonify({"error": "Stations data not available."}), 500
+
+    candidates = STATIONS_DATA
+    if province:
+        candidates = [s for s in STATIONS_DATA if (s.get("provinceCode") or "").strip().upper() == province]
+        if not candidates:
+            candidates = STATIONS_DATA
 
     closest_station = None
     min_distance = float('inf')
 
-    for station in STATIONS_DATA:
+    for station in candidates:
         station_lat = station.get('lat')
         station_lon = station.get('lon')
 
