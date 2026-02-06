@@ -1274,7 +1274,35 @@ def idf_curves():
         climate_mode = (request.args.get("climateMode") or "factor").strip().lower()
         climate_meta = None
 
-        if climate in ("cc_2050_high", "idf_cc_2050_high", "cmip6_2050_ssp585"):
+        if climate in ("qc18", "qc_18", "quebec18"):
+            # Québec guidance: +18% uplift (applied to intensities)
+            station_meta = STATION_LOOKUP.get(stationId) or {}
+            prov = (station_meta.get("provinceCode") or "").strip().upper()
+            if prov == "QC":
+                applied_count = 0
+                for point in processed_data:
+                    for rp, val in list(point.items()):
+                        if rp == "duration":
+                            continue
+                        if isinstance(val, (int, float)) and math.isfinite(val):
+                            point[rp] = float(val) * 1.18
+                            applied_count += 1
+                climate_meta = {
+                    "requested": climate,
+                    "applied": True if applied_count > 0 else False,
+                    "mode": "factor",
+                    "factor": 1.18,
+                    "scope": "QC only",
+                    "note": "QC climate-change uplift (+18%) applied to intensities.",
+                }
+            else:
+                climate_meta = {
+                    "requested": climate,
+                    "applied": False,
+                    "reason": f"Station province is {prov or 'unknown'}; qc18 applies only to QC stations.",
+                }
+
+        elif climate in ("cc_2050_high", "idf_cc_2050_high", "cmip6_2050_ssp585"):
             station_id_str = str(stationId)
             idf_cc_path = _idf_cc_index().get(station_id_str)
             if idf_cc_path:
