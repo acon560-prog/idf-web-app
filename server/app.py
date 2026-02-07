@@ -95,6 +95,8 @@ IDF_STATION_IDS = set()
 
 # Optional: IDF_CC (climate change) exports (per-station)
 IDF_CC_ROOT = os.path.join(os.path.dirname(__file__), "data", "idf_cc")
+IDF_CC_EXPORTS_ROOT = os.path.join(os.path.dirname(__file__), "data", "idf_cc_exports")
+IDF_CC_FACTORS_ROOT = os.path.join(os.path.dirname(__file__), "data", "idf_cc_factors")
 
 
 def _median(values):
@@ -185,26 +187,63 @@ def _idf_cc_index():
     """
     mapping = {}
     if not os.path.isdir(IDF_CC_ROOT):
+        # still allow exports root to be scanned
+        pass
+    for root in [IDF_CC_ROOT, IDF_CC_EXPORTS_ROOT]:
+        if not os.path.isdir(root):
+            continue
+        for _root, _dirs, files in os.walk(root):
+            for filename in files:
+                if not filename.lower().endswith(".csv"):
+                    continue
+                path = os.path.join(_root, filename)
+                try:
+                    with open(path, "r", encoding="utf-8", errors="ignore") as fp:
+                        # station id is usually on the first few lines
+                        for _ in range(30):
+                            line = fp.readline()
+                            if not line:
+                                break
+                            sid = _parse_idf_cc_station_id(line)
+                            if sid:
+                                mapping[str(sid)] = path
+                                break
+                except Exception:
+                    continue
+    return mapping
+
+
+@lru_cache(maxsize=1)
+def _idf_cc_factors_index():
+    """
+    Maps stationId -> path to compact factor JSON file.
+    """
+    mapping = {}
+    if not os.path.isdir(IDF_CC_FACTORS_ROOT):
         return mapping
-    for root, _dirs, files in os.walk(IDF_CC_ROOT):
+    for root, _dirs, files in os.walk(IDF_CC_FACTORS_ROOT):
         for filename in files:
-            if not filename.lower().endswith(".csv"):
+            if not filename.lower().endswith(".json"):
                 continue
             path = os.path.join(root, filename)
             try:
-                with open(path, "r", encoding="utf-8", errors="ignore") as fp:
-                    # station id is usually on the first few lines
-                    for _ in range(30):
-                        line = fp.readline()
-                        if not line:
-                            break
-                        sid = _parse_idf_cc_station_id(line)
-                        if sid:
-                            mapping[str(sid)] = path
-                            break
+                with open(path, "r", encoding="utf-8") as fp:
+                    doc = json.load(fp)
+                sid = doc.get("stationId")
+                if sid:
+                    mapping[str(sid)] = path
             except Exception:
                 continue
     return mapping
+
+
+@lru_cache(maxsize=128)
+def _load_idf_cc_factors(path: str):
+    try:
+        with open(path, "r", encoding="utf-8") as fp:
+            return json.load(fp)
+    except Exception:
+        return None
 
 
 @lru_cache(maxsize=64)
@@ -1304,7 +1343,38 @@ def idf_curves():
 
         elif climate in ("cc_2050_high", "idf_cc_2050_high", "cmip6_2050_ssp585"):
             station_id_str = str(stationId)
-            idf_cc_path = _idf_cc_index().get(station_id_str)
+            idf_cc_path = None
+            # Prefer compact precomputed factors if available (fast + small)
+            factors_path = _idf_cc_factors_index().get(station_id_str)
+            if factors_path:
+                factors_doc = _load_idf_cc_factors(factors_path) or {}
+                factors = factors_doc.get("factors") or {}
+                applied_count = 0
+                for point in processed_data:
+                    dur = point.get("duration")
+                    if not isinstance(dur, int):
+                        continue
+                    row = factors.get(str(dur)) or factors.get(dur) or {}
+                    for rp, val in list(point.items()):
+                        if rp == "duration":
+                            continue
+                        f = row.get(str(rp))
+                        if isinstance(val, (int, float)) and math.isfinite(val) and isinstance(f, (int, float)) and f > 0:
+                            point[rp] = float(val) * float(f)
+                            applied_count += 1
+                climate_meta = {
+                    "requested": climate,
+                    "applied": True if applied_count > 0 else False,
+                    "mode": "factor",
+                    "scenario": "SSP5-8.5",
+                    "stationId": factors_doc.get("stationId") or station_id_str,
+                    "initialYear": factors_doc.get("initialYear"),
+                    "finalYear": factors_doc.get("finalYear"),
+                    "source": "idf_cc_factors_json",
+                    "note": "Applied precomputed SSP5-8.5 factors (future/historical).",
+                }
+            else:
+                idf_cc_path = _idf_cc_index().get(station_id_str)
             if idf_cc_path:
                 export = _load_idf_cc_export(idf_cc_path)
                 if export:
@@ -1345,6 +1415,7 @@ def idf_curves():
                         "finalYear": export.get("finalYear"),
                         "stationId": export.get("stationId"),
                         "modelsUsed": export.get("modelsPerScenario", {}).get(scenario, 0),
+                        "source": "idf_cc_export_csv",
                         "note": "IDF_CC v8 export; ensemble-median SSP5-8.5 vs station baseline used to adjust returned values.",
                     }
             else:
