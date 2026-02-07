@@ -617,6 +617,76 @@ def find_nearest_station_with_idf(station_id):
     }
 
 
+def find_nearest_station_with_idf_cc(station_id: str):
+    """
+    Finds the nearest station (same province when possible) that has either:
+    - a compact IDF_CC factor JSON, or
+    - an IDF_CC export CSV (fallback).
+    Returns {station, distance_km, source} or None.
+    """
+    origin = STATION_LOOKUP.get(station_id)
+    if not origin:
+        return None
+
+    origin_lat = parse_coordinate(origin.get("lat"))
+    origin_lon = parse_coordinate(origin.get("lon"))
+    if origin_lat is None or origin_lon is None:
+        return None
+
+    origin_prov = (origin.get("provinceCode") or "").strip().upper()
+
+    factors_idx = _idf_cc_factors_index()
+    exports_idx = _idf_cc_index()
+    eligible_ids = set(factors_idx.keys()) | set(exports_idx.keys())
+    if not eligible_ids:
+        return None
+
+    best_station = None
+    best_distance = float("inf")
+    best_source = None
+
+    # Prefer same-province matches; if none exist, fall back to any eligible station.
+    candidates = []
+    if origin_prov:
+        candidates = [
+            s
+            for s in STATIONS_DATA
+            if (s.get("provinceCode") or "").strip().upper() == origin_prov
+        ]
+    if not candidates:
+        candidates = STATIONS_DATA
+
+    for candidate in candidates:
+        candidate_id = candidate.get("stationId")
+        if not candidate_id:
+            continue
+        candidate_id = str(candidate_id)
+        if candidate_id == str(station_id):
+            continue
+        if candidate_id not in eligible_ids:
+            continue
+
+        cand_lat = parse_coordinate(candidate.get("lat"))
+        cand_lon = parse_coordinate(candidate.get("lon"))
+        if cand_lat is None or cand_lon is None:
+            continue
+
+        distance = haversine(origin_lat, origin_lon, cand_lat, cand_lon)
+        if distance < best_distance:
+            best_distance = distance
+            best_station = candidate
+            best_source = "idf_cc_factors_json" if candidate_id in factors_idx else "idf_cc_export_csv"
+
+    if not best_station or best_distance == float("inf"):
+        return None
+
+    return {
+        "station": best_station,
+        "distance_km": best_distance,
+        "source": best_source,
+    }
+
+
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     payload = request.get_json() or {}
@@ -1264,6 +1334,7 @@ def idf_curves():
 
         idf_key = IDF_KEY_MAPPING.get(stationId)
         fallback_meta = None
+        effective_station_id = stationId
         
         if not idf_key or idf_key not in IDF_DATA:
             print(f"IDF data not found for station ID: {stationId}. Attempting fallback.")
@@ -1278,6 +1349,8 @@ def idf_curves():
                     'usedStationName': fallback_station.get('name'),
                     'distanceKm': round(fallback['distance_km'], 2)
                 }
+                if fallback_station.get("stationId"):
+                    effective_station_id = str(fallback_station.get("stationId"))
                 print(f"Fallback succeeded: using station {fallback_meta['usedStationId']} ({fallback_meta['usedStationName']}) at {fallback_meta['distanceKm']} km.")
             else:
                 print(f"IDF fallback failed for station ID: {stationId}")
@@ -1342,7 +1415,7 @@ def idf_curves():
                 }
 
         elif climate in ("cc_2050_high", "idf_cc_2050_high", "cmip6_2050_ssp585"):
-            station_id_str = str(stationId)
+            station_id_str = str(effective_station_id)
             idf_cc_path = None
             # Prefer compact precomputed factors if available (fast + small)
             factors_path = _idf_cc_factors_index().get(station_id_str)
@@ -1419,11 +1492,58 @@ def idf_curves():
                         "note": "IDF_CC v8 export; ensemble-median SSP5-8.5 vs station baseline used to adjust returned values.",
                     }
             else:
-                climate_meta = {
-                    "requested": climate,
-                    "applied": False,
-                    "reason": "No IDF_CC export found for this stationId on server.",
-                }
+                # Last resort: apply climate factors from nearest station that has them.
+                nearest_cc = find_nearest_station_with_idf_cc(station_id_str)
+                if nearest_cc:
+                    used_station = nearest_cc.get("station") or {}
+                    used_id = str(used_station.get("stationId") or "")
+                    used_source = nearest_cc.get("source")
+                    used_distance = nearest_cc.get("distance_km")
+
+                    if used_source == "idf_cc_factors_json":
+                        used_factors_path = _idf_cc_factors_index().get(used_id)
+                        factors_doc = _load_idf_cc_factors(used_factors_path) if used_factors_path else None
+                        factors = (factors_doc or {}).get("factors") or {}
+                        applied_count = 0
+                        for point in processed_data:
+                            dur = point.get("duration")
+                            if not isinstance(dur, int):
+                                continue
+                            row = factors.get(str(dur)) or factors.get(dur) or {}
+                            for rp, val in list(point.items()):
+                                if rp == "duration":
+                                    continue
+                                f = row.get(str(rp))
+                                if isinstance(val, (int, float)) and math.isfinite(val) and isinstance(f, (int, float)) and f > 0:
+                                    point[rp] = float(val) * float(f)
+                                    applied_count += 1
+                        climate_meta = {
+                            "requested": climate,
+                            "applied": True if applied_count > 0 else False,
+                            "mode": "factor",
+                            "scenario": "SSP5-8.5",
+                            "source": "nearest_idf_cc_factors_json",
+                            "usedClimateStationId": used_id,
+                            "usedClimateStationName": used_station.get("name"),
+                            "usedClimateDistanceKm": round(float(used_distance), 2) if used_distance is not None else None,
+                            "note": "Applied climate factors from nearest station with IDF_CC factors.",
+                        }
+                    else:
+                        climate_meta = {
+                            "requested": climate,
+                            "applied": False,
+                            "reason": "Nearest station has only export CSV; add factors JSONs (recommended) or provide export under server/data/idf_cc.",
+                            "source": "nearest_idf_cc_export_csv",
+                            "usedClimateStationId": used_id,
+                            "usedClimateStationName": used_station.get("name"),
+                            "usedClimateDistanceKm": round(float(used_distance), 2) if used_distance is not None else None,
+                        }
+                else:
+                    climate_meta = {
+                        "requested": climate,
+                        "applied": False,
+                        "reason": "No IDF_CC export/factors found for this stationId (or nearby stations) on server.",
+                    }
 
         response_payload = {"data": processed_data}
         if fallback_meta:
