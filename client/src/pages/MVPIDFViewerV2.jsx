@@ -119,6 +119,7 @@ const MVPIDFViewerV2 = () => {
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
   const [applyClimate2050High, setApplyClimate2050High] = useState(false);
+  const [applyQc18, setApplyQc18] = useState(false);
   const [climateInfo, setClimateInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -361,7 +362,12 @@ const MVPIDFViewerV2 = () => {
         console.log("Found nearest station:", nearestStation);
 
        const idfUrlBase = `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`;
-       const idfUrl = applyClimate2050High ? `${idfUrlBase}&climate=cc_2050_high` : idfUrlBase;
+       const climateParam = applyClimate2050High
+         ? "cc_2050_high"
+         : applyQc18
+           ? "qc18"
+           : "";
+       const idfUrl = climateParam ? `${idfUrlBase}&climate=${climateParam}` : idfUrlBase;
 
        const idfResponse = await (authFetch
         ? authFetch(
@@ -492,7 +498,7 @@ const MVPIDFViewerV2 = () => {
           setLoading(false);
         }
       },
-      [authFetch, place, applyClimate2050High],
+      [authFetch, place, applyClimate2050High, applyQc18],
     );
 
   const handleCheckboxChange = useCallback((event) => {
@@ -697,7 +703,11 @@ const MVPIDFViewerV2 = () => {
               <input
                 type="checkbox"
                 checked={applyClimate2050High}
-                onChange={(e) => setApplyClimate2050High(e.target.checked)}
+                onChange={(e) => {
+                  const next = e.target.checked;
+                  setApplyClimate2050High(next);
+                  if (next) setApplyQc18(false);
+                }}
                 className="mt-1"
               />
               <span>
@@ -713,6 +723,41 @@ const MVPIDFViewerV2 = () => {
                   <div className="text-emerald-700">
                     Climate applied: <span className="font-semibold">Yes</span>
                     {climateInfo?.modelsUsed ? ` (models: ${climateInfo.modelsUsed})` : ""}
+                  </div>
+                ) : (
+                  <div className="text-amber-700">
+                    Climate applied: <span className="font-semibold">No</span>
+                    {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={applyQc18}
+                onChange={(e) => {
+                  const next = e.target.checked;
+                  setApplyQc18(next);
+                  if (next) setApplyClimate2050High(false);
+                }}
+                className="mt-1"
+              />
+              <span>
+                Apply climate change (Québec): <span className="font-semibold">+18% uplift</span>
+              </span>
+            </label>
+            <p className="mt-2 text-xs text-gray-500">
+              Applied only to stations in QC.
+            </p>
+            {applyQc18 && (
+              <div className="mt-2 text-xs">
+                {climateInfo?.applied ? (
+                  <div className="text-emerald-700">
+                    Climate applied: <span className="font-semibold">Yes</span> (factor: 1.18)
                   </div>
                 ) : (
                   <div className="text-amber-700">
