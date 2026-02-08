@@ -740,9 +740,32 @@ def find_nearest_station_with_idf_cc(station_id: str):
     if not eligible_ids:
         return None
 
-    best_station = None
-    best_distance = float("inf")
-    best_source = None
+    def _nearest_for_allowed_ids(allowed_ids: set[str]):
+        best_station = None
+        best_distance = float("inf")
+        for candidate in candidates:
+            candidate_id = candidate.get("stationId")
+            if not candidate_id:
+                continue
+            candidate_id = str(candidate_id)
+            if candidate_id == str(station_id):
+                continue
+            if candidate_id not in allowed_ids:
+                continue
+
+            cand_lat = parse_coordinate(candidate.get("lat"))
+            cand_lon = parse_coordinate(candidate.get("lon"))
+            if cand_lat is None or cand_lon is None:
+                continue
+
+            distance = haversine(origin_lat, origin_lon, cand_lat, cand_lon)
+            if distance < best_distance:
+                best_distance = distance
+                best_station = candidate
+
+        if not best_station or best_distance == float("inf"):
+            return None
+        return {"station": best_station, "distance_km": best_distance}
 
     # Prefer same-province matches; if none exist, fall back to any eligible station.
     candidates = []
@@ -755,35 +778,17 @@ def find_nearest_station_with_idf_cc(station_id: str):
     if not candidates:
         candidates = STATIONS_DATA
 
-    for candidate in candidates:
-        candidate_id = candidate.get("stationId")
-        if not candidate_id:
-            continue
-        candidate_id = str(candidate_id)
-        if candidate_id == str(station_id):
-            continue
-        if candidate_id not in eligible_ids:
-            continue
+    # Prefer factor JSONs over export CSVs (even if slightly farther),
+    # because exports alone may not be usable at runtime without parsing.
+    nearest_factors = _nearest_for_allowed_ids(set(factors_idx.keys()))
+    if nearest_factors:
+        return {**nearest_factors, "source": "idf_cc_factors_json"}
 
-        cand_lat = parse_coordinate(candidate.get("lat"))
-        cand_lon = parse_coordinate(candidate.get("lon"))
-        if cand_lat is None or cand_lon is None:
-            continue
+    nearest_exports = _nearest_for_allowed_ids(set(exports_idx.keys()))
+    if nearest_exports:
+        return {**nearest_exports, "source": "idf_cc_export_csv"}
 
-        distance = haversine(origin_lat, origin_lon, cand_lat, cand_lon)
-        if distance < best_distance:
-            best_distance = distance
-            best_station = candidate
-            best_source = "idf_cc_factors_json" if candidate_id in factors_idx else "idf_cc_export_csv"
-
-    if not best_station or best_distance == float("inf"):
-        return None
-
-    return {
-        "station": best_station,
-        "distance_km": best_distance,
-        "source": best_source,
-    }
+    return None
 
 
 @app.route('/api/auth/register', methods=['POST'])
@@ -1496,11 +1501,15 @@ def idf_curves():
         
         idf_station_data = IDF_DATA.get(idf_key, [])
 
-        # If this station has no valid sub-hour IDF values (e.g. 5/10/15/30 min),
-        # fall back to the nearest station that does (still using the already
-        # loaded ECCC IDF dataset). This avoids returning only 1h+ durations
-        # for stations where sub-hour data is missing.
-        if not _idf_station_has_subhour_durations(idf_station_data):
+        # Optional: if the selected station has no valid sub-hour (5–30 min) values,
+        # allow explicitly requesting a fallback to the nearest station that does.
+        allow_subhour_fallback = (request.args.get("allowSubhourFallback") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+        if allow_subhour_fallback and not _idf_station_has_subhour_durations(idf_station_data):
             short_fallback = find_nearest_station_with_subhour_idf(str(effective_station_id))
             if short_fallback:
                 fb_station = short_fallback["station"]
