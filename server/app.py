@@ -1202,14 +1202,53 @@ def list_contact_submissions():
         return jsonify({'error': 'Failed to fetch submissions'}), 500
 
 
-def duration_to_minutes(duration_str):
-    if not isinstance(duration_str, str):
+def duration_to_minutes(duration_value):
+    """
+    Convert an IDF duration into minutes.
+
+    The loaded IDF data can contain durations as:
+    - numbers (already minutes): 5, 10, 15, 60, 120, ...
+    - strings: "5 min", "1 h", "24 hr", etc.
+    """
+    if duration_value is None:
         return None
-    duration_str = duration_str.lower().strip()
-    if 'min' in duration_str:
-        return int(duration_str.replace('min', '').strip())
-    elif 'h' in duration_str:
-        return int(float(duration_str.replace('h', '').strip()) * 60)
+
+    # Many IDF datasets store minute durations as numbers.
+    if isinstance(duration_value, (int, float)):
+        try:
+            if not math.isfinite(float(duration_value)):
+                return None
+        except Exception:
+            return None
+        minutes = int(round(float(duration_value)))
+        return minutes if minutes > 0 else None
+
+    s = str(duration_value).lower().strip()
+    if not s:
+        return None
+    s = re.sub(r"\s+", " ", s)
+
+    m = re.match(r"^(\d+(?:\.\d+)?)\s*(min|mins|minute|minutes)$", s)
+    if m:
+        minutes = int(round(float(m.group(1))))
+        return minutes if minutes > 0 else None
+
+    m = re.match(r"^(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours)$", s)
+    if m:
+        minutes = int(round(float(m.group(1)) * 60.0))
+        return minutes if minutes > 0 else None
+
+    m = re.match(r"^(\d+(?:\.\d+)?)\s*(d|day|days)$", s)
+    if m:
+        minutes = int(round(float(m.group(1)) * 24.0 * 60.0))
+        return minutes if minutes > 0 else None
+
+    # Bare numbers as strings -> assume minutes.
+    m = re.match(r"^(\d+(?:\.\d+)?)$", s)
+    if m:
+        minutes = int(round(float(m.group(1))))
+        return minutes if minutes > 0 else None
+
     return None
 
 def haversine(lat1, lon1, lat2, lon2):
