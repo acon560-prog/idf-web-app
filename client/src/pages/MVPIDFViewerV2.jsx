@@ -236,6 +236,11 @@ const MVPIDFViewerV2 = () => {
           autocompleteRef.current.addListener("place_changed", () => {
               const selectedPlace = autocompleteRef.current.getPlace();
               console.log("Place selected:", selectedPlace);
+              // Some browsers/devices can fire place_changed without a real selection.
+              // Only treat it as a selection when geometry exists.
+              if (!selectedPlace || !selectedPlace.geometry) {
+                return;
+              }
               setPlace(selectedPlace);
               const formatted =
                 selectedPlace?.formatted_address ||
