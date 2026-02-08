@@ -147,15 +147,11 @@ const MVPIDFViewerV2 = () => {
     );
   }, [trialMessage, error]);
   
-  // This useEffect ensures the Google Maps script is loaded only once and correctly.
+  // Load Google Maps script once (independent of auth state).
   useEffect(() => {
-    if (!user) {
-      setScriptLoaded(false);
-      return;
-    }
     if (!hasGoogleApiKey) {
       setScriptLoaded(false);
-       setError(
+      setError(
         "Google Maps API key is missing or invalid. Set REACT_APP_GOOGLE_PLACES_API_KEY in your environment or .env file.",
       );
       return;
@@ -212,13 +208,10 @@ const MVPIDFViewerV2 = () => {
       isMounted = false;
       // No need to remove the script tag, as other components might need it.
     };
-  }, [user, hasGoogleApiKey]);
+  }, [hasGoogleApiKey]);
 
   // This useEffect initializes Autocomplete only after the script has successfully loaded.
   useEffect(() => {
-    if (!user) {
-      return;
-    }
     if (!hasGoogleApiKey) {
       return;
     }
@@ -274,7 +267,7 @@ const MVPIDFViewerV2 = () => {
         }
       };
     }
-  }, [hasGoogleApiKey, scriptLoaded, user]);
+  }, [hasGoogleApiKey, scriptLoaded]);
 
   useEffect(() => {
     if (!user) {

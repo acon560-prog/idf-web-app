@@ -1,52 +1,43 @@
-# ===============================
-# 1. Build React frontend (CRA)
-# ===============================
-FROM node:18 AS frontend-builder
+############################
+# 1) Build the React client #
+############################
+FROM node:20-alpine AS client-build
 
-# Set working directory
-WORKDIR /app
+WORKDIR /app/client
+COPY client/package.json client/package-lock.json ./
+RUN npm ci
+COPY client/ ./
+RUN npm run build
 
-# Copy package.json first for caching
-COPY client/package*.json ./client/
+############################
+# 2) Build the Python server#
+############################
+FROM python:3.12-slim AS server
 
-# Install dependencies
-RUN cd client && npm install
-
-# Copy full React project
-COPY client ./client
-
-# Build the production frontend bundle
-RUN cd client && npm run build
-
-
-# ===============================
-# 2. Build Python Flask backend
-# ===============================
-FROM python:3.11-slim AS backend
-
-# Set working directory
-WORKDIR /app
-
-# Install OS packages required for building Python deps
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy backend code
-COPY server ./server
-
-# Copy CRA "build" folder into Flask /server/build
-COPY --from=frontend-builder /app/client/build ./server/build
-
-# Install backend dependencies
-RUN pip install --no-cache-dir -r server/requirements.txt
-
-# Cloud Run requires this variable:
-ENV PORT=8080
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Expose port
+WORKDIR /app/server
+
+# System deps (kept minimal)
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# Python deps
+COPY server/requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Server source
+COPY server/ ./
+
+# Copy client build output into Flask static folder
+COPY --from=client-build /app/client/build ./build
+
+# Cloud Run will set PORT
+ENV PORT=8080
 EXPOSE 8080
 
-# Start Gunicorn server
-CMD ["gunicorn", "--chdir", "server", "app:app", "--bind", ":8080"]
+# Run via gunicorn in production
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT} -w 2 -t 120 app:app"]
+
