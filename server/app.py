@@ -617,6 +617,105 @@ def find_nearest_station_with_idf(station_id):
     }
 
 
+def _idf_station_has_subhour_durations(idf_station_data) -> bool:
+    """
+    True if the station IDF dataset contains any valid sub-hour duration
+    entries (< 60 min) with at least one numeric return-period value.
+
+    Some ECCC stations publish only 1h+ durations, or have sub-hour rows but
+    with missing values (e.g. -99.9 -> null in our parsed JSON).
+    """
+    if not isinstance(idf_station_data, list) or not idf_station_data:
+        return False
+
+    for entry in idf_station_data:
+        d = duration_to_minutes(entry.get("duration"))
+        if d is None or d >= 60:
+            continue
+
+        for rp in ["2", "5", "10", "25", "50", "100"]:
+            v = entry.get(rp)
+            if v is None:
+                continue
+            try:
+                fv = float(v)
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(fv):
+                return True
+
+    return False
+
+
+def find_nearest_station_with_subhour_idf(station_id: str):
+    """
+    Finds nearest station (same province when possible) that has IDF data
+    including valid sub-hour durations (< 60 min).
+    Returns {station, idf_key, distance_km} or None.
+    """
+    origin = STATION_LOOKUP.get(station_id)
+    if not origin:
+        return None
+
+    origin_lat = parse_coordinate(origin.get("lat"))
+    origin_lon = parse_coordinate(origin.get("lon"))
+    if origin_lat is None or origin_lon is None:
+        return None
+
+    origin_prov = (origin.get("provinceCode") or "").strip().upper()
+
+    best_station = None
+    best_idf_key = None
+    best_distance = float("inf")
+
+    # Prefer same-province matches; if none exist, fall back to any station.
+    candidates = []
+    if origin_prov:
+        candidates = [
+            s
+            for s in STATIONS_DATA
+            if (s.get("provinceCode") or "").strip().upper() == origin_prov
+        ]
+    if not candidates:
+        candidates = STATIONS_DATA
+
+    for candidate in candidates:
+        candidate_id = candidate.get("stationId")
+        if not candidate_id:
+            continue
+        candidate_id = str(candidate_id)
+        if candidate_id == str(station_id):
+            continue
+        if candidate_id not in IDF_KEY_MAPPING:
+            continue
+
+        idf_key = IDF_KEY_MAPPING.get(candidate_id)
+        if not idf_key or idf_key not in IDF_DATA:
+            continue
+        if not _idf_station_has_subhour_durations(IDF_DATA.get(idf_key) or []):
+            continue
+
+        cand_lat = parse_coordinate(candidate.get("lat"))
+        cand_lon = parse_coordinate(candidate.get("lon"))
+        if cand_lat is None or cand_lon is None:
+            continue
+
+        distance = haversine(origin_lat, origin_lon, cand_lat, cand_lon)
+        if distance < best_distance:
+            best_distance = distance
+            best_station = candidate
+            best_idf_key = idf_key
+
+    if not best_station or best_idf_key is None or best_distance == float("inf"):
+        return None
+
+    return {
+        "station": best_station,
+        "idf_key": best_idf_key,
+        "distance_km": best_distance,
+    }
+
+
 def find_nearest_station_with_idf_cc(station_id: str):
     """
     Finds the nearest station (same province when possible) that has either:
@@ -1396,6 +1495,33 @@ def idf_curves():
                 return jsonify({"error": "IDF data not found for this station or nearby stations."}), 404
         
         idf_station_data = IDF_DATA.get(idf_key, [])
+
+        # If this station has no valid sub-hour IDF values (e.g. 5/10/15/30 min),
+        # fall back to the nearest station that does (still using the already
+        # loaded ECCC IDF dataset). This avoids returning only 1h+ durations
+        # for stations where sub-hour data is missing.
+        if not _idf_station_has_subhour_durations(idf_station_data):
+            short_fallback = find_nearest_station_with_subhour_idf(str(effective_station_id))
+            if short_fallback:
+                fb_station = short_fallback["station"]
+                prev_used_station_id = effective_station_id
+
+                idf_key = short_fallback["idf_key"]
+                idf_station_data = IDF_DATA.get(idf_key, [])
+
+                if fb_station.get("stationId"):
+                    effective_station_id = str(fb_station.get("stationId"))
+
+                if not fallback_meta:
+                    fallback_meta = {}
+                fallback_meta.update({
+                    "shortDurationFallback": True,
+                    "shortDurationReason": "Selected station has no valid sub-hour (5–30 min) IDF values; using nearest station with sub-hour durations.",
+                    "shortDurationRequestedStationId": prev_used_station_id,
+                    "shortDurationUsedStationId": fb_station.get("stationId"),
+                    "shortDurationUsedStationName": fb_station.get("name"),
+                    "shortDurationDistanceKm": round(float(short_fallback["distance_km"]), 2),
+                })
 
         processed_data = []
         
