@@ -34,6 +34,7 @@ node_modules/
 client/dist/
 .vercel
 
+
 env.cloudrun.yaml
 env.cloudrun
 
@@ -46,3 +47,9 @@ client/.env.*
 stripeKeys.txtbuildlog.txt
 buildlog.txt
 stripeKeys.txt
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+

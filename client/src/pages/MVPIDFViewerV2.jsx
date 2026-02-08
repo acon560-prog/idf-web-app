@@ -121,6 +121,8 @@ const MVPIDFViewerV2 = () => {
   const [applyClimate2050High, setApplyClimate2050High] = useState(false);
   const [applyQc18, setApplyQc18] = useState(false);
   const [climateInfo, setClimateInfo] = useState(null);
+  const [allowSubhourFallback, setAllowSubhourFallback] = useState(false);
+  const [idfFallbackInfo, setIdfFallbackInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isStationInfoVisible, setIsStationInfoVisible] = useState(false);
@@ -308,6 +310,7 @@ const MVPIDFViewerV2 = () => {
         setError(null);
         setIDFData([]);
         setClimateInfo(null);
+        setIdfFallbackInfo(null);
         setStation(null);
         setShowChart(false);
         setIsStationInfoVisible(false);
@@ -367,7 +370,10 @@ const MVPIDFViewerV2 = () => {
          : applyQc18
            ? "qc18"
            : "";
-       const idfUrl = climateParam ? `${idfUrlBase}&climate=${climateParam}` : idfUrlBase;
+       const extraParams = [];
+       if (climateParam) extraParams.push(`climate=${encodeURIComponent(climateParam)}`);
+       if (allowSubhourFallback) extraParams.push("allowSubhourFallback=1");
+       const idfUrl = extraParams.length ? `${idfUrlBase}&${extraParams.join("&")}` : idfUrlBase;
 
        const idfResponse = await (authFetch
         ? authFetch(
@@ -393,6 +399,7 @@ const MVPIDFViewerV2 = () => {
           throw new Error(idfJson?.error || "Failed to fetch IDF data.");
         }
         setClimateInfo(idfJson?.climate || null);
+        setIdfFallbackInfo(idfJson?.fallback || null);
         console.log("Raw IDF data from API:", idfJson.data);
 
         const processedData = idfJson.data
@@ -498,7 +505,7 @@ const MVPIDFViewerV2 = () => {
           setLoading(false);
         }
       },
-      [authFetch, place, applyClimate2050High, applyQc18],
+      [authFetch, place, applyClimate2050High, applyQc18, allowSubhourFallback],
     );
 
   const handleCheckboxChange = useCallback((event) => {
@@ -715,7 +722,7 @@ const MVPIDFViewerV2 = () => {
               </span>
             </label>
             <p className="mt-2 text-xs text-gray-500">
-              This applies only when an IDF_CC export exists for the selected station.
+              Applies when IDF_CC factors are available (for the station, or a nearby station with factors).
             </p>
             {applyClimate2050High && (
               <div className="mt-2 text-xs">
@@ -765,6 +772,38 @@ const MVPIDFViewerV2 = () => {
                     {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={allowSubhourFallback}
+                onChange={(e) => setAllowSubhourFallback(e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                If the selected station has no <span className="font-semibold">5–30 min</span> data, use the nearest station for short durations
+              </span>
+            </label>
+            <p className="mt-2 text-xs text-gray-500">
+              Some ECCC stations have missing sub-hour data; enabling this keeps your table/plot on the standard short-duration grid.
+            </p>
+            {idfFallbackInfo?.shortDurationFallback && (
+              <div className="mt-2 text-xs text-amber-700">
+                Using short-duration IDF from{" "}
+                <span className="font-semibold">
+                  {idfFallbackInfo.shortDurationUsedStationName || "nearest station"}{" "}
+                </span>
+                {idfFallbackInfo.shortDurationUsedStationId
+                  ? `(${idfFallbackInfo.shortDurationUsedStationId})`
+                  : ""}
+                {typeof idfFallbackInfo.shortDurationDistanceKm === "number"
+                  ? ` — ${idfFallbackInfo.shortDurationDistanceKm} km`
+                  : ""}
+                .
               </div>
             )}
           </div>
