@@ -33,3 +33,8 @@ coverage/
 node_modules/
 client/dist/
 .vercel
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
