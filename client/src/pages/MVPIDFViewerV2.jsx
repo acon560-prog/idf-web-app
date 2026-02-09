@@ -248,6 +248,10 @@ const MVPIDFViewerV2 = () => {
                 selectedPlace?.name ||
                 autocompleteInputRef.current?.value ||
                 "";
+              // Keep the DOM input value in sync (uncontrolled input).
+              if (autocompleteInputRef.current) {
+                autocompleteInputRef.current.value = formatted;
+              }
               setLocationInputValue(formatted);
             });
         } else {
@@ -815,7 +819,6 @@ const MVPIDFViewerV2 = () => {
                   type="text"
                   id="location"
                   placeholder="e.g., Montreal, QC"
-                  value={locationInputValue}
                   onChange={(event) => {
                     const nextValue = event.target.value;
                     setLocationInputValue(nextValue);
