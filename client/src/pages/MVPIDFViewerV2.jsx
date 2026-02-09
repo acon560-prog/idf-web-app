@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import Autocomplete from "react-google-autocomplete";
 import {
   LineChart,
   Line,
@@ -131,18 +132,7 @@ const MVPIDFViewerV2 = () => {
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
   const [locationInputValue, setLocationInputValue] = useState("");
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const autocompleteRef = useRef(null);
-  const autocompleteInputRef = useRef(null);
   const chartDataRef = useRef(null);
-  const lastSelectedLocationRef = useRef("");
-  const enableGoogleAutocomplete = useMemo(() => {
-    // Google Autocomplete has been unreliable on some Cloud Run deployments (typing gets stuck).
-    // Default to OFF on *.run.app, but keep it ON locally.
-    const host = (typeof window !== "undefined" && window.location?.hostname) || "";
-    const isCloudRun = host.endsWith(".run.app");
-    return !isCloudRun;
-  }, []);
   
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
   
@@ -155,139 +145,14 @@ const MVPIDFViewerV2 = () => {
     );
   }, [trialMessage, error]);
   
-  // Load Google Maps script once (independent of auth state).
+  // We rely on `react-google-autocomplete` to load/init Places correctly.
   useEffect(() => {
-    if (!enableGoogleAutocomplete) {
-      return;
-    }
     if (!hasGoogleApiKey) {
-      setScriptLoaded(false);
       setError(
         "Google Maps API key is missing or invalid. Set REACT_APP_GOOGLE_PLACES_API_KEY in your environment or .env file.",
       );
-      return;
     }
-    let isMounted = true;
-    const GOOGLE_MAPS_SCRIPT_ID = "google-maps-script";
-
-    // Check if the script tag already exists in the document's head to prevent duplicate loads.
-    const existingScript = document.getElementById(GOOGLE_MAPS_SCRIPT_ID);
-    if (existingScript) {
-       console.log(
-        "Google Maps script tag already exists. Assuming script is loading or loaded.",
-      );
-      if (isMounted) {
-        setScriptLoaded(true);
-      }
-      return;
-    }
-
-    // Check if the script is already loaded via the window object, even if the tag is not present.
-    if (window.google?.maps?.places) {
-        console.log(
-        "Google Maps script already loaded via window object. Setting scriptLoaded to true.",
-      );
-      if (isMounted) {
-        setScriptLoaded(true);
-      }
-      return;
-    }
-
-    // If not loaded, create and append the script element.
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`;
-    script.async = true;
-    script.id = GOOGLE_MAPS_SCRIPT_ID;
-    
-    script.onload = () => {
-      if (isMounted) {
-        console.log("Google Maps script loaded successfully.");
-        setScriptLoaded(true);
-      }
-    };
-    
-    script.onerror = () => {
-      if (isMounted) {
-         console.error("Failed to load Google Maps script.");
-        setError("Failed to load Google Maps script. Check your API key.");
-      }
-    };
-    
-    document.head.appendChild(script);
-
-    return () => {
-      isMounted = false;
-      // No need to remove the script tag, as other components might need it.
-    };
-  }, [hasGoogleApiKey, enableGoogleAutocomplete]);
-
-  // This useEffect initializes Autocomplete only after the script has successfully loaded.
-  useEffect(() => {
-    if (!enableGoogleAutocomplete) {
-      return;
-    }
-    if (!hasGoogleApiKey) {
-      return;
-    }
-    if (scriptLoaded && autocompleteInputRef.current) {
-      // Use a short delay to ensure the places library is fully available
-      const initAutocomplete = () => {
-          if (window.google?.maps?.places) {
-            console.log("Initializing Autocomplete.");
-            if (autocompleteRef.current) {
-              return;
-            }
-            // Create and store the autocomplete instance in a ref
-            autocompleteRef.current = new window.google.maps.places.Autocomplete(
-              autocompleteInputRef.current,
-              {
-                types: ["(cities)"],
-                componentRestrictions: { country: "ca" },
-              },
-            );
-    
-          // Attach the listener and update the state when a place is selected
-          autocompleteRef.current.addListener("place_changed", () => {
-              const selectedPlace = autocompleteRef.current.getPlace();
-              console.log("Place selected:", selectedPlace);
-              // Some browsers/devices can fire place_changed without a real selection.
-              // Only treat it as a selection when geometry exists.
-              if (!selectedPlace || !selectedPlace.geometry) {
-                return;
-              }
-              setPlace(selectedPlace);
-              const formatted =
-                selectedPlace?.formatted_address ||
-                selectedPlace?.description ||
-                selectedPlace?.name ||
-                autocompleteInputRef.current?.value ||
-                "";
-              // Keep the DOM input value in sync (uncontrolled input).
-              if (autocompleteInputRef.current) {
-                autocompleteInputRef.current.value = formatted;
-              }
-              lastSelectedLocationRef.current = formatted;
-              setLocationInputValue(formatted);
-            });
-        } else {
-          // If the library is not yet ready, try again after a short delay
-          setTimeout(initAutocomplete, 100);
-        }
-      };
-      
-      initAutocomplete();
-
-      // Cleanup function to remove the listener and instance on component unmount
-      return () => {
-        if (autocompleteRef.current) {
-           window.google.maps.event.clearInstanceListeners(
-            autocompleteRef.current,
-          );
-          autocompleteRef.current = null;
-        }
-      };
-    }
-  }, [hasGoogleApiKey, scriptLoaded, enableGoogleAutocomplete]);
+  }, [hasGoogleApiKey]);
 
   useEffect(() => {
     if (!user) {
@@ -329,62 +194,23 @@ const MVPIDFViewerV2 = () => {
         setIsStationInfoVisible(false);
         setLoading(true);
 
-      const typedNow = (autocompleteInputRef.current?.value || "").trim();
-
-      // Path A: Google place selection (when enabled)
-      const lastSelected = (lastSelectedLocationRef.current || "").trim();
-      const selectionStillValid =
-        Boolean(place && place.geometry) &&
-        Boolean(typedNow) &&
-        Boolean(lastSelected) &&
-        typedNow === lastSelected;
-
-      let lat;
-      let lon;
-      let provinceCode = "";
-
-      if (selectionStillValid) {
-        lat = place.geometry.location.lat();
-        lon = place.geometry.location.lng();
-
-        if (place.address_components) {
-          for (const component of place.address_components) {
-            if (component.types.includes("administrative_area_level_1")) {
-              provinceCode = component.short_name;
-              break;
-            }
-          }
-        }
-      } else {
-        // Path B: Free-text geocode (works even when Google Autocomplete is disabled/unreliable)
-        if (!typedNow) {
-          setError("Please enter a location.");
-          setLoading(false);
-          return;
-        }
-        const geoResp = await fetch(
-          `${buildApiUrl("/geocode")}?q=${encodeURIComponent(typedNow)}`,
-        );
-        const geoJson = await readJsonResponse(
-          geoResp,
-          "Failed to geocode the provided location.",
-        );
-        if (!geoResp.ok) {
-          throw new Error(geoJson?.error || "Failed to geocode the provided location.");
-        }
-        lat = geoJson.lat;
-        lon = geoJson.lon;
-        provinceCode = geoJson.province || "";
-      }
-
-      if (typeof lat !== "number" || typeof lon !== "number") {
-        setError("Could not determine coordinates for the selected location.");
+      if (!place || !place.geometry) {
+        setError("Please select a valid location from the dropdown.");
         setLoading(false);
         return;
       }
-      if (!provinceCode) {
-        // Province is optional; backend will fall back to all-stations if empty.
-        provinceCode = "";
+
+      const lat = place.geometry.location.lat();
+      const lon = place.geometry.location.lng();
+      let provinceCode = "";
+
+      if (place.address_components) {
+        for (const component of place.address_components) {
+          if (component.types.includes("administrative_area_level_1")) {
+            provinceCode = component.short_name;
+            break;
+          }
+        }
       }
 
     try {
@@ -676,35 +502,7 @@ const MVPIDFViewerV2 = () => {
     );
   }
  
-  if (!scriptLoaded) {
-    return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="flex items-center text-blue-600">
-          <svg
-            className="animate-spin -ml-1 mr-3 h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-          <span>Loading Maps...</span>
-        </div>
-      </div>
-    );
-  }
+  // No explicit "Loading Maps" gate; Autocomplete component handles script loading.
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
@@ -859,16 +657,24 @@ const MVPIDFViewerV2 = () => {
                 >
                   Location
                 </label>
-                <input
-                  ref={autocompleteInputRef}
-                  type="text"
+                <Autocomplete
+                  apiKey={GOOGLE_MAPS_API_KEY}
+                  onPlaceSelected={(selectedPlace) => {
+                    if (!selectedPlace || !selectedPlace.geometry) return;
+                    setPlace(selectedPlace);
+                    const formatted =
+                      selectedPlace?.formatted_address ||
+                      selectedPlace?.name ||
+                      "";
+                    setLocationInputValue(formatted);
+                  }}
+                  options={{
+                    types: ["(cities)"],
+                    componentRestrictions: { country: "ca" },
+                  }}
                   id="location"
                   name="location"
                   placeholder="e.g., Montreal, QC"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck={false}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
