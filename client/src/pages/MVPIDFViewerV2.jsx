@@ -233,22 +233,23 @@ const MVPIDFViewerV2 = () => {
             );
     
           // Attach the listener and update the state when a place is selected
-
-         autocompleteRef.current.addListener("place_changed", () => {
-                const selectedPlace = autocompleteRef.current.getPlace();
-                console.log("Place selected:", selectedPlace);
-                setPlace(selectedPlace);
-                const formatted =
-                  selectedPlace?.formatted_address ||
-                  selectedPlace?.description ||
-                  selectedPlace?.name ||
-                  autocompleteInputRef.current?.value ||
-                  "";
-                // Keep the controlled input value in sync with Google Autocomplete.
-              // If we don't, React will re-render with the previous state value,
-              // which can look like the input only "keeps" the first character.
-                  setLocationInputValue(formatted);
-                });
+          autocompleteRef.current.addListener("place_changed", () => {
+              const selectedPlace = autocompleteRef.current.getPlace();
+              console.log("Place selected:", selectedPlace);
+              // Some browsers/devices can fire place_changed without a real selection.
+              // Only treat it as a selection when geometry exists.
+              if (!selectedPlace || !selectedPlace.geometry) {
+                return;
+              }
+              setPlace(selectedPlace);
+              const formatted =
+                selectedPlace?.formatted_address ||
+                selectedPlace?.description ||
+                selectedPlace?.name ||
+                autocompleteInputRef.current?.value ||
+                "";
+              setLocationInputValue(formatted);
+            });
         } else {
           // If the library is not yet ready, try again after a short delay
           setTimeout(initAutocomplete, 100);
