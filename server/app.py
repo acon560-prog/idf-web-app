@@ -6,6 +6,8 @@ import os
 import math
 import smtplib
 import statistics
+import urllib.parse
+import urllib.request
 from functools import lru_cache
 from email.message import EmailMessage
 from datetime import datetime, timedelta
@@ -89,6 +91,87 @@ PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', '
 
 STATIONS_DATA = []
 STATION_LOOKUP = {}
+
+
+_PROVINCE_NAME_TO_CODE = {
+    "alberta": "AB",
+    "british columbia": "BC",
+    "manitoba": "MB",
+    "new brunswick": "NB",
+    "newfoundland and labrador": "NL",
+    "nova scotia": "NS",
+    "northwest territories": "NT",
+    "nunavut": "NU",
+    "ontario": "ON",
+    "prince edward island": "PE",
+    "quebec": "QC",
+    "saskatchewan": "SK",
+    "yukon": "YT",
+}
+
+
+@lru_cache(maxsize=2048)
+def _nominatim_geocode_cached(q: str):
+    q = (q or "").strip()
+    if not q:
+        return None
+    # Bias to Canada to reduce ambiguous results.
+    query = f"{q}, Canada"
+    url = "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode({
+        "format": "json",
+        "limit": 1,
+        "addressdetails": 1,
+        "q": query,
+    })
+    req = urllib.request.Request(
+        url,
+        headers={
+            # Nominatim requires a valid User-Agent.
+            "User-Agent": "civispec-idf-viewer/1.0 (support@civispec.example)",
+            "Accept": "application/json",
+        },
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            payload = resp.read().decode("utf-8")
+    except Exception as exc:
+        print(f"Nominatim geocode failed: {exc}")
+        return None
+
+    try:
+        results = json.loads(payload)
+    except Exception:
+        return None
+    if not results:
+        return None
+    top = results[0] or {}
+    lat = top.get("lat")
+    lon = top.get("lon")
+    addr = top.get("address") or {}
+    prov_name = (addr.get("state") or addr.get("province") or "").strip().lower()
+    province = _PROVINCE_NAME_TO_CODE.get(prov_name, "")
+    try:
+        lat_f = float(lat)
+        lon_f = float(lon)
+    except (TypeError, ValueError):
+        return None
+    return {"lat": lat_f, "lon": lon_f, "province": province, "raw": top}
+
+
+@app.route("/api/geocode", methods=["GET"])
+def geocode():
+    """
+    Geocode a free-text location using OpenStreetMap Nominatim.
+    Returns {lat, lon, province} or 404.
+    """
+    q = request.args.get("q") or ""
+    if not q.strip():
+        return jsonify({"error": "Missing 'q' parameter."}), 400
+    result = _nominatim_geocode_cached(q)
+    if not result:
+        return jsonify({"error": "Geocode failed for the provided query."}), 404
+    return jsonify({"lat": result["lat"], "lon": result["lon"], "province": result["province"]})
 IDF_DATA = {}
 IDF_KEY_MAPPING = {}
 IDF_STATION_IDS = set() 

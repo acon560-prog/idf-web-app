@@ -136,6 +136,13 @@ const MVPIDFViewerV2 = () => {
   const autocompleteInputRef = useRef(null);
   const chartDataRef = useRef(null);
   const lastSelectedLocationRef = useRef("");
+  const enableGoogleAutocomplete = useMemo(() => {
+    // Google Autocomplete has been unreliable on some Cloud Run deployments (typing gets stuck).
+    // Default to OFF on *.run.app, but keep it ON locally.
+    const host = (typeof window !== "undefined" && window.location?.hostname) || "";
+    const isCloudRun = host.endsWith(".run.app");
+    return !isCloudRun;
+  }, []);
   
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
   
@@ -150,6 +157,9 @@ const MVPIDFViewerV2 = () => {
   
   // Load Google Maps script once (independent of auth state).
   useEffect(() => {
+    if (!enableGoogleAutocomplete) {
+      return;
+    }
     if (!hasGoogleApiKey) {
       setScriptLoaded(false);
       setError(
@@ -209,10 +219,13 @@ const MVPIDFViewerV2 = () => {
       isMounted = false;
       // No need to remove the script tag, as other components might need it.
     };
-  }, [hasGoogleApiKey]);
+  }, [hasGoogleApiKey, enableGoogleAutocomplete]);
 
   // This useEffect initializes Autocomplete only after the script has successfully loaded.
   useEffect(() => {
+    if (!enableGoogleAutocomplete) {
+      return;
+    }
     if (!hasGoogleApiKey) {
       return;
     }
@@ -274,7 +287,7 @@ const MVPIDFViewerV2 = () => {
         }
       };
     }
-  }, [hasGoogleApiKey, scriptLoaded]);
+  }, [hasGoogleApiKey, scriptLoaded, enableGoogleAutocomplete]);
 
   useEffect(() => {
     if (!user) {
@@ -316,9 +329,9 @@ const MVPIDFViewerV2 = () => {
         setIsStationInfoVisible(false);
         setLoading(true);
 
-      // Validate that the current typed value matches the last selected place.
-      // This avoids using a stale `place` object if the user edits the input.
       const typedNow = (autocompleteInputRef.current?.value || "").trim();
+
+      // Path A: Google place selection (when enabled)
       const lastSelected = (lastSelectedLocationRef.current || "").trim();
       const selectionStillValid =
         Boolean(place && place.geometry) &&
@@ -326,17 +339,15 @@ const MVPIDFViewerV2 = () => {
         Boolean(lastSelected) &&
         typedNow === lastSelected;
 
-      if (!selectionStillValid) {
-          setError("Please select a valid location from the dropdown.");
-          setLoading(false);
-          return;
-        }
-
-      const lat = place.geometry.location.lat();
-      const lon = place.geometry.location.lng();
+      let lat;
+      let lon;
       let provinceCode = "";
 
-      if (place.address_components) {
+      if (selectionStillValid) {
+        lat = place.geometry.location.lat();
+        lon = place.geometry.location.lng();
+
+        if (place.address_components) {
           for (const component of place.address_components) {
             if (component.types.includes("administrative_area_level_1")) {
               provinceCode = component.short_name;
@@ -344,12 +355,37 @@ const MVPIDFViewerV2 = () => {
             }
           }
         }
-
-      if (!provinceCode) {
-          setError("Could not determine the province for the selected location.");
+      } else {
+        // Path B: Free-text geocode (works even when Google Autocomplete is disabled/unreliable)
+        if (!typedNow) {
+          setError("Please enter a location.");
           setLoading(false);
           return;
         }
+        const geoResp = await fetch(
+          `${buildApiUrl("/geocode")}?q=${encodeURIComponent(typedNow)}`,
+        );
+        const geoJson = await readJsonResponse(
+          geoResp,
+          "Failed to geocode the provided location.",
+        );
+        if (!geoResp.ok) {
+          throw new Error(geoJson?.error || "Failed to geocode the provided location.");
+        }
+        lat = geoJson.lat;
+        lon = geoJson.lon;
+        provinceCode = geoJson.province || "";
+      }
+
+      if (typeof lat !== "number" || typeof lon !== "number") {
+        setError("Could not determine coordinates for the selected location.");
+        setLoading(false);
+        return;
+      }
+      if (!provinceCode) {
+        // Province is optional; backend will fall back to all-stations if empty.
+        provinceCode = "";
+      }
 
     try {
         const params = new URLSearchParams({
