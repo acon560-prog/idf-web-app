@@ -815,10 +815,15 @@ const MVPIDFViewerV2 = () => {
                   ref={autocompleteInputRef}
                   type="text"
                   id="location"
+                  name="location"
                   placeholder="e.g., Montreal, QC"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   onChange={(event) => {
-                    const nextValue = event.target.value;
-                    setLocationInputValue(nextValue);
+                    // Keep input uncontrolled (Google Autocomplete + browser can fight controlled inputs).
+                    // We only commit the value to state when the user selects a place.
                     setPlace(null);
                     setError(null);
                   }}
