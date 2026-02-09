@@ -135,6 +135,7 @@ const MVPIDFViewerV2 = () => {
   const autocompleteRef = useRef(null);
   const autocompleteInputRef = useRef(null);
   const chartDataRef = useRef(null);
+  const lastSelectedLocationRef = useRef("");
   
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
   
@@ -252,6 +253,7 @@ const MVPIDFViewerV2 = () => {
               if (autocompleteInputRef.current) {
                 autocompleteInputRef.current.value = formatted;
               }
+              lastSelectedLocationRef.current = formatted;
               setLocationInputValue(formatted);
             });
         } else {
@@ -314,7 +316,17 @@ const MVPIDFViewerV2 = () => {
         setIsStationInfoVisible(false);
         setLoading(true);
 
-      if (!place || !place.geometry) {
+      // Validate that the current typed value matches the last selected place.
+      // This avoids using a stale `place` object if the user edits the input.
+      const typedNow = (autocompleteInputRef.current?.value || "").trim();
+      const lastSelected = (lastSelectedLocationRef.current || "").trim();
+      const selectionStillValid =
+        Boolean(place && place.geometry) &&
+        Boolean(typedNow) &&
+        Boolean(lastSelected) &&
+        typedNow === lastSelected;
+
+      if (!selectionStillValid) {
           setError("Please select a valid location from the dropdown.");
           setLoading(false);
           return;
@@ -821,12 +833,6 @@ const MVPIDFViewerV2 = () => {
                   autoCorrect="off"
                   autoCapitalize="off"
                   spellCheck={false}
-                  onChange={(event) => {
-                    // Keep input uncontrolled (Google Autocomplete + browser can fight controlled inputs).
-                    // We only commit the value to state when the user selects a place.
-                    setPlace(null);
-                    setError(null);
-                  }}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
