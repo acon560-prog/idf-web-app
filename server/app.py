@@ -5,10 +5,15 @@ import json
 import os
 import math
 import smtplib
+import statistics
+import urllib.parse
+import urllib.request
+from functools import lru_cache
 from email.message import EmailMessage
 from datetime import datetime, timedelta
 
 import bcrypt
+import stripe
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -67,14 +72,357 @@ users_collection = mongo.db.users
 submissions_collection = mongo.db.submissions
 ADMIN_EMAIL = (os.environ.get('ADMIN_EMAIL') or '').strip().lower()
 
+# Stripe config (required for card-based trials)
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
+STRIPE_PRICE_CONSULTANT_MONTHLY = os.environ.get("STRIPE_PRICE_CONSULTANT_MONTHLY")
+STRIPE_PRICE_MUNICIPAL_ANNUAL = os.environ.get("STRIPE_PRICE_MUNICIPAL_ANNUAL")
+STRIPE_PRICE_LIFETIME = os.environ.get("STRIPE_PRICE_LIFETIME")
+FRONTEND_URL = (os.environ.get("FRONTEND_URL") or "http://localhost:3000").rstrip("/")
+STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS = int(os.environ.get("STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS") or "100")
+STRIPE_CURRENCY = (os.environ.get("STRIPE_CURRENCY") or "cad").lower().strip()
+LIFETIME_MEMBERSHIP_LIMIT = int(os.environ.get("LIFETIME_MEMBERSHIP_LIMIT") or "300")
+
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
+
 # Define the provinces to load. Add more as you get the data for them.
 PROVINCES = ['QC', 'ON', 'BC', 'AB', 'MB', 'SK', 'NB', 'NL', 'NS', 'PE', 'YT', 'NT', 'NU']
 
 STATIONS_DATA = []
 STATION_LOOKUP = {}
+
+
+_PROVINCE_NAME_TO_CODE = {
+    "alberta": "AB",
+    "british columbia": "BC",
+    "manitoba": "MB",
+    "new brunswick": "NB",
+    "newfoundland and labrador": "NL",
+    "nova scotia": "NS",
+    "northwest territories": "NT",
+    "nunavut": "NU",
+    "ontario": "ON",
+    "prince edward island": "PE",
+    "quebec": "QC",
+    "saskatchewan": "SK",
+    "yukon": "YT",
+}
+
+
+@lru_cache(maxsize=2048)
+def _nominatim_geocode_cached(q: str):
+    q = (q or "").strip()
+    if not q:
+        return None
+    # Bias to Canada to reduce ambiguous results.
+    query = f"{q}, Canada"
+    url = "https://nominatim.openstreetmap.org/search?" + urllib.parse.urlencode({
+        "format": "json",
+        "limit": 1,
+        "addressdetails": 1,
+        "q": query,
+    })
+    req = urllib.request.Request(
+        url,
+        headers={
+            # Nominatim requires a valid User-Agent.
+            "User-Agent": "civispec-idf-viewer/1.0 (support@civispec.example)",
+            "Accept": "application/json",
+        },
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            payload = resp.read().decode("utf-8")
+    except Exception as exc:
+        print(f"Nominatim geocode failed: {exc}")
+        return None
+
+    try:
+        results = json.loads(payload)
+    except Exception:
+        return None
+    if not results:
+        return None
+    top = results[0] or {}
+    lat = top.get("lat")
+    lon = top.get("lon")
+    addr = top.get("address") or {}
+    prov_name = (addr.get("state") or addr.get("province") or "").strip().lower()
+    province = _PROVINCE_NAME_TO_CODE.get(prov_name, "")
+    try:
+        lat_f = float(lat)
+        lon_f = float(lon)
+    except (TypeError, ValueError):
+        return None
+    return {"lat": lat_f, "lon": lon_f, "province": province, "raw": top}
+
+
+@app.route("/api/geocode", methods=["GET"])
+def geocode():
+    """
+    Geocode a free-text location using OpenStreetMap Nominatim.
+    Returns {lat, lon, province} or 404.
+    """
+    q = request.args.get("q") or ""
+    if not q.strip():
+        return jsonify({"error": "Missing 'q' parameter."}), 400
+    result = _nominatim_geocode_cached(q)
+    if not result:
+        return jsonify({"error": "Geocode failed for the provided query."}), 404
+    return jsonify({"lat": result["lat"], "lon": result["lon"], "province": result["province"]})
 IDF_DATA = {}
 IDF_KEY_MAPPING = {}
 IDF_STATION_IDS = set() 
+
+# Optional: IDF_CC (climate change) exports (per-station)
+IDF_CC_ROOT = os.path.join(os.path.dirname(__file__), "data", "idf_cc")
+IDF_CC_EXPORTS_ROOT = os.path.join(os.path.dirname(__file__), "data", "idf_cc_exports")
+IDF_CC_FACTORS_ROOT = os.path.join(os.path.dirname(__file__), "data", "idf_cc_factors")
+
+
+def _median(values):
+    clean = [v for v in values if v is not None]
+    if not clean:
+        return None
+    try:
+        return statistics.median(clean)
+    except Exception:
+        clean.sort()
+        mid = len(clean) // 2
+        if len(clean) % 2 == 1:
+            return clean[mid]
+        return (clean[mid - 1] + clean[mid]) / 2.0
+
+
+def _parse_idf_cc_station_id(header_line: str):
+    if not isinstance(header_line, str):
+        return None
+    m = re.search(r"Station ID:\s*([0-9A-Za-z]+)", header_line)
+    return m.group(1).strip() if m else None
+
+
+def _parse_idf_cc_final_year(line: str):
+    if not isinstance(line, str):
+        return None
+    m = re.search(r"final year:\s*([0-9]{4})", line, flags=re.IGNORECASE)
+    try:
+        return int(m.group(1)) if m else None
+    except Exception:
+        return None
+
+
+def _parse_idf_cc_intensity_table(lines, start_index):
+    """
+    Parses an "Intensity (mm/h)" table starting at or after start_index.
+    Returns (table_dict, next_index, return_periods)
+    table_dict: {duration_minutes(int): {rp(str): value(float)}}
+    """
+    i = start_index
+    # find header line starting with t\T
+    while i < len(lines) and "t\\T" not in (lines[i] or ""):
+        i += 1
+    if i >= len(lines):
+        return None, start_index, None
+
+    header_tokens = str(lines[i]).strip().split()
+    # header like: ["t\\T","2","5","10",...]
+    rps = [t.strip() for t in header_tokens[1:] if t.strip()]
+    i += 1
+
+    table = {}
+    while i < len(lines):
+        raw = lines[i]
+        line = (raw or "").strip()
+        if not line:
+            break
+        if line.lower().startswith("precipitation") or line.lower().startswith("model:") or line.startswith("-"):
+            break
+        tokens = line.split()
+        if not tokens:
+            break
+        # duration is first token (minutes)
+        try:
+            dur = int(float(tokens[0]))
+        except Exception:
+            break
+        row = {}
+        for idx, rp in enumerate(rps):
+            if idx + 1 >= len(tokens):
+                continue
+            try:
+                row[rp] = float(tokens[idx + 1])
+            except Exception:
+                continue
+        if row:
+            table[dur] = row
+        i += 1
+
+    return table, i, rps
+
+
+@lru_cache(maxsize=1)
+def _idf_cc_index():
+    """
+    Maps stationId -> path to IDF_CC export file.
+    We scan once on first use to keep runtime cost low.
+    """
+    mapping = {}
+    if not os.path.isdir(IDF_CC_ROOT):
+        # still allow exports root to be scanned
+        pass
+    for root in [IDF_CC_ROOT, IDF_CC_EXPORTS_ROOT]:
+        if not os.path.isdir(root):
+            continue
+        for _root, _dirs, files in os.walk(root):
+            for filename in files:
+                if not filename.lower().endswith(".csv"):
+                    continue
+                path = os.path.join(_root, filename)
+                try:
+                    with open(path, "r", encoding="utf-8", errors="ignore") as fp:
+                        # station id is usually on the first few lines
+                        for _ in range(30):
+                            line = fp.readline()
+                            if not line:
+                                break
+                            sid = _parse_idf_cc_station_id(line)
+                            if sid:
+                                mapping[str(sid)] = path
+                                break
+                except Exception:
+                    continue
+    return mapping
+
+
+@lru_cache(maxsize=1)
+def _idf_cc_factors_index():
+    """
+    Maps stationId -> path to compact factor JSON file.
+    """
+    mapping = {}
+    if not os.path.isdir(IDF_CC_FACTORS_ROOT):
+        return mapping
+    for root, _dirs, files in os.walk(IDF_CC_FACTORS_ROOT):
+        for filename in files:
+            if not filename.lower().endswith(".json"):
+                continue
+            path = os.path.join(root, filename)
+            try:
+                with open(path, "r", encoding="utf-8") as fp:
+                    doc = json.load(fp)
+                sid = doc.get("stationId")
+                if sid:
+                    mapping[str(sid)] = path
+            except Exception:
+                continue
+    return mapping
+
+
+@lru_cache(maxsize=128)
+def _load_idf_cc_factors(path: str):
+    try:
+        with open(path, "r", encoding="utf-8") as fp:
+            return json.load(fp)
+    except Exception:
+        return None
+
+
+@lru_cache(maxsize=64)
+def _load_idf_cc_export(path: str):
+    """
+    Parses an IDF_CC v8-style export and returns:
+      {
+        stationId, finalYear,
+        baseline: {dur: {rp: val}},
+        scenarios: { 'ssp585': [table1, table2, ...], ... },
+        modelsPerScenario: { 'ssp585': N, ... }
+      }
+    """
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as fp:
+            lines = [line.rstrip("\n") for line in fp.readlines()]
+    except Exception:
+        return None
+
+    station_id = None
+    final_year = None
+    baseline = None
+    scenarios = {}
+
+    # Try to capture station id and final year from header
+    for j in range(min(40, len(lines))):
+        if station_id is None:
+            station_id = _parse_idf_cc_station_id(lines[j])
+        if final_year is None:
+            final_year = _parse_idf_cc_final_year(lines[j])
+
+    # Baseline historical intensity table: first "Intensity (mm/h)" section in file
+    for i, line in enumerate(lines[:200]):
+        if str(line).strip().lower().startswith("intensity (mm/h)"):
+            baseline, _next_i, _rps = _parse_idf_cc_intensity_table(lines, i)
+            break
+
+    # Model/scenario tables
+    i = 0
+    while i < len(lines):
+        line = (lines[i] or "").strip()
+        if line.lower().startswith("model:"):
+            # read forward to find Experiment and then Intensity table
+            experiment = None
+            j = i
+            while j < len(lines) and j < i + 20:
+                l2 = (lines[j] or "").strip()
+                if l2.lower().startswith("experiment:"):
+                    experiment = l2.split(":", 1)[1].strip()
+                if l2.lower().startswith("intensity (mm/h)"):
+                    break
+                j += 1
+            if experiment and j < len(lines) and (lines[j] or "").strip().lower().startswith("intensity (mm/h)"):
+                table, next_idx, _rps = _parse_idf_cc_intensity_table(lines, j)
+                # experiment is like "historical,ssp585" -> scenario is last token
+                scenario = experiment.split(",")[-1].strip().lower()
+                if table:
+                    scenarios.setdefault(scenario, []).append(table)
+                i = next_idx
+                continue
+        i += 1
+
+    models_per = {k: len(v) for k, v in scenarios.items()}
+    return {
+        "stationId": station_id,
+        "finalYear": final_year,
+        "baseline": baseline,
+        "scenarios": scenarios,
+        "modelsPerScenario": models_per,
+    }
+
+
+def _idf_cc_ensemble_median(table_list):
+    if not table_list:
+        return None
+    out = {}
+    durations = set()
+    rps = set()
+    for t in table_list:
+        durations.update(t.keys())
+        for d, row in t.items():
+            rps.update(row.keys())
+    for d in sorted(durations):
+        out_row = {}
+        for rp in sorted(rps, key=lambda x: int(x) if str(x).isdigit() else 10**9):
+            vals = []
+            for t in table_list:
+                v = t.get(d, {}).get(rp)
+                if isinstance(v, (int, float)) and math.isfinite(v):
+                    vals.append(float(v))
+            med = _median(vals)
+            if med is not None:
+                out_row[str(rp)] = float(med)
+        if out_row:
+            out[int(d)] = out_row
+    return out
 
 
 def normalize_email(email: str) -> str:
@@ -114,6 +462,7 @@ def serialize_user(user_doc):
         'trialStartsAt': isoformat_or_none(user_doc.get('trialStartsAt')),
         'trialEndsAt': isoformat_or_none(user_doc.get('trialEndsAt')),
         'stripeCustomerId': user_doc.get('stripeCustomerId'),
+        'trialUsed': bool(user_doc.get('trialUsed')),
         'role': role,
     }
 
@@ -182,10 +531,38 @@ def user_has_active_access(user_doc):
                 {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
             )
             return False
-        # Legacy users might not have a recorded trial end. Treat as active trial.
-        return True
+        # If trial end is unknown, treat as expired for safety (no free access without an end date).
+        users_collection.update_one(
+            {'_id': user_doc['_id']},
+            {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
+        )
+        return False
 
     return False
+
+def trial_already_used(user_doc) -> bool:
+    """
+    One-trial-per-email enforcement.
+    Treat any existing trial history as "used", even if legacy documents don't have trialUsed flag.
+    """
+    if not user_doc:
+        return False
+    if user_doc.get('trialUsed') is True:
+        return True
+    if isinstance(user_doc.get('trialStartsAt'), datetime):
+        return True
+    if user_doc.get('subscriptionStatus') in ('trialing', 'trial_expired', 'active', 'canceled', 'past_due', 'incomplete'):
+        # If they've ever had a subscription lifecycle state recorded, don't grant another trial.
+        return True
+    return False
+
+def ensure_user_indexes():
+    try:
+        users_collection.create_index('email', unique=True, sparse=True)
+    except Exception as exc:
+        print(f"Failed to ensure user indexes: {exc}")
+
+ensure_user_indexes()
 
 
 def log_submission_to_file(name, email, message):
@@ -323,6 +700,180 @@ def find_nearest_station_with_idf(station_id):
     }
 
 
+def _idf_station_has_subhour_durations(idf_station_data) -> bool:
+    """
+    True if the station IDF dataset contains any valid sub-hour duration
+    entries (< 60 min) with at least one numeric return-period value.
+
+    Some ECCC stations publish only 1h+ durations, or have sub-hour rows but
+    with missing values (e.g. -99.9 -> null in our parsed JSON).
+    """
+    if not isinstance(idf_station_data, list) or not idf_station_data:
+        return False
+
+    for entry in idf_station_data:
+        d = duration_to_minutes(entry.get("duration"))
+        if d is None or d >= 60:
+            continue
+
+        for rp in ["2", "5", "10", "25", "50", "100"]:
+            v = entry.get(rp)
+            if v is None:
+                continue
+            try:
+                fv = float(v)
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(fv):
+                return True
+
+    return False
+
+
+def find_nearest_station_with_subhour_idf(station_id: str):
+    """
+    Finds nearest station (same province when possible) that has IDF data
+    including valid sub-hour durations (< 60 min).
+    Returns {station, idf_key, distance_km} or None.
+    """
+    origin = STATION_LOOKUP.get(station_id)
+    if not origin:
+        return None
+
+    origin_lat = parse_coordinate(origin.get("lat"))
+    origin_lon = parse_coordinate(origin.get("lon"))
+    if origin_lat is None or origin_lon is None:
+        return None
+
+    origin_prov = (origin.get("provinceCode") or "").strip().upper()
+
+    best_station = None
+    best_idf_key = None
+    best_distance = float("inf")
+
+    # Prefer same-province matches; if none exist, fall back to any station.
+    candidates = []
+    if origin_prov:
+        candidates = [
+            s
+            for s in STATIONS_DATA
+            if (s.get("provinceCode") or "").strip().upper() == origin_prov
+        ]
+    if not candidates:
+        candidates = STATIONS_DATA
+
+    for candidate in candidates:
+        candidate_id = candidate.get("stationId")
+        if not candidate_id:
+            continue
+        candidate_id = str(candidate_id)
+        if candidate_id == str(station_id):
+            continue
+        if candidate_id not in IDF_KEY_MAPPING:
+            continue
+
+        idf_key = IDF_KEY_MAPPING.get(candidate_id)
+        if not idf_key or idf_key not in IDF_DATA:
+            continue
+        if not _idf_station_has_subhour_durations(IDF_DATA.get(idf_key) or []):
+            continue
+
+        cand_lat = parse_coordinate(candidate.get("lat"))
+        cand_lon = parse_coordinate(candidate.get("lon"))
+        if cand_lat is None or cand_lon is None:
+            continue
+
+        distance = haversine(origin_lat, origin_lon, cand_lat, cand_lon)
+        if distance < best_distance:
+            best_distance = distance
+            best_station = candidate
+            best_idf_key = idf_key
+
+    if not best_station or best_idf_key is None or best_distance == float("inf"):
+        return None
+
+    return {
+        "station": best_station,
+        "idf_key": best_idf_key,
+        "distance_km": best_distance,
+    }
+
+
+def find_nearest_station_with_idf_cc(station_id: str):
+    """
+    Finds the nearest station (same province when possible) that has either:
+    - a compact IDF_CC factor JSON, or
+    - an IDF_CC export CSV (fallback).
+    Returns {station, distance_km, source} or None.
+    """
+    origin = STATION_LOOKUP.get(station_id)
+    if not origin:
+        return None
+
+    origin_lat = parse_coordinate(origin.get("lat"))
+    origin_lon = parse_coordinate(origin.get("lon"))
+    if origin_lat is None or origin_lon is None:
+        return None
+
+    origin_prov = (origin.get("provinceCode") or "").strip().upper()
+
+    factors_idx = _idf_cc_factors_index()
+    exports_idx = _idf_cc_index()
+    eligible_ids = set(factors_idx.keys()) | set(exports_idx.keys())
+    if not eligible_ids:
+        return None
+
+    def _nearest_for_allowed_ids(allowed_ids: set[str]):
+        best_station = None
+        best_distance = float("inf")
+        for candidate in candidates:
+            candidate_id = candidate.get("stationId")
+            if not candidate_id:
+                continue
+            candidate_id = str(candidate_id)
+            if candidate_id == str(station_id):
+                continue
+            if candidate_id not in allowed_ids:
+                continue
+
+            cand_lat = parse_coordinate(candidate.get("lat"))
+            cand_lon = parse_coordinate(candidate.get("lon"))
+            if cand_lat is None or cand_lon is None:
+                continue
+
+            distance = haversine(origin_lat, origin_lon, cand_lat, cand_lon)
+            if distance < best_distance:
+                best_distance = distance
+                best_station = candidate
+
+        if not best_station or best_distance == float("inf"):
+            return None
+        return {"station": best_station, "distance_km": best_distance}
+
+    # Prefer same-province matches; if none exist, fall back to any eligible station.
+    candidates = []
+    if origin_prov:
+        candidates = [
+            s
+            for s in STATIONS_DATA
+            if (s.get("provinceCode") or "").strip().upper() == origin_prov
+        ]
+    if not candidates:
+        candidates = STATIONS_DATA
+
+    # Prefer factor JSONs over export CSVs (even if slightly farther),
+    # because exports alone may not be usable at runtime without parsing.
+    nearest_factors = _nearest_for_allowed_ids(set(factors_idx.keys()))
+    if nearest_factors:
+        return {**nearest_factors, "source": "idf_cc_factors_json"}
+
+    nearest_exports = _nearest_for_allowed_ids(set(exports_idx.keys()))
+    if nearest_exports:
+        return {**nearest_exports, "source": "idf_cc_export_csv"}
+
+    return None
+
+
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     payload = request.get_json() or {}
@@ -346,7 +897,6 @@ def register():
 
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     now = datetime.utcnow()
-    trial_end = now + timedelta(days=7)
     role = 'admin' if email and email == ADMIN_EMAIL else 'user'
 
     user_doc = {
@@ -354,11 +904,13 @@ def register():
         'username': username if username else None,
         'name': name,
         'passwordHash': password_hash,
-        'subscriptionStatus': 'trialing',
+        # Trial is started only after card collection via Stripe Checkout.
+        'subscriptionStatus': 'trial_pending',
         'plan': None,
         'stripeCustomerId': None,
-        'trialStartsAt': now,
-        'trialEndsAt': trial_end,
+        'trialUsed': False,
+        'trialStartsAt': None,
+        'trialEndsAt': None,
         'createdAt': now,
         'updatedAt': now,
         'role': role,
@@ -374,6 +926,341 @@ def register():
         'user': serialize_user(user_doc),
         **tokens,
     }), 201
+
+
+def _price_id_for_plan(plan: str):
+    plan = (plan or "").strip().lower()
+    if plan in ("consultant", "consultant_monthly", "monthly"):
+        return STRIPE_PRICE_CONSULTANT_MONTHLY, "consultant_monthly"
+    if plan in ("municipal", "municipal_annual", "annual"):
+        return STRIPE_PRICE_MUNICIPAL_ANNUAL, "municipal_annual"
+    if plan in ("lifetime", "lifetime_membership", "lifetime-membership"):
+        return STRIPE_PRICE_LIFETIME, "lifetime"
+    return None, None
+
+
+@app.route('/api/billing/create-checkout-session', methods=['POST'])
+@jwt_required()
+def create_checkout_session():
+    """
+    Creates a Stripe Checkout session for a paid subscription (no trial).
+    Trial access is started separately via the $1 refundable card verification flow.
+    """
+    if not STRIPE_SECRET_KEY:
+        return jsonify({'error': 'Stripe is not configured.'}), 500
+
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'Authentication required.'}), 401
+
+    payload = request.get_json() or {}
+    plan = payload.get('plan') or 'consultant_monthly'
+    price_id, plan_key = _price_id_for_plan(plan)
+    if plan_key is None:
+        return jsonify({'error': f'Unknown plan: {plan}'}), 400
+    if not price_id:
+        return jsonify({'error': f'Missing Stripe price ID for plan: {plan_key}'}), 500
+
+    email = normalize_email(user_doc.get('email'))
+    if not email:
+        return jsonify({'error': 'A valid email is required for billing.'}), 400
+
+    success_url = f"{FRONTEND_URL}/start?checkout=success"
+    cancel_url = f"{FRONTEND_URL}/?checkout=cancel"
+
+    customer_id = user_doc.get("stripeCustomerId")
+    # Lifetime is a one-time purchase (not a subscription).
+    if plan_key == "lifetime":
+        sold_count = users_collection.count_documents({"plan": "lifetime"})
+        if sold_count >= LIFETIME_MEMBERSHIP_LIMIT:
+            return jsonify({"error": "Lifetime membership is sold out."}), 409
+
+        session_kwargs = {
+            "mode": "payment",
+            "client_reference_id": str(user_doc["_id"]),
+            "line_items": [{"price": price_id, "quantity": 1}],
+            "metadata": {
+                "userId": str(user_doc["_id"]),
+                "purpose": "lifetime_purchase",
+                "plan": "lifetime",
+            },
+            "payment_intent_data": {
+                "metadata": {
+                    "userId": str(user_doc["_id"]),
+                    "purpose": "lifetime_purchase",
+                    "plan": "lifetime",
+                },
+            },
+            "allow_promotion_codes": True,
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+        }
+
+        customer_id = user_doc.get("stripeCustomerId")
+        if customer_id:
+            session_kwargs["customer"] = customer_id
+        else:
+            session_kwargs["customer_creation"] = "always"
+            session_kwargs["customer_email"] = email
+
+        session = stripe.checkout.Session.create(**session_kwargs)
+        return jsonify({"url": session.url})
+
+    session_kwargs = {
+        "mode": "subscription",
+        "client_reference_id": str(user_doc["_id"]),
+        "line_items": [{"price": price_id, "quantity": 1}],
+        "subscription_data": {
+            "metadata": {
+                "userId": str(user_doc["_id"]),
+                "plan": plan_key,
+            },
+        },
+        "payment_method_collection": "always",
+        "allow_promotion_codes": True,
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+    }
+
+    # Reuse an existing Stripe customer if available (e.g., after card verification)
+    if customer_id:
+        session_kwargs["customer"] = customer_id
+    else:
+        session_kwargs["customer_email"] = email
+
+    session = stripe.checkout.Session.create(
+        **session_kwargs,
+    )
+
+    return jsonify({"url": session.url})
+
+
+@app.route('/api/billing/create-trial-verification-session', methods=['POST'])
+@jwt_required()
+def create_trial_verification_session():
+    """
+    Creates a Stripe Checkout session to verify a card with a $1 refundable payment.
+    After successful payment, we refund the $1 and start a 7-day trial.
+    """
+    if not STRIPE_SECRET_KEY:
+        return jsonify({'error': 'Stripe is not configured.'}), 500
+
+    user_doc = get_current_user()
+    if not user_doc:
+        return jsonify({'error': 'Authentication required.'}), 401
+
+    if trial_already_used(user_doc):
+        return jsonify({'error': 'Trial already used for this account.'}), 409
+
+    email = normalize_email(user_doc.get('email'))
+    if not email:
+        return jsonify({'error': 'A valid email is required for billing.'}), 400
+
+    success_url = f"{FRONTEND_URL}/start?trial=success"
+    cancel_url = f"{FRONTEND_URL}/?trial=cancel"
+
+    session = stripe.checkout.Session.create(
+        mode="payment",
+        customer_creation="always",
+        customer_email=email,
+        client_reference_id=str(user_doc["_id"]),
+        payment_intent_data={
+            # Save payment method for later subscription checkout.
+            "setup_future_usage": "off_session",
+            "metadata": {
+                "userId": str(user_doc["_id"]),
+                "purpose": "trial_verification",
+            },
+        },
+        metadata={
+            "userId": str(user_doc["_id"]),
+            "purpose": "trial_verification",
+        },
+        line_items=[
+            {
+                "price_data": {
+                    "currency": STRIPE_CURRENCY,
+                    "unit_amount": STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS,
+                    "product_data": {"name": "Trial verification (refunded)"},
+                },
+                "quantity": 1,
+            }
+        ],
+        success_url=success_url,
+        cancel_url=cancel_url,
+    )
+
+    return jsonify({"url": session.url})
+
+
+@app.route('/api/billing/stripe-webhook', methods=['POST'])
+def stripe_webhook():
+    """
+    Stripe webhook handler to sync subscription/trial status to MongoDB.
+    """
+    if not STRIPE_WEBHOOK_SECRET:
+        return jsonify({'error': 'Stripe webhook secret not configured.'}), 500
+
+    payload = request.data
+    sig_header = request.headers.get("Stripe-Signature")
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+    except Exception as exc:
+        print(f"Stripe webhook verification failed: {exc}")
+        return jsonify({'error': 'Invalid signature'}), 400
+
+    event_type = event.get("type")
+    data_object = (event.get("data") or {}).get("object") or {}
+    now = datetime.utcnow()
+
+    def _update_user_by_email_or_id(user_id: str | None, email: str | None, updates: dict):
+        query = None
+        if user_id:
+            try:
+                query = {"_id": ObjectId(user_id)}
+            except Exception:
+                query = None
+        if not query and email:
+            query = {"email": normalize_email(email)}
+        if not query:
+            return
+        users_collection.update_one(query, {"$set": {**updates, "updatedAt": now}})
+
+    try:
+        if event_type == "checkout.session.completed":
+            # Checkout session includes the subscription and customer IDs.
+            session = data_object
+            metadata = session.get("metadata") or {}
+            purpose = (metadata.get("purpose") or "").strip().lower()
+
+            # Trial verification checkout (mode=payment)
+            if purpose == "trial_verification":
+                customer_id = session.get("customer")
+                email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+                user_id = session.get("client_reference_id") or metadata.get("userId")
+                payment_intent_id = session.get("payment_intent")
+
+                # Refund the verification payment (idempotent by event id).
+                if payment_intent_id:
+                    try:
+                        stripe.Refund.create(
+                            payment_intent=payment_intent_id,
+                            idempotency_key=event.get("id"),
+                        )
+                    except Exception as refund_exc:
+                        print(f"Failed to refund trial verification payment: {refund_exc}")
+
+                trial_start = now
+                trial_end = now + timedelta(days=7)
+
+                updates = {
+                    "stripeCustomerId": customer_id,
+                    "subscriptionStatus": "trialing",
+                    "trialStartsAt": trial_start,
+                    "trialEndsAt": trial_end,
+                    "trialUsed": True,
+                    "updatedAt": now,
+                }
+                _update_user_by_email_or_id(user_id, email, updates)
+                return jsonify({'received': True})
+
+            # Lifetime membership purchase (mode=payment)
+            if purpose == "lifetime_purchase":
+                customer_id = session.get("customer")
+                email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+                user_id = session.get("client_reference_id") or metadata.get("userId")
+
+                sold_count = users_collection.count_documents({"plan": "lifetime"})
+                if sold_count >= LIFETIME_MEMBERSHIP_LIMIT:
+                    # Do not grant access if sold out; manual resolution/refund may be needed.
+                    return jsonify({'received': True})
+
+                updates = {
+                    "stripeCustomerId": customer_id,
+                    "subscriptionStatus": "active",
+                    "plan": "lifetime",
+                    "lifetimePurchasedAt": now,
+                    "updatedAt": now,
+                }
+                _update_user_by_email_or_id(user_id, email, updates)
+                return jsonify({'received': True})
+
+            subscription_id = session.get("subscription")
+            customer_id = session.get("customer")
+            email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+            user_id = session.get("client_reference_id")
+
+            trial_start = None
+            trial_end = None
+            subscription_status = None
+            plan_key = None
+
+            if subscription_id:
+                sub = stripe.Subscription.retrieve(subscription_id)
+                subscription_status = sub.get("status")
+                trial_start_unix = sub.get("trial_start")
+                trial_end_unix = sub.get("trial_end")
+                if trial_start_unix:
+                    trial_start = datetime.utcfromtimestamp(trial_start_unix)
+                if trial_end_unix:
+                    trial_end = datetime.utcfromtimestamp(trial_end_unix)
+                plan_key = (sub.get("metadata") or {}).get("plan")
+
+            updates = {
+                "stripeCustomerId": customer_id,
+                "stripeSubscriptionId": subscription_id,
+                "plan": plan_key,
+                "subscriptionStatus": subscription_status or "active",
+            }
+
+            # Mark trial as used if a trial was granted (or if it was ever started).
+            if trial_end:
+                updates["trialStartsAt"] = trial_start or now
+                updates["trialEndsAt"] = trial_end
+                updates["trialUsed"] = True
+                # If Stripe says trialing, keep it; otherwise it might already be active.
+                if updates["subscriptionStatus"] == "trialing":
+                    pass
+            else:
+                # No trial on this checkout (e.g., user already used it)
+                updates["trialUsed"] = True if trial_already_used(get_user_by_id(user_id) if user_id else None) else bool(
+                    updates.get("trialUsed")
+                )
+
+            _update_user_by_email_or_id(user_id, email, updates)
+
+        elif event_type in ("customer.subscription.updated", "customer.subscription.deleted", "customer.subscription.created"):
+            sub = data_object
+            customer_id = sub.get("customer")
+            subscription_id = sub.get("id")
+            status = sub.get("status")
+            trial_start_unix = sub.get("trial_start")
+            trial_end_unix = sub.get("trial_end")
+            plan_key = (sub.get("metadata") or {}).get("plan")
+
+            updates = {
+                "stripeCustomerId": customer_id,
+                "stripeSubscriptionId": subscription_id,
+                "subscriptionStatus": status,
+                "plan": plan_key,
+            }
+
+            if trial_start_unix:
+                updates["trialStartsAt"] = datetime.utcfromtimestamp(trial_start_unix)
+            if trial_end_unix:
+                updates["trialEndsAt"] = datetime.utcfromtimestamp(trial_end_unix)
+                updates["trialUsed"] = True
+
+            users_collection.update_one(
+                {"stripeCustomerId": customer_id},
+                {"$set": {**updates, "updatedAt": now}},
+            )
+
+    except Exception as exc:
+        print(f"Stripe webhook handler error ({event_type}): {exc}")
+        return jsonify({'error': 'Webhook handler error'}), 500
+
+    return jsonify({'received': True})
 
 
 @app.route('/api/auth/login', methods=['POST'])
@@ -502,14 +1389,53 @@ def list_contact_submissions():
         return jsonify({'error': 'Failed to fetch submissions'}), 500
 
 
-def duration_to_minutes(duration_str):
-    if not isinstance(duration_str, str):
+def duration_to_minutes(duration_value):
+    """
+    Convert an IDF duration into minutes.
+
+    The loaded IDF data can contain durations as:
+    - numbers (already minutes): 5, 10, 15, 60, 120, ...
+    - strings: "5 min", "1 h", "24 hr", etc.
+    """
+    if duration_value is None:
         return None
-    duration_str = duration_str.lower().strip()
-    if 'min' in duration_str:
-        return int(duration_str.replace('min', '').strip())
-    elif 'h' in duration_str:
-        return int(float(duration_str.replace('h', '').strip()) * 60)
+
+    # Many IDF datasets store minute durations as numbers.
+    if isinstance(duration_value, (int, float)):
+        try:
+            if not math.isfinite(float(duration_value)):
+                return None
+        except Exception:
+            return None
+        minutes = int(round(float(duration_value)))
+        return minutes if minutes > 0 else None
+
+    s = str(duration_value).lower().strip()
+    if not s:
+        return None
+    s = re.sub(r"\s+", " ", s)
+
+    m = re.match(r"^(\d+(?:\.\d+)?)\s*(min|mins|minute|minutes)$", s)
+    if m:
+        minutes = int(round(float(m.group(1))))
+        return minutes if minutes > 0 else None
+
+    m = re.match(r"^(\d+(?:\.\d+)?)\s*(h|hr|hrs|hour|hours)$", s)
+    if m:
+        minutes = int(round(float(m.group(1)) * 60.0))
+        return minutes if minutes > 0 else None
+
+    m = re.match(r"^(\d+(?:\.\d+)?)\s*(d|day|days)$", s)
+    if m:
+        minutes = int(round(float(m.group(1)) * 24.0 * 60.0))
+        return minutes if minutes > 0 else None
+
+    # Bare numbers as strings -> assume minutes.
+    m = re.match(r"^(\d+(?:\.\d+)?)$", s)
+    if m:
+        minutes = int(round(float(m.group(1))))
+        return minutes if minutes > 0 else None
+
     return None
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -521,6 +1447,33 @@ def haversine(lat1, lon1, lat2, lon2):
     a = math.sin(delta_phi / 2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
+
+
+def _norm_name_tokens(station):
+    """
+    Extracts tokens from station name for loose matching against IDF keys.
+    """
+    raw = station.get("normalizedName") or station.get("name") or ""
+    raw = str(raw).lower()
+    # keep alphanumerics, turn separators into spaces
+    raw = re.sub(r"[^a-z0-9]+", " ", raw).strip()
+    tokens = [t for t in raw.split() if len(t) >= 4]  # ignore very short tokens
+    return tokens
+
+
+def _idf_key_seems_to_match_station(station, idf_key: str) -> bool:
+    """
+    Heuristic: does the IDF key string contain at least one meaningful token
+    from the station name? This helps avoid mismatches where a stationId points
+    to an IDF file for a different station.
+    """
+    if not idf_key:
+        return False
+    key = str(idf_key).lower()
+    tokens = _norm_name_tokens(station)
+    if not tokens:
+        return False
+    return any(t in key for t in tokens)
     
 @app.route('/api/stations', methods=['GET'])
 def get_stations():
@@ -534,13 +1487,23 @@ def nearest_station():
     except (ValueError, TypeError):
         return jsonify({"error": "Invalid latitude or longitude."}), 400
 
+    # Optional province filter (helps avoid cross-province duplicates in merged datasets)
+    province = (request.args.get("province") or "").strip().upper()
+
     if not isinstance(STATIONS_DATA, list) or not STATIONS_DATA:
         return jsonify({"error": "Stations data not available."}), 500
 
+    candidates = STATIONS_DATA
+    if province:
+        candidates = [s for s in STATIONS_DATA if (s.get("provinceCode") or "").strip().upper() == province]
+        if not candidates:
+            candidates = STATIONS_DATA
+
     closest_station = None
     min_distance = float('inf')
+    best_quality = 10  # lower is better
 
-    for station in STATIONS_DATA:
+    for station in candidates:
         station_lat = station.get('lat')
         station_lon = station.get('lon')
 
@@ -550,7 +1513,18 @@ def nearest_station():
                 station_lon = float(station_lon)
                 distance = haversine(lat, lon, station_lat, station_lon)
 
-                if distance < min_distance:
+                # Prefer stations whose stationId maps to an IDF key that matches the station name
+                candidate_id = station.get("stationId")
+                idf_key = IDF_KEY_MAPPING.get(str(candidate_id)) if candidate_id else None
+                if candidate_id and idf_key and _idf_key_seems_to_match_station(station, idf_key):
+                    quality = 0
+                elif candidate_id and idf_key:
+                    quality = 1
+                else:
+                    quality = 2
+
+                if quality < best_quality or (quality == best_quality and distance < min_distance):
+                    best_quality = quality
                     min_distance = distance
                     closest_station = station
 
@@ -586,6 +1560,7 @@ def idf_curves():
 
         idf_key = IDF_KEY_MAPPING.get(stationId)
         fallback_meta = None
+        effective_station_id = stationId
         
         if not idf_key or idf_key not in IDF_DATA:
             print(f"IDF data not found for station ID: {stationId}. Attempting fallback.")
@@ -600,12 +1575,45 @@ def idf_curves():
                     'usedStationName': fallback_station.get('name'),
                     'distanceKm': round(fallback['distance_km'], 2)
                 }
+                if fallback_station.get("stationId"):
+                    effective_station_id = str(fallback_station.get("stationId"))
                 print(f"Fallback succeeded: using station {fallback_meta['usedStationId']} ({fallback_meta['usedStationName']}) at {fallback_meta['distanceKm']} km.")
             else:
                 print(f"IDF fallback failed for station ID: {stationId}")
                 return jsonify({"error": "IDF data not found for this station or nearby stations."}), 404
         
         idf_station_data = IDF_DATA.get(idf_key, [])
+
+        # Optional: if the selected station has no valid sub-hour (5–30 min) values,
+        # allow explicitly requesting a fallback to the nearest station that does.
+        allow_subhour_fallback = (request.args.get("allowSubhourFallback") or "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+        if allow_subhour_fallback and not _idf_station_has_subhour_durations(idf_station_data):
+            short_fallback = find_nearest_station_with_subhour_idf(str(effective_station_id))
+            if short_fallback:
+                fb_station = short_fallback["station"]
+                prev_used_station_id = effective_station_id
+
+                idf_key = short_fallback["idf_key"]
+                idf_station_data = IDF_DATA.get(idf_key, [])
+
+                if fb_station.get("stationId"):
+                    effective_station_id = str(fb_station.get("stationId"))
+
+                if not fallback_meta:
+                    fallback_meta = {}
+                fallback_meta.update({
+                    "shortDurationFallback": True,
+                    "shortDurationReason": "Selected station has no valid sub-hour (5–30 min) IDF values; using nearest station with sub-hour durations.",
+                    "shortDurationRequestedStationId": prev_used_station_id,
+                    "shortDurationUsedStationId": fb_station.get("stationId"),
+                    "shortDurationUsedStationName": fb_station.get("name"),
+                    "shortDurationDistanceKm": round(float(short_fallback["distance_km"]), 2),
+                })
 
         processed_data = []
         
@@ -630,9 +1638,175 @@ def idf_curves():
 
         processed_data.sort(key=lambda x: x['duration'])
         
+        # Optional climate-change adjustment
+        climate = (request.args.get("climate") or "").strip().lower()
+        climate_mode = (request.args.get("climateMode") or "factor").strip().lower()
+        climate_meta = None
+
+        if climate in ("qc18", "qc_18", "quebec18"):
+            # Québec guidance: +18% uplift (applied to intensities)
+            station_meta = STATION_LOOKUP.get(stationId) or {}
+            prov = (station_meta.get("provinceCode") or "").strip().upper()
+            if prov == "QC":
+                applied_count = 0
+                for point in processed_data:
+                    for rp, val in list(point.items()):
+                        if rp == "duration":
+                            continue
+                        if isinstance(val, (int, float)) and math.isfinite(val):
+                            point[rp] = float(val) * 1.18
+                            applied_count += 1
+                climate_meta = {
+                    "requested": climate,
+                    "applied": True if applied_count > 0 else False,
+                    "mode": "factor",
+                    "factor": 1.18,
+                    "scope": "QC only",
+                    "note": "QC climate-change uplift (+18%) applied to intensities.",
+                }
+            else:
+                climate_meta = {
+                    "requested": climate,
+                    "applied": False,
+                    "reason": f"Station province is {prov or 'unknown'}; qc18 applies only to QC stations.",
+                }
+
+        elif climate in ("cc_2050_high", "idf_cc_2050_high", "cmip6_2050_ssp585"):
+            station_id_str = str(effective_station_id)
+            idf_cc_path = None
+            # Prefer compact precomputed factors if available (fast + small)
+            factors_path = _idf_cc_factors_index().get(station_id_str)
+            if factors_path:
+                factors_doc = _load_idf_cc_factors(factors_path) or {}
+                factors = factors_doc.get("factors") or {}
+                applied_count = 0
+                for point in processed_data:
+                    dur = point.get("duration")
+                    if not isinstance(dur, int):
+                        continue
+                    row = factors.get(str(dur)) or factors.get(dur) or {}
+                    for rp, val in list(point.items()):
+                        if rp == "duration":
+                            continue
+                        f = row.get(str(rp))
+                        if isinstance(val, (int, float)) and math.isfinite(val) and isinstance(f, (int, float)) and f > 0:
+                            point[rp] = float(val) * float(f)
+                            applied_count += 1
+                climate_meta = {
+                    "requested": climate,
+                    "applied": True if applied_count > 0 else False,
+                    "mode": "factor",
+                    "scenario": "SSP5-8.5",
+                    "stationId": factors_doc.get("stationId") or station_id_str,
+                    "initialYear": factors_doc.get("initialYear"),
+                    "finalYear": factors_doc.get("finalYear"),
+                    "source": "idf_cc_factors_json",
+                    "note": "Applied precomputed SSP5-8.5 factors (future/historical).",
+                }
+            else:
+                idf_cc_path = _idf_cc_index().get(station_id_str)
+            if idf_cc_path:
+                export = _load_idf_cc_export(idf_cc_path)
+                if export:
+                    scenario = "ssp585"
+                    future_tables = export.get("scenarios", {}).get(scenario) or []
+                    baseline = export.get("baseline") or {}
+                    future_median = _idf_cc_ensemble_median(future_tables) or {}
+
+                    applied_count = 0
+                    for point in processed_data:
+                        dur = point.get("duration")
+                        if not isinstance(dur, int):
+                            continue
+                        base_row = baseline.get(dur) or {}
+                        fut_row = future_median.get(dur) or {}
+                        for rp, val in list(point.items()):
+                            if rp == "duration":
+                                continue
+                            if not isinstance(val, (int, float)) or not math.isfinite(val):
+                                continue
+                            # Only apply where we have matching baseline+future values
+                            b = base_row.get(str(rp))
+                            f = fut_row.get(str(rp))
+                            if not isinstance(b, (int, float)) or not isinstance(f, (int, float)) or b <= 0:
+                                continue
+                            if climate_mode == "override":
+                                point[rp] = float(f)
+                            else:
+                                factor = float(f) / float(b)
+                                point[rp] = float(val) * factor
+                            applied_count += 1
+
+                    climate_meta = {
+                        "requested": climate,
+                        "applied": True if applied_count > 0 else False,
+                        "mode": climate_mode,
+                        "scenario": "SSP5-8.5",
+                        "finalYear": export.get("finalYear"),
+                        "stationId": export.get("stationId"),
+                        "modelsUsed": export.get("modelsPerScenario", {}).get(scenario, 0),
+                        "source": "idf_cc_export_csv",
+                        "note": "IDF_CC v8 export; ensemble-median SSP5-8.5 vs station baseline used to adjust returned values.",
+                    }
+            else:
+                # Last resort: apply climate factors from nearest station that has them.
+                nearest_cc = find_nearest_station_with_idf_cc(station_id_str)
+                if nearest_cc:
+                    used_station = nearest_cc.get("station") or {}
+                    used_id = str(used_station.get("stationId") or "")
+                    used_source = nearest_cc.get("source")
+                    used_distance = nearest_cc.get("distance_km")
+
+                    if used_source == "idf_cc_factors_json":
+                        used_factors_path = _idf_cc_factors_index().get(used_id)
+                        factors_doc = _load_idf_cc_factors(used_factors_path) if used_factors_path else None
+                        factors = (factors_doc or {}).get("factors") or {}
+                        applied_count = 0
+                        for point in processed_data:
+                            dur = point.get("duration")
+                            if not isinstance(dur, int):
+                                continue
+                            row = factors.get(str(dur)) or factors.get(dur) or {}
+                            for rp, val in list(point.items()):
+                                if rp == "duration":
+                                    continue
+                                f = row.get(str(rp))
+                                if isinstance(val, (int, float)) and math.isfinite(val) and isinstance(f, (int, float)) and f > 0:
+                                    point[rp] = float(val) * float(f)
+                                    applied_count += 1
+                        climate_meta = {
+                            "requested": climate,
+                            "applied": True if applied_count > 0 else False,
+                            "mode": "factor",
+                            "scenario": "SSP5-8.5",
+                            "source": "nearest_idf_cc_factors_json",
+                            "usedClimateStationId": used_id,
+                            "usedClimateStationName": used_station.get("name"),
+                            "usedClimateDistanceKm": round(float(used_distance), 2) if used_distance is not None else None,
+                            "note": "Applied climate factors from nearest station with IDF_CC factors.",
+                        }
+                    else:
+                        climate_meta = {
+                            "requested": climate,
+                            "applied": False,
+                            "reason": "Nearest station has only export CSV; add factors JSONs (recommended) or provide export under server/data/idf_cc.",
+                            "source": "nearest_idf_cc_export_csv",
+                            "usedClimateStationId": used_id,
+                            "usedClimateStationName": used_station.get("name"),
+                            "usedClimateDistanceKm": round(float(used_distance), 2) if used_distance is not None else None,
+                        }
+                else:
+                    climate_meta = {
+                        "requested": climate,
+                        "applied": False,
+                        "reason": "No IDF_CC export/factors found for this stationId (or nearby stations) on server.",
+                    }
+
         response_payload = {"data": processed_data}
         if fallback_meta:
             response_payload['fallback'] = fallback_meta
+        if climate_meta:
+            response_payload["climate"] = climate_meta
         return jsonify(response_payload)
 
     except Exception as e:

@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import Autocomplete from "react-google-autocomplete";
 import {
   LineChart,
   Line,
@@ -118,6 +119,11 @@ const MVPIDFViewerV2 = () => {
   const [trialMessage, setTrialMessage] = useState("");
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
+  const [applyClimate2050High, setApplyClimate2050High] = useState(false);
+  const [applyQc18, setApplyQc18] = useState(false);
+  const [climateInfo, setClimateInfo] = useState(null);
+  const [allowSubhourFallback, setAllowSubhourFallback] = useState(false);
+  const [idfFallbackInfo, setIdfFallbackInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isStationInfoVisible, setIsStationInfoVisible] = useState(false);
@@ -126,12 +132,31 @@ const MVPIDFViewerV2 = () => {
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
   const [locationInputValue, setLocationInputValue] = useState("");
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const autocompleteRef = useRef(null);
-  const autocompleteInputRef = useRef(null);
   const chartDataRef = useRef(null);
   
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
+
+  // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
+  // Force-keep it enabled.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = document.getElementById("location");
+    if (!el) return;
+
+    const forceEnable = () => {
+      try {
+        if (el.disabled) el.disabled = false;
+        if (el.hasAttribute("disabled")) el.removeAttribute("disabled");
+      } catch (_e) {
+        // no-op
+      }
+    };
+
+    forceEnable();
+    const obs = new MutationObserver(() => forceEnable());
+    obs.observe(el, { attributes: true, attributeFilter: ["disabled"] });
+    return () => obs.disconnect();
+  }, []);
   
   const trialExpired = useMemo(() => {
     const message = (trialMessage || "").toLowerCase();
@@ -142,129 +167,14 @@ const MVPIDFViewerV2 = () => {
     );
   }, [trialMessage, error]);
   
-  // This useEffect ensures the Google Maps script is loaded only once and correctly.
+  // We rely on `react-google-autocomplete` to load/init Places correctly.
   useEffect(() => {
-    if (!user) {
-      setScriptLoaded(false);
-      return;
-    }
     if (!hasGoogleApiKey) {
-      setScriptLoaded(false);
-       setError(
+      setError(
         "Google Maps API key is missing or invalid. Set REACT_APP_GOOGLE_PLACES_API_KEY in your environment or .env file.",
       );
-      return;
     }
-    let isMounted = true;
-    const GOOGLE_MAPS_SCRIPT_ID = "google-maps-script";
-
-    // Check if the script tag already exists in the document's head to prevent duplicate loads.
-    const existingScript = document.getElementById(GOOGLE_MAPS_SCRIPT_ID);
-    if (existingScript) {
-       console.log(
-        "Google Maps script tag already exists. Assuming script is loading or loaded.",
-      );
-      if (isMounted) {
-        setScriptLoaded(true);
-      }
-      return;
-    }
-
-    // Check if the script is already loaded via the window object, even if the tag is not present.
-    if (window.google?.maps?.places) {
-        console.log(
-        "Google Maps script already loaded via window object. Setting scriptLoaded to true.",
-      );
-      if (isMounted) {
-        setScriptLoaded(true);
-      }
-      return;
-    }
-
-    // If not loaded, create and append the script element.
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`;
-    script.async = true;
-    script.id = GOOGLE_MAPS_SCRIPT_ID;
-    
-    script.onload = () => {
-      if (isMounted) {
-        console.log("Google Maps script loaded successfully.");
-        setScriptLoaded(true);
-      }
-    };
-    
-    script.onerror = () => {
-      if (isMounted) {
-         console.error("Failed to load Google Maps script.");
-        setError("Failed to load Google Maps script. Check your API key.");
-      }
-    };
-    
-    document.head.appendChild(script);
-
-    return () => {
-      isMounted = false;
-      // No need to remove the script tag, as other components might need it.
-    };
-  }, [user, hasGoogleApiKey]);
-
-  // This useEffect initializes Autocomplete only after the script has successfully loaded.
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-    if (!hasGoogleApiKey) {
-      return;
-    }
-    if (scriptLoaded && autocompleteInputRef.current) {
-      // Use a short delay to ensure the places library is fully available
-      const initAutocomplete = () => {
-          if (window.google?.maps?.places) {
-            console.log("Initializing Autocomplete.");
-            // Create and store the autocomplete instance in a ref
-            autocompleteRef.current = new window.google.maps.places.Autocomplete(
-              autocompleteInputRef.current,
-              {
-                types: ["(cities)"],
-                componentRestrictions: { country: "ca" },
-              },
-            );
-    
-          // Attach the listener and update the state when a place is selected
-          autocompleteRef.current.addListener("place_changed", () => {
-              const selectedPlace = autocompleteRef.current.getPlace();
-              console.log("Place selected:", selectedPlace);
-              setPlace(selectedPlace);
-              const formatted =
-                selectedPlace?.formatted_address ||
-                selectedPlace?.description ||
-                selectedPlace?.name ||
-                autocompleteInputRef.current?.value ||
-                "";
-              if (autocompleteInputRef.current) {
-                  autocompleteInputRef.current.value = formatted;
-                }
-            });
-        } else {
-          // If the library is not yet ready, try again after a short delay
-          setTimeout(initAutocomplete, 100);
-        }
-      };
-      
-      initAutocomplete();
-
-      // Cleanup function to remove the listener and instance on component unmount
-      return () => {
-        if (autocompleteRef.current) {
-           window.google.maps.event.clearInstanceListeners(
-            autocompleteRef.current,
-          );
-          autocompleteRef.current = null;
-        }
-      };
-    }
-  }, [hasGoogleApiKey, scriptLoaded, user]);
+  }, [hasGoogleApiKey]);
 
   useEffect(() => {
     if (!user) {
@@ -299,35 +209,31 @@ const MVPIDFViewerV2 = () => {
       e.preventDefault();
         setError(null);
         setIDFData([]);
+        setClimateInfo(null);
+        setIdfFallbackInfo(null);
         setStation(null);
         setShowChart(false);
         setIsStationInfoVisible(false);
         setLoading(true);
 
       if (!place || !place.geometry) {
-          setError("Please select a valid location from the dropdown.");
-          setLoading(false);
-          return;
-        }
+        setError("Please select a valid location from the dropdown.");
+        setLoading(false);
+        return;
+      }
 
       const lat = place.geometry.location.lat();
       const lon = place.geometry.location.lng();
       let provinceCode = "";
 
       if (place.address_components) {
-          for (const component of place.address_components) {
-            if (component.types.includes("administrative_area_level_1")) {
-              provinceCode = component.short_name;
-              break;
-            }
+        for (const component of place.address_components) {
+          if (component.types.includes("administrative_area_level_1")) {
+            provinceCode = component.short_name;
+            break;
           }
         }
-
-      if (!provinceCode) {
-          setError("Could not determine the province for the selected location.");
-          setLoading(false);
-          return;
-        }
+      }
 
     try {
         const params = new URLSearchParams({
@@ -352,12 +258,23 @@ const MVPIDFViewerV2 = () => {
         setIsStationInfoVisible(true);
         console.log("Found nearest station:", nearestStation);
 
+       const idfUrlBase = `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`;
+       const climateParam = applyClimate2050High
+         ? "cc_2050_high"
+         : applyQc18
+           ? "qc18"
+           : "";
+       const extraParams = [];
+       if (climateParam) extraParams.push(`climate=${encodeURIComponent(climateParam)}`);
+       if (allowSubhourFallback) extraParams.push("allowSubhourFallback=1");
+       const idfUrl = extraParams.length ? `${idfUrlBase}&${extraParams.join("&")}` : idfUrlBase;
+
        const idfResponse = await (authFetch
         ? authFetch(
-            `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`,
+            idfUrl,
           )
         : fetch(
-            `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`,
+            idfUrl,
           ));
 
         const idfJson = await readJsonResponse(
@@ -372,6 +289,8 @@ const MVPIDFViewerV2 = () => {
           }
           throw new Error(idfJson?.error || "Failed to fetch IDF data.");
         }
+        setClimateInfo(idfJson?.climate || null);
+        setIdfFallbackInfo(idfJson?.fallback || null);
         console.log("Raw IDF data from API:", idfJson.data);
 
         const processedData = idfJson.data
@@ -477,7 +396,7 @@ const MVPIDFViewerV2 = () => {
           setLoading(false);
         }
       },
-      [authFetch, place],
+      [authFetch, place, applyClimate2050High, applyQc18, allowSubhourFallback],
     );
 
   const handleCheckboxChange = useCallback((event) => {
@@ -605,35 +524,7 @@ const MVPIDFViewerV2 = () => {
     );
   }
  
-  if (!scriptLoaded) {
-    return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="flex items-center text-blue-600">
-          <svg
-            className="animate-spin -ml-1 mr-3 h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-          <span>Loading Maps...</span>
-        </div>
-      </div>
-    );
-  }
+  // No explicit "Loading Maps" gate; Autocomplete component handles script loading.
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
@@ -677,6 +568,109 @@ const MVPIDFViewerV2 = () => {
             Intensity-Duration-Frequency (IDF) curves.
           </p>
 
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={applyClimate2050High}
+                onChange={(e) => {
+                  const next = e.target.checked;
+                  setApplyClimate2050High(next);
+                  if (next) setApplyQc18(false);
+                }}
+                className="mt-1"
+              />
+              <span>
+                Apply climate change (Ontario): <span className="font-semibold">2050 + high emissions (SSP5-8.5)</span>
+              </span>
+            </label>
+            <p className="mt-2 text-xs text-gray-500">
+              Applies when IDF_CC factors are available (for the station, or a nearby station with factors).
+            </p>
+            {applyClimate2050High && (
+              <div className="mt-2 text-xs">
+                {climateInfo?.applied ? (
+                  <div className="text-emerald-700">
+                    Climate applied: <span className="font-semibold">Yes</span>
+                    {climateInfo?.modelsUsed ? ` (models: ${climateInfo.modelsUsed})` : ""}
+                  </div>
+                ) : (
+                  <div className="text-amber-700">
+                    Climate applied: <span className="font-semibold">No</span>
+                    {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={applyQc18}
+                onChange={(e) => {
+                  const next = e.target.checked;
+                  setApplyQc18(next);
+                  if (next) setApplyClimate2050High(false);
+                }}
+                className="mt-1"
+              />
+              <span>
+                Apply climate change (Québec): <span className="font-semibold">+18% uplift</span>
+              </span>
+            </label>
+            <p className="mt-2 text-xs text-gray-500">
+              Applied only to stations in QC.
+            </p>
+            {applyQc18 && (
+              <div className="mt-2 text-xs">
+                {climateInfo?.applied ? (
+                  <div className="text-emerald-700">
+                    Climate applied: <span className="font-semibold">Yes</span> (factor: 1.18)
+                  </div>
+                ) : (
+                  <div className="text-amber-700">
+                    Climate applied: <span className="font-semibold">No</span>
+                    {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                checked={allowSubhourFallback}
+                onChange={(e) => setAllowSubhourFallback(e.target.checked)}
+                className="mt-1"
+              />
+              <span>
+                If the selected station has no <span className="font-semibold">5–30 min</span> data, use the nearest station for short durations
+              </span>
+            </label>
+            <p className="mt-2 text-xs text-gray-500">
+              Some ECCC stations have missing sub-hour data; enabling this keeps your table/plot on the standard short-duration grid.
+            </p>
+            {idfFallbackInfo?.shortDurationFallback && (
+              <div className="mt-2 text-xs text-amber-700">
+                Using short-duration IDF from{" "}
+                <span className="font-semibold">
+                  {idfFallbackInfo.shortDurationUsedStationName || "nearest station"}{" "}
+                </span>
+                {idfFallbackInfo.shortDurationUsedStationId
+                  ? `(${idfFallbackInfo.shortDurationUsedStationId})`
+                  : ""}
+                {typeof idfFallbackInfo.shortDurationDistanceKm === "number"
+                  ? ` — ${idfFallbackInfo.shortDurationDistanceKm} km`
+                  : ""}
+                .
+              </div>
+            )}
+          </div>
+
           <form onSubmit={handleSearch} className="space-y-4">
              <div>
                 <label
@@ -685,18 +679,24 @@ const MVPIDFViewerV2 = () => {
                 >
                   Location
                 </label>
-                <input
-                  ref={autocompleteInputRef}
-                  type="text"
-                  id="location"
-                  placeholder="e.g., Montreal, QC"
-                  value={locationInputValue}
-                  onChange={(event) => {
-                    const nextValue = event.target.value;
-                    setLocationInputValue(nextValue);
-                    setPlace(null);
-                    setError(null);
+                <Autocomplete
+                  apiKey={GOOGLE_MAPS_API_KEY}
+                  onPlaceSelected={(selectedPlace) => {
+                    if (!selectedPlace || !selectedPlace.geometry) return;
+                    setPlace(selectedPlace);
+                    const formatted =
+                      selectedPlace?.formatted_address ||
+                      selectedPlace?.name ||
+                      "";
+                    setLocationInputValue(formatted);
                   }}
+                  options={{
+                    types: ["(cities)"],
+                    componentRestrictions: { country: "ca" },
+                  }}
+                  id="location"
+                  name="location"
+                  placeholder="e.g., Montreal, QC"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>

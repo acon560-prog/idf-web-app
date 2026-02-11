@@ -1,0 +1,44 @@
+#
+# Controls what `gcloud builds submit` uploads.
+# We exclude huge dataset assets (pdf/png/zip) but keep the JSON files required at runtime.
+#
+
+.git
+.github
+
+**/node_modules
+**/.cache
+**/__pycache__
+**/*.pyc
+**/*.pyo
+
+client/build
+client/dist
+
+tmp
+coverage
+*.log
+
+# Exclude large assets inside server/data
+server/data/**/*.pdf
+server/data/**/*.png
+server/data/**/*.zip
+
+# Exclude everything under server/data by default...
+server/data/**
+
+# ...then include only runtime JSONs needed by the API
+!server/data/
+!server/data/*/
+!server/data/*/master_stations_enriched_validated.json
+!server/data/*/idf_data_by_station.json
+!server/data/frost_depth_lookup_FULL.json
+
+# Include climate-change files
+!server/data/idf_cc/
+!server/data/idf_cc/**
+!server/data/idf_cc_exports/
+!server/data/idf_cc_exports/**
+!server/data/idf_cc_factors/
+!server/data/idf_cc_factors/**
+

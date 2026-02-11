@@ -6,6 +6,8 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout } = useAuth();                     // ❷ get user + logout
   const isAdmin = user?.role === "admin";
+  const startHref = user ? "/start" : "/login";
+  const startLabel = user ? "Dashboard" : "Log in";
 
   return (
     <nav className="bg-gray-800 text-white">
@@ -17,7 +19,11 @@ function Navbar() {
           <li><Link to="/services" className="hover:underline">Services</Link></li>
           <li><Link to="/contact" className="hover:underline">Contact</Link></li>
           {isAdmin && <li><Link to="/admin" className="hover:underline">Admin</Link></li>}
-          <li><Link to="/start" className="hover:underline text-yellow-300 font-semibold">Start</Link></li>
+          <li>
+            <Link to={startHref} className="hover:underline text-yellow-300 font-semibold">
+              {startLabel}
+            </Link>
+          </li>
           {user && (                                       // ❸ show logout when logged in
             <li>
               <button type="button" onClick={logout} className="hover:underline">
@@ -44,7 +50,15 @@ function Navbar() {
           {isAdmin && (
             <li><Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link></li>
           )}
-          <li><Link to="/start" onClick={() => setMenuOpen(false)} className="text-yellow-300 font-semibold">Start</Link></li>
+          <li>
+            <Link
+              to={startHref}
+              onClick={() => setMenuOpen(false)}
+              className="text-yellow-300 font-semibold"
+            >
+              {startLabel}
+            </Link>
+          </li>
           {user && (
             <li>
               <button
