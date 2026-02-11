@@ -15,18 +15,8 @@ npm-debug.log
 yarn-debug.log
 yarn-error.log
 
-# Exclude large dataset assets by default (keep only runtime JSONs)
-server/data/**
-!server/data/
-!server/data/*/
-!server/data/*/master_stations_enriched_validated.json
-!server/data/*/idf_data_by_station.json
-!server/data/frost_depth_lookup_FULL.json
-
-# Keep climate-change factor inputs/outputs
-!server/data/idf_cc/
-!server/data/idf_cc/**
-!server/data/idf_cc_exports/
-!server/data/idf_cc_exports/**
-!server/data/idf_cc_factors/
-!server/data/idf_cc_factors/**
+# Keep `server/data/**` in the image (required at runtime),
+# but ignore large assets that would bloat Cloud Build context.
+server/data/**/*.pdf
+server/data/**/*.png
+server/data/**/*.zip
