@@ -9,7 +9,7 @@ steps:
         set -euo pipefail
         docker build \
           -t "$_IMAGE_URI" \
-          --build-arg REACT_APP_GOOGLE_PLACES_API_KEY="$GOOGLE_PLACES_KEY" \
+          --build-arg REACT_APP_GOOGLE_PLACES_API_KEY="$$GOOGLE_PLACES_KEY" \
           .
 
 images:
