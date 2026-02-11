@@ -4,6 +4,9 @@
 FROM node:20-alpine AS client-build
 
 WORKDIR /app/client
+# CRA env vars must be available at build time
+ARG REACT_APP_GOOGLE_PLACES_API_KEY
+ENV REACT_APP_GOOGLE_PLACES_API_KEY=${REACT_APP_GOOGLE_PLACES_API_KEY}
 COPY client/package.json client/package-lock.json ./
 RUN npm ci
 COPY client/ ./
