@@ -135,6 +135,28 @@ const MVPIDFViewerV2 = () => {
   const chartDataRef = useRef(null);
   
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
+
+  // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
+  // Force-keep it enabled.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = document.getElementById("location");
+    if (!el) return;
+
+    const forceEnable = () => {
+      try {
+        if (el.disabled) el.disabled = false;
+        if (el.hasAttribute("disabled")) el.removeAttribute("disabled");
+      } catch (_e) {
+        // no-op
+      }
+    };
+
+    forceEnable();
+    const obs = new MutationObserver(() => forceEnable());
+    obs.observe(el, { attributes: true, attributeFilter: ["disabled"] });
+    return () => obs.disconnect();
+  }, []);
   
   const trialExpired = useMemo(() => {
     const message = (trialMessage || "").toLowerCase();
