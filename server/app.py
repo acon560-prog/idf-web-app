@@ -75,6 +75,13 @@ STATION_LOOKUP = {}
 IDF_DATA = {}
 IDF_KEY_MAPPING = {}
 IDF_STATION_IDS = set() 
+DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
+RETURN_PERIODS = ('2', '5', '10', '25', '50', '100')
+# Station IDs are usually either 7 digits or 3 digits + 4 alphanumeric chars.
+STATION_ID_RE = re.compile(r'(\d{7}|\d{3}[A-Z0-9]{4})')
+ICC_EXPORTS_DIRNAME = 'icc_exports'
+ICC_DURATION_ROW_RE = re.compile(r'^\d+(\.\d+)?\s(min|h)$', re.IGNORECASE)
+LOADED_ICC_EXPORT_DIRS = set()
 
 
 def normalize_email(email: str) -> str:
@@ -231,14 +238,269 @@ def send_contact_email(name, email, message, send_copy=False):
 
     return True
 
+def extract_station_id(raw_value):
+    if not raw_value:
+        return None
+    match = STATION_ID_RE.search(str(raw_value).upper())
+    return match.group(1) if match else None
+
+
+def parse_duration_to_minutes(duration_value):
+    if duration_value is None:
+        return None
+
+    if isinstance(duration_value, (int, float)):
+        try:
+            minutes = int(round(float(duration_value)))
+            return minutes if minutes > 0 else None
+        except (TypeError, ValueError):
+            return None
+
+    text = str(duration_value).strip().lower()
+    match = re.match(
+        r'^(\d+(?:\.\d+)?)\s*(min|mins|minute|minutes|h|hr|hrs|hour|hours)$',
+        text,
+    )
+    if not match:
+        return None
+
+    value = float(match.group(1))
+    unit = match.group(2)
+    if unit.startswith('h'):
+        value *= 60
+
+    minutes = int(round(value))
+    return minutes if minutes > 0 else None
+
+
+def minutes_to_duration_label(minutes):
+    if minutes % 60 == 0 and minutes >= 60:
+        return f"{minutes // 60} h"
+    return f"{minutes} min"
+
+
+def normalize_idf_rows(rows):
+    if not isinstance(rows, list):
+        return []
+
+    normalized = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+
+        duration_minutes = parse_duration_to_minutes(row.get('duration'))
+        if duration_minutes is None:
+            continue
+
+        normalized_row = {
+            'duration': minutes_to_duration_label(duration_minutes),
+        }
+        for rp in RETURN_PERIODS:
+            value = row.get(rp)
+            if value in (None, '', -99.9, '-99.9'):
+                continue
+            try:
+                normalized_row[rp] = float(value)
+            except (TypeError, ValueError):
+                continue
+
+        if len(normalized_row) > 1:
+            normalized.append(normalized_row)
+
+    return normalized
+
+
+def parse_icc_table_2a(lines):
+    results = []
+    in_table = False
+    data_started = False
+
+    for line in lines:
+        if 'table 2a' in line.lower():
+            in_table = True
+            continue
+
+        if not in_table:
+            continue
+
+        parts = line.strip().split()
+        if len(parts) > 1:
+            duration_token = f"{parts[0]} {parts[1]}"
+        elif parts:
+            duration_token = parts[0]
+        else:
+            duration_token = ''
+
+        if not data_started:
+            if ICC_DURATION_ROW_RE.match(duration_token):
+                data_started = True
+            else:
+                continue
+
+        if not ICC_DURATION_ROW_RE.match(duration_token):
+            break
+
+        if len(parts) < 8:
+            continue
+
+        if parts[1].lower() in ('min', 'h'):
+            duration = f"{parts[0]} {parts[1]}"
+            values = parts[2:-1]
+        else:
+            duration = parts[0]
+            values = parts[1:-1]
+
+        if len(values) < len(RETURN_PERIODS):
+            continue
+
+        parsed_row = {'duration': duration}
+        for idx, rp in enumerate(RETURN_PERIODS):
+            try:
+                numeric_value = float(values[idx])
+            except (TypeError, ValueError, IndexError):
+                numeric_value = None
+            if numeric_value == -99.9:
+                numeric_value = None
+            parsed_row[rp] = numeric_value
+
+        results.append(parsed_row)
+
+    return normalize_idf_rows(results)
+
+
+def parse_icc_json_payload(payload, fallback_station_id=None):
+    parsed = {}
+
+    if isinstance(payload, dict):
+        if isinstance(payload.get('data'), list):
+            station_id = extract_station_id(payload.get('stationId')) or fallback_station_id
+            rows = normalize_idf_rows(payload.get('data'))
+            if station_id and rows:
+                parsed[station_id] = rows
+            return parsed
+
+        for key, value in payload.items():
+            if not isinstance(value, list):
+                continue
+            station_id = extract_station_id(key)
+            if not station_id and fallback_station_id and len(payload) == 1:
+                station_id = fallback_station_id
+            rows = normalize_idf_rows(value)
+            if station_id and rows:
+                parsed[station_id] = rows
+        return parsed
+
+    if isinstance(payload, list):
+        is_station_list = all(
+            isinstance(item, dict)
+            and item.get('stationId')
+            and isinstance(item.get('data'), list)
+            for item in payload
+        )
+        if is_station_list:
+            for item in payload:
+                station_id = extract_station_id(item.get('stationId'))
+                rows = normalize_idf_rows(item.get('data'))
+                if station_id and rows:
+                    parsed[station_id] = rows
+            return parsed
+
+        rows = normalize_idf_rows(payload)
+        if fallback_station_id and rows:
+            parsed[fallback_station_id] = rows
+
+    return parsed
+
+
+def merge_station_idf_rows(station_id, rows):
+    if not station_id or not rows:
+        return 'skipped'
+
+    existing_key = IDF_KEY_MAPPING.get(station_id)
+    if existing_key and existing_key in IDF_DATA:
+        existing_rows = IDF_DATA.get(existing_key) or []
+        if existing_rows:
+            return 'skipped'
+        IDF_DATA[existing_key] = rows
+        IDF_STATION_IDS.add(station_id)
+        return 'updated'
+
+    key_to_use = station_id
+    if key_to_use in IDF_DATA and (IDF_DATA.get(key_to_use) or []):
+        key_to_use = f"{station_id}__{ICC_EXPORTS_DIRNAME}"
+
+    IDF_DATA[key_to_use] = rows
+    IDF_KEY_MAPPING[station_id] = key_to_use
+    IDF_STATION_IDS.add(station_id)
+    return 'added'
+
+
+def load_icc_exports_from_dir(directory_path):
+    summary = {
+        'processed': 0,
+        'added': 0,
+        'updated': 0,
+        'skipped': 0,
+        'errors': 0,
+    }
+
+    if not os.path.isdir(directory_path):
+        return summary
+
+    real_directory = os.path.realpath(directory_path)
+    if real_directory in LOADED_ICC_EXPORT_DIRS:
+        return summary
+
+    LOADED_ICC_EXPORT_DIRS.add(real_directory)
+
+    for file_name in sorted(os.listdir(directory_path)):
+        file_path = os.path.join(directory_path, file_name)
+        if not os.path.isfile(file_path):
+            continue
+        lower_name = file_name.lower()
+        if not (lower_name.endswith('.txt') or lower_name.endswith('.json')):
+            continue
+
+        summary['processed'] += 1
+        fallback_station_id = extract_station_id(file_name)
+
+        try:
+            station_data = {}
+            if lower_name.endswith('.txt'):
+                with open(file_path, 'r', encoding='latin-1', errors='ignore') as handle:
+                    rows = parse_icc_table_2a(handle.readlines())
+                if fallback_station_id and rows:
+                    station_data[fallback_station_id] = rows
+            else:
+                with open(file_path, 'r', encoding='utf-8') as handle:
+                    payload = json.load(handle)
+                station_data = parse_icc_json_payload(payload, fallback_station_id=fallback_station_id)
+        except (OSError, json.JSONDecodeError) as exc:
+            summary['errors'] += 1
+            print(f"Could not process ICC export file {file_path}: {exc}")
+            continue
+
+        if not station_data:
+            summary['skipped'] += 1
+            continue
+
+        for station_id, rows in station_data.items():
+            action = merge_station_idf_rows(station_id, rows)
+            if action in summary:
+                summary[action] += 1
+            else:
+                summary['skipped'] += 1
+
+    return summary
+
+
 for province_code in PROVINCES:
-    # Construct file paths for each province.
-    # Assumes your data is structured like this: data/QC/master...json
-    stations_path = os.path.join(os.path.dirname(__file__), 'data', province_code, 'master_stations_enriched_validated.json')
-    idf_path = os.path.join(os.path.dirname(__file__), 'data', province_code, 'idf_data_by_station.json')
+    # Assumes your data is structured like this:
+    # data/QC/master_stations_enriched_validated.json and data/QC/idf_data_by_station.json.
+    stations_path = os.path.join(DATA_DIR, province_code, 'master_stations_enriched_validated.json')
+    idf_path = os.path.join(DATA_DIR, province_code, 'idf_data_by_station.json')
 
     try:
-        # Load station data
         with open(stations_path, 'r', encoding='utf-8') as f:
             stations = json.load(f)
             STATIONS_DATA.extend(stations)
@@ -247,27 +509,40 @@ for province_code in PROVINCES:
                 if sid:
                     STATION_LOOKUP[sid] = station
         print(f"Successfully loaded stations metadata for {province_code}.")
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        print(f"Could not load stations metadata for {province_code}: {exc}")
 
-        # Load IDF data and create mapping
+    try:
         with open(idf_path, 'r', encoding='utf-8') as f:
             prov_idf_data = json.load(f)
             IDF_DATA.update(prov_idf_data)
             for key in prov_idf_data:
-                # Use a more robust regex to find the station ID
-                # This regex looks for a 7-digit number or a 3-digit number followed by 2 letters and 1 digit
-                station_id_match = re.search(r'(\d{7}|\d{3}[A-Z]{2}\d)', key)
+                station_id_match = extract_station_id(key)
                 if station_id_match:
-                    station_id = station_id_match.group(1)
-                    IDF_KEY_MAPPING[station_id] = key
-                    IDF_STATION_IDS.add(station_id)
+                    IDF_KEY_MAPPING[station_id_match] = key
+                    IDF_STATION_IDS.add(station_id_match)
                 else:
-                    # Fallback for keys that don't match the regex
+                    # Fallback for keys that don't have a recognizable station ID.
                     IDF_KEY_MAPPING[key] = key
                     IDF_STATION_IDS.add(key)
         print(f"Successfully loaded IDF data for {len(prov_idf_data)} stations in {province_code}.")
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Could not load data for {province_code}: {e}")
-        continue
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        print(f"Could not load IDF JSON for {province_code}: {exc}")
+
+    icc_dirs = (
+        os.path.join(DATA_DIR, province_code, ICC_EXPORTS_DIRNAME),
+        os.path.join(DATA_DIR, ICC_EXPORTS_DIRNAME, province_code),
+        os.path.join(DATA_DIR, ICC_EXPORTS_DIRNAME),
+    )
+    for icc_dir in icc_dirs:
+        summary = load_icc_exports_from_dir(icc_dir)
+        if summary['processed'] or summary['errors']:
+            print(
+                f"Loaded ICC exports from {icc_dir}: "
+                f"processed={summary['processed']}, added={summary['added']}, "
+                f"updated={summary['updated']}, skipped={summary['skipped']}, errors={summary['errors']}"
+            )
+
 print(f"Total stations loaded: {len(STATIONS_DATA)}")
 print(f"Total IDF data sets loaded: {len(IDF_DATA)}")
 
@@ -503,14 +778,7 @@ def list_contact_submissions():
 
 
 def duration_to_minutes(duration_str):
-    if not isinstance(duration_str, str):
-        return None
-    duration_str = duration_str.lower().strip()
-    if 'min' in duration_str:
-        return int(duration_str.replace('min', '').strip())
-    elif 'h' in duration_str:
-        return int(float(duration_str.replace('h', '').strip()) * 60)
-    return None
+    return parse_duration_to_minutes(duration_str)
 
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371
