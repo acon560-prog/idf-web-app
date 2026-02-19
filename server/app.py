@@ -82,6 +82,11 @@ STATION_ID_RE = re.compile(r'(\d{7}|\d{3}[A-Z0-9]{4})')
 ICC_EXPORTS_DIRNAME = 'icc_exports'
 ICC_DURATION_ROW_RE = re.compile(r'^\d+(\.\d+)?\s(min|h)$', re.IGNORECASE)
 LOADED_ICC_EXPORT_DIRS = set()
+IDF_CC_FACTORS_DIR = os.path.join(DATA_DIR, 'idf_cc_factors')
+DEFAULT_CC_SCENARIO = 'ssp585'
+IDF_CC_TRUTHY = {'1', 'true', 'yes', 'on'}
+_IDF_CC_FACTORS_INDEX = None
+_IDF_CC_FACTORS_CACHE = {}
 
 
 def normalize_email(email: str) -> str:
@@ -598,6 +603,231 @@ def find_nearest_station_with_idf(station_id):
     }
 
 
+def _normalize_cc_scenario(raw_value):
+    if raw_value is None:
+        return DEFAULT_CC_SCENARIO
+
+    scenario_text = str(raw_value).strip().lower()
+    if not scenario_text:
+        return DEFAULT_CC_SCENARIO
+
+    scenario_key = re.sub(r'[^a-z0-9]', '', scenario_text)
+    if scenario_key in {'none', 'baseline', 'off', 'false', '0'}:
+        return None
+    if scenario_key in {'ssp585', 'cc2050'}:
+        return DEFAULT_CC_SCENARIO
+    return scenario_text
+
+
+def _parse_year_int(value):
+    try:
+        if value in (None, ''):
+            return -1
+        return int(value)
+    except (TypeError, ValueError):
+        return -1
+
+
+def _coerce_float(value):
+    try:
+        if value in (None, ''):
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _requested_cc_scenario(query_args):
+    for flag_key in ('cc_2050', 'climateChange', 'applyClimateChange', 'apply_climate_change'):
+        raw_flag = query_args.get(flag_key)
+        if raw_flag is None:
+            continue
+        normalized_flag = str(raw_flag).strip().lower()
+        if normalized_flag in IDF_CC_TRUTHY:
+            return DEFAULT_CC_SCENARIO
+        if normalized_flag in {'0', 'false', 'no', 'off'}:
+            return None
+
+    raw_scenario = (
+        query_args.get('scenario')
+        or query_args.get('climateScenario')
+        or query_args.get('cc_scenario')
+    )
+    if raw_scenario is None:
+        return None
+    return _normalize_cc_scenario(raw_scenario)
+
+
+def _idf_cc_factors_index():
+    global _IDF_CC_FACTORS_INDEX
+    if _IDF_CC_FACTORS_INDEX is not None:
+        return _IDF_CC_FACTORS_INDEX
+
+    index = {}
+    loaded_files = 0
+
+    if not os.path.isdir(IDF_CC_FACTORS_DIR):
+        print(f"IDF_CC factors directory not found: {IDF_CC_FACTORS_DIR}")
+        _IDF_CC_FACTORS_INDEX = index
+        return _IDF_CC_FACTORS_INDEX
+
+    for file_name in os.listdir(IDF_CC_FACTORS_DIR):
+        if not file_name.lower().endswith('.json'):
+            continue
+
+        file_path = os.path.join(IDF_CC_FACTORS_DIR, file_name)
+        try:
+            with open(file_path, 'r', encoding='utf-8') as fp:
+                payload = json.load(fp)
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"Skipping invalid IDF_CC factor file {file_path}: {exc}")
+            continue
+
+        station_id = extract_station_id(payload.get('stationId') or file_name)
+        factors = payload.get('factors')
+        if not station_id or not isinstance(factors, dict) or not factors:
+            continue
+
+        scenario = _normalize_cc_scenario(payload.get('scenario') or DEFAULT_CC_SCENARIO)
+        if not scenario:
+            continue
+
+        station_factors = index.setdefault(station_id, {})
+        candidate = {
+            'path': file_path,
+            'station_id': station_id,
+            'scenario': scenario,
+            'initial_year': _parse_year_int(payload.get('initialYear')),
+            'final_year': _parse_year_int(payload.get('finalYear')),
+        }
+        current = station_factors.get(scenario)
+        if (
+            current is None
+            or (candidate['final_year'], candidate['initial_year'], candidate['path'])
+            > (current['final_year'], current['initial_year'], current['path'])
+        ):
+            station_factors[scenario] = candidate
+
+        loaded_files += 1
+
+    scenario_entries = sum(len(scenarios) for scenarios in index.values())
+    print(
+        f"Indexed IDF_CC factors from {IDF_CC_FACTORS_DIR}: "
+        f"files={loaded_files}, station_scenarios={scenario_entries}"
+    )
+    _IDF_CC_FACTORS_INDEX = index
+    return _IDF_CC_FACTORS_INDEX
+
+
+def _load_idf_cc_factors(entry):
+    if not entry:
+        return {}
+    file_path = entry.get('path')
+    if not file_path:
+        return {}
+
+    cached = _IDF_CC_FACTORS_CACHE.get(file_path)
+    if cached is not None:
+        return cached
+
+    try:
+        with open(file_path, 'r', encoding='utf-8') as fp:
+            payload = json.load(fp)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"Failed to load IDF_CC factors from {file_path}: {exc}")
+        payload = {}
+
+    _IDF_CC_FACTORS_CACHE[file_path] = payload
+    return payload
+
+
+def find_nearest_station_with_idf_cc(station_id, scenario=DEFAULT_CC_SCENARIO):
+    origin = STATION_LOOKUP.get(station_id)
+    if not origin:
+        return None
+
+    scenario = _normalize_cc_scenario(scenario) or DEFAULT_CC_SCENARIO
+    factors_index = _idf_cc_factors_index()
+    if not factors_index:
+        return None
+
+    origin_lat = parse_coordinate(origin.get('lat'))
+    origin_lon = parse_coordinate(origin.get('lon'))
+    if origin_lat is None or origin_lon is None:
+        return None
+
+    best_station = None
+    best_entry = None
+    best_distance = float('inf')
+
+    for candidate in STATIONS_DATA:
+        candidate_id = candidate.get('stationId')
+        if not candidate_id or candidate_id == station_id:
+            continue
+
+        candidate_scenarios = factors_index.get(candidate_id)
+        if not candidate_scenarios:
+            continue
+
+        scenario_entry = candidate_scenarios.get(scenario)
+        if not scenario_entry:
+            continue
+
+        cand_lat = parse_coordinate(candidate.get('lat'))
+        cand_lon = parse_coordinate(candidate.get('lon'))
+        if cand_lat is None or cand_lon is None:
+            continue
+
+        distance = haversine(origin_lat, origin_lon, cand_lat, cand_lon)
+        if distance < best_distance:
+            best_distance = distance
+            best_station = candidate
+            best_entry = scenario_entry
+
+    if not best_station or not best_entry:
+        return None
+
+    return {
+        'station': best_station,
+        'entry': best_entry,
+        'distance_km': best_distance,
+    }
+
+
+def apply_idf_cc_factors(rows, factors):
+    if not isinstance(rows, list) or not rows:
+        return rows, {'updated': 0, 'total': 0}
+    if not isinstance(factors, dict) or not factors:
+        return rows, {'updated': 0, 'total': 0}
+
+    updated_rows = []
+    updated_cells = 0
+    total_cells = 0
+
+    for row in rows:
+        row_out = dict(row)
+        duration_key = str(row.get('duration'))
+        factor_row = factors.get(duration_key)
+        if not isinstance(factor_row, dict):
+            updated_rows.append(row_out)
+            continue
+
+        for rp in RETURN_PERIODS:
+            raw_base = row_out.get(rp)
+            if not isinstance(raw_base, (int, float)):
+                continue
+            total_cells += 1
+            factor_value = _coerce_float(factor_row.get(rp))
+            if factor_value is None:
+                continue
+            row_out[rp] = float(raw_base) * factor_value
+            updated_cells += 1
+
+        updated_rows.append(row_out)
+
+    return updated_rows, {'updated': updated_cells, 'total': total_cells}
+
+
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     payload = request.get_json() or {}
@@ -851,9 +1081,15 @@ def idf_curves():
         print(f"Received request for station ID: {stationId}")
         if not stationId:
             return jsonify({"error": "Missing 'stationId' parameter"}), 400
+        stationId = str(stationId)
+
+        climate_scenario = _requested_cc_scenario(request.args)
+        if climate_scenario:
+            print(f"Climate change scenario requested: {climate_scenario}")
 
         idf_key = IDF_KEY_MAPPING.get(stationId)
         fallback_meta = None
+        climate_adjustment_meta = None
         
         if not idf_key or idf_key not in IDF_DATA:
             print(f"IDF data not found for station ID: {stationId}. Attempting fallback.")
@@ -897,10 +1133,71 @@ def idf_curves():
                     processed_data.append(data_point)
 
         processed_data.sort(key=lambda x: x['duration'])
+
+        if climate_scenario:
+            scenario_key = _normalize_cc_scenario(climate_scenario) or DEFAULT_CC_SCENARIO
+            idf_station_id = str(fallback_meta['usedStationId']) if fallback_meta else stationId
+            factor_station = STATION_LOOKUP.get(idf_station_id)
+            factor_index = _idf_cc_factors_index()
+            factor_entry = (factor_index.get(idf_station_id) or {}).get(scenario_key)
+            factor_fallback = None
+
+            if not factor_entry:
+                nearest_with_factors = find_nearest_station_with_idf_cc(idf_station_id, scenario=scenario_key)
+                if nearest_with_factors:
+                    factor_station = nearest_with_factors['station']
+                    factor_entry = nearest_with_factors['entry']
+                    factor_fallback = {
+                        'requestedStationId': idf_station_id,
+                        'requestedStationName': STATION_LOOKUP.get(idf_station_id, {}).get('name'),
+                        'usedStationId': factor_station.get('stationId'),
+                        'usedStationName': factor_station.get('name'),
+                        'distanceKm': round(nearest_with_factors['distance_km'], 2),
+                    }
+
+            climate_adjustment_meta = {
+                'requested': True,
+                'scenario': scenario_key,
+                'requestedStationId': stationId,
+                'idfStationId': idf_station_id,
+                'applied': False,
+            }
+
+            if factor_entry:
+                factor_doc = _load_idf_cc_factors(factor_entry)
+                factors = factor_doc.get('factors') or {}
+                processed_data, summary = apply_idf_cc_factors(processed_data, factors)
+                climate_adjustment_meta.update({
+                    'applied': True,
+                    'factorStationId': (
+                        factor_station.get('stationId')
+                        if isinstance(factor_station, dict)
+                        else factor_entry.get('station_id')
+                    ),
+                    'factorStationName': (
+                        factor_station.get('name')
+                        if isinstance(factor_station, dict)
+                        else None
+                    ),
+                    'sourceFile': (
+                        factor_doc.get('sourceFile')
+                        or os.path.basename(factor_entry.get('path', ''))
+                    ),
+                    'updatedCells': summary.get('updated', 0),
+                    'candidateCells': summary.get('total', 0),
+                })
+                if factor_fallback:
+                    climate_adjustment_meta['factorFallback'] = factor_fallback
+            else:
+                climate_adjustment_meta['reason'] = (
+                    f"No {scenario_key} factors found for this station or nearby stations."
+                )
         
         response_payload = {"data": processed_data}
         if fallback_meta:
             response_payload['fallback'] = fallback_meta
+        if climate_adjustment_meta:
+            response_payload['climateAdjustment'] = climate_adjustment_meta
         return jsonify(response_payload)
 
     except Exception as e:
