@@ -584,11 +584,11 @@ const MVPIDFViewerV2 = () => {
                 className="mt-1"
               />
               <span>
-                Apply climate change (Ontario): <span className="font-semibold">2050 + high emissions (SSP5-8.5)</span>
+                Apply climate change (Canada, except Québec): <span className="font-semibold">2050 + high emissions (SSP5-8.5)</span>
               </span>
             </label>
             <p className="mt-2 text-xs text-gray-500">
-              Applies when IDF_CC factors are available (for the station, or a nearby station with factors).
+              Uses IDF_CC factors when available for the selected station, otherwise the nearest station with factors.
             </p>
             {applyClimate2050High && (
               <div className="mt-2 text-xs">
