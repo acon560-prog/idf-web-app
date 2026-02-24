@@ -443,7 +443,7 @@ const MVPIDFViewerV2 = () => {
         ...allReturnPeriods.map((p) => item[p] ?? ""),
       ].join(",");
     });
-
+    
    const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -455,6 +455,45 @@ const MVPIDFViewerV2 = () => {
     link.click();
     document.body.removeChild(link);
   }, [station]);
+  
+  const handleGeoJSONDownload = useCallback(() => {
+  if (!chartDataRef.current || !station) return;
+
+  const features = chartDataRef.current.map((row) => ({
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: [station.lon, station.lat], // station location
+    },
+    properties: {
+      stationId: station.stationId,
+      stationName: station.stationName || station.name,
+      duration: row.duration,
+      ...allReturnPeriods.reduce((acc, period) => {
+        acc[`${period}-Year`] = row[period] ?? null;
+        return acc;
+      }, {}),
+    },
+  }));
+
+  const geojson = {
+    type: "FeatureCollection",
+    features,
+  };
+
+  const blob = new Blob([JSON.stringify(geojson, null, 2)], {
+    type: "application/geo+json",
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `idf_data_${station.stationId}.geojson`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}, [station]);
 
   const getLineColor = (period) => {
     const colors = {
@@ -806,6 +845,14 @@ const MVPIDFViewerV2 = () => {
                 >
                   <DownloadIcon className="mr-2 h-4 w-4" />
                   Download CSV
+                </button>
+                <button
+                  onClick={handleGeoJSONDownload}
+                  className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!idfData.length}
+                >
+                  <DownloadIcon className="mr-2 h-4 w-4" />
+                  Download GeoJSON
                 </button>
               </div>
             </div>

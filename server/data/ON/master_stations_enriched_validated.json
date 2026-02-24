@@ -172,7 +172,7 @@
   {
     "stationId": "6016975",
     "name": "RED LAKE A",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Aviation-Staffed",
@@ -529,7 +529,7 @@
   {
     "stationId": "6025407",
     "name": "MOOSE LAKE",
-    "provinceCode": "MB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -716,7 +716,7 @@
   {
     "stationId": "6032192",
     "name": "EAGLE RIVER",
-    "provinceCode": "YT",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -1243,7 +1243,7 @@
   {
     "stationId": "6040322",
     "name": "ARMSTRONG",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -1379,7 +1379,7 @@
   {
     "stationId": "6041109",
     "name": "CAMERON FALLS",
-    "provinceCode": "AB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -2433,7 +2433,7 @@
   {
     "stationId": "6048951",
     "name": "TROUT LAKE",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -3776,7 +3776,7 @@
   {
     "stationId": "6069K90",
     "name": "WARREN",
-    "provinceCode": "MB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -3878,7 +3878,7 @@
   {
     "stationId": "6071712",
     "name": "COCHRANE",
-    "provinceCode": "AB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -4099,7 +4099,7 @@
   {
     "stationId": "6073840",
     "name": "ISLAND FALLS",
-    "provinceCode": "SK",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -5697,7 +5697,7 @@
   {
     "stationId": "6101555",
     "name": "CLAYBANK",
-    "provinceCode": "SK",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -5901,7 +5901,7 @@
   {
     "stationId": "6101935",
     "name": "CUMBERLAND",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -6088,7 +6088,7 @@
   {
     "stationId": "6102153",
     "name": "DUNVEGAN",
-    "provinceCode": "AB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -6887,7 +6887,7 @@
   {
     "stationId": "6105395",
     "name": "MOOSE CREEK",
-    "provinceCode": "YT",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -7856,7 +7856,7 @@
   {
     "stationId": "6107247",
     "name": "RUSSELL",
-    "provinceCode": "MB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Climate-Staffed",
@@ -9369,7 +9369,7 @@
   {
     "stationId": "6114126",
     "name": "KIMBERLEY",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -10882,7 +10882,7 @@
   {
     "stationId": "6121630",
     "name": "CLINTON",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -15285,7 +15285,7 @@
   {
     "stationId": "6146728",
     "name": "PRINCETON",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -17019,7 +17019,7 @@
   {
     "stationId": "6152235",
     "name": "EDGELEY",
-    "provinceCode": "SK",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -18141,7 +18141,7 @@
   {
     "stationId": "6155498",
     "name": "MOUNTAIN VIEW",
-    "provinceCode": "AB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -18940,7 +18940,7 @@
   {
     "stationId": "6157913",
     "name": "SOUTH BAY",
-    "provinceCode": "MB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -19076,7 +19076,7 @@
   {
     "stationId": "6158065",
     "name": "STONEY CREEK",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -20844,7 +20844,7 @@
   {
     "stationId": "616PA87",
     "name": "ROSEDALE",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "N/A",
@@ -22782,7 +22782,7 @@
   {
     "stationId": "6150060",
     "name": "ALBERTON",
-    "provinceCode": "PE",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Climate-Staffed",
@@ -24890,7 +24890,7 @@
   {
     "stationId": "6017400",
     "name": "SANDY LAKE",
-    "provinceCode": "MB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Aviation-Auto",
@@ -25638,7 +25638,7 @@
   {
     "stationId": "6016970",
     "name": "RED LAKE A",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Aviation-Staffed",
@@ -25740,7 +25740,7 @@
   {
     "stationId": "6017401",
     "name": "SANDY LAKE A",
-    "provinceCode": "MB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Aviation-Auto",
@@ -25995,7 +25995,7 @@
   {
     "stationId": "6016971",
     "name": "RED LAKE A",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Aviation-Auto",
@@ -26012,7 +26012,7 @@
   {
     "stationId": "6153380",
     "name": "HAVELOCK",
-    "provinceCode": "NB",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Climate-Staffed",
@@ -26114,7 +26114,7 @@
   {
     "stationId": "6040327",
     "name": "ARMSTRONG A",
-    "provinceCode": "BC",
+    "provinceCode": "ON",
     "provinceNameEng": "ONTARIO",
     "provinceNameFre": "ONTARIO",
     "status": "Aviation-Auto",
