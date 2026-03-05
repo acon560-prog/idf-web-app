@@ -52,4 +52,10 @@ stripeKeys.txt
 __pycache__/
 *.pyc
 *.pyo
-
+# Generated IDF derivative artifacts (safe to ignore)
+server/data/**/*_qq.pdf
+server/data/**/*_qq.png
+server/data/**/*_r.pdf
+server/data/**/*_r.png
+server/data/**/*_t.pdf
+server/data/**/*_t.png
