@@ -1,5 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
+import permitImg from '../assets/permit-drawings.jpg';
+import gradingImg from '../assets/grading-drainage.jpg';
 
 function Services() {
   return (
@@ -48,11 +50,13 @@ function Services() {
             I focus on clean sheets, clear notes, and coordination between architectural intent and engineering details.
           </p>
           <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-            <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Photo placeholder (replace with your project photo)
-            </div>
-            <div className="flex h-40 items-center justify-center text-sm text-slate-500">
-              Add an image: permits / drawings example
+            
+           <div className="h-40">
+              <img
+                src={permitImg}
+                alt="Permit drawings example"
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
           <ul className="mt-4 space-y-2 text-sm text-slate-600">
@@ -75,15 +79,16 @@ function Services() {
           <h3 className="text-xl font-semibold text-slate-900">Grading &amp; drainage plans</h3>
           <p className="mt-3 text-sm text-slate-600">
             Site grading concepts focused on constructability, positive drainage, and sensible stormwater routing. Where
-            needed, I can provide rational-method sizing checks and supporting documentation for approvals.
+            needed, we can provide rational-method sizing checks and supporting documentation for approvals.
           </p>
           <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-            <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
-              Photo placeholder (replace with your project photo)
-            </div>
-            <div className="flex h-40 items-center justify-center text-sm text-slate-500">
-              Add an image: grading / drainage plan example
-            </div>
+            <div className="h-40">
+					    <img
+						    src={gradingImg}
+						    alt="Grading and drainage plan example"
+						    className="h-full w-full object-cover"
+			      />
+		        </div>
           </div>
           <ul className="mt-4 space-y-2 text-sm text-slate-600">
             <li className="flex gap-2">
