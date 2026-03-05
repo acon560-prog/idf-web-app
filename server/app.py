@@ -7,7 +7,7 @@ import math
 import smtplib
 from email.message import EmailMessage
 from datetime import datetime, timedelta
-
+import certifi
 import bcrypt
 from bson import ObjectId
 from flask import Flask, request, jsonify, send_from_directory
@@ -59,8 +59,8 @@ app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
-
-mongo = PyMongo(app)
+mongo = PyMongo(app, tlsCAFile=certifi.where())
+# mongo = PyMongo(app)
 jwt = JWTManager(app)
 
 users_collection = mongo.db.users

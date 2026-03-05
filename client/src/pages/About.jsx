@@ -9,10 +9,12 @@ function About() {
       animate={{ opacity: 1, y: 0 }}   // ← changed this
       transition={{ duration: 0.8 }}
     >
-      <h2 className="text-2xl font-bold">About Us</h2>
-      <p className="mt-4">
-        With decades of experience, we help clients achieve safe, code-compliant and cost-effective solutions in residential and commercial projects.
-      </p>
+      <div className="max-w-2xl w-full">
+        <h2 className="text-3xl font-bold text-slate-900">About Us</h2>
+        <p className="mt-4 text-lg text-slate-700 leading-relaxed">
+        With over 18 years of experience in civil engineering, we help each client plan and deliver practical, code‑compliant and cost‑effective infrastructure solutions. Our work spans residential, industrial, mining and public projects, covering drinking water, wastewater and stormwater systems, earthworks, road drainage and hydraulic and hydrologic modeling.
+        </p>
+      </div>  
     </motion.div>
   );
 }
