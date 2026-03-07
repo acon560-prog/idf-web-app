@@ -393,14 +393,21 @@ def user_has_active_access(user_doc):
     if not user_doc:
         return False
 
-    status = user_doc.get('subscriptionStatus')
-    if status == 'active':
+    # Admin always has access
+    if determine_role(user_doc) == 'admin':
         return True
 
+    status = user_doc.get('subscriptionStatus')
     trial_end = user_doc.get('trialEndsAt')
     now = datetime.utcnow()
 
-    if status == 'trialing':
+    # Treat as paid only when billing markers exist
+    has_paid_subscription = bool(user_doc.get('stripeCustomerId') or user_doc.get('plan'))
+    if status == 'active' and has_paid_subscription:
+        return True
+
+    # Trial logic for non-admin users (and "active" users without billing markers)
+    if status in ('trialing', 'active'):
         if isinstance(trial_end, datetime):
             if now <= trial_end:
                 return True
@@ -409,12 +416,9 @@ def user_has_active_access(user_doc):
                 {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
             )
             return False
-        # If trial end is unknown, treat as expired for safety (no free access without an end date).
-        users_collection.update_one(
-            {'_id': user_doc['_id']},
-            {'$set': {'subscriptionStatus': 'trial_expired', 'updatedAt': now}},
-        )
-        return False
+        # Legacy users in trialing state without a trial end
+        if status == 'trialing':
+            return True
 
     return False
 

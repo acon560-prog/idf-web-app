@@ -177,32 +177,48 @@ const MVPIDFViewerV2 = () => {
   }, [hasGoogleApiKey]);
 
   useEffect(() => {
-    if (!user) {
-      setTrialMessage("");
-      return;
+  if (!user) {
+    setTrialMessage("");
+    return;
+  }
+
+  const role = (user.role || "").toLowerCase();
+  const hasPaidSubscription = Boolean(user.stripeCustomerId || user.plan);
+
+  // Admins never see trial-expired banner
+  if (role === "admin") {
+    setTrialMessage("");
+    return;
+  }
+
+  // Paid non-admin users do not see trial banner
+  if (user.subscriptionStatus === "active" && hasPaidSubscription) {
+    setTrialMessage("");
+    return;
+  }
+
+  if (user.trialEndsAt) {
+    const endsAt = new Date(user.trialEndsAt);
+    const now = new Date();
+    const diffMs = endsAt - now;
+    if (diffMs > 0) {
+      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      setTrialMessage(
+        `Your free trial ends in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}.`,
+      );
+    } else {
+      setTrialMessage(
+        "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
+      );
     }
-    if (user.trialEndsAt) {
-      const endsAt = new Date(user.trialEndsAt);
-      const now = new Date();
-      const diffMs = endsAt - now;
-      if (diffMs > 0) {
-        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-         setTrialMessage(
-          `Your free trial ends in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}.`,
-        );
-      } else {
-        setTrialMessage(
-          "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
-        );
-      }
-        } else if (user.subscriptionStatus === "trialing") {
-          setTrialMessage("Your free trial is active.");
-        } else if (user.subscriptionStatus !== "active") {
-          setTrialMessage("Your subscription status could not be verified.");
-        } else {
-          setTrialMessage("");
-        }
-      }, [user, hasGoogleApiKey, trialExpired]);
+  } else if (user.subscriptionStatus === "trialing") {
+    setTrialMessage("Your free trial is active.");
+  } else if (user.subscriptionStatus !== "active") {
+    setTrialMessage("Your subscription status could not be verified.");
+  } else {
+    setTrialMessage("");
+  }
+}, [user]);
 
   const handleSearch = useCallback(
     async (e) => {
