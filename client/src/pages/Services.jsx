@@ -51,13 +51,13 @@ function Services() {
           </p>
           <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
             
-           <div className="h-40">
+           
               <img
                 src={permitImg}
                 alt="Permit drawings example"
-                className="h-full w-full object-cover"
+                className="h-48 w-full object-cover"
               />
-            </div>
+            
           </div>
           <ul className="mt-4 space-y-2 text-sm text-slate-600">
             <li className="flex gap-2">
@@ -82,13 +82,13 @@ function Services() {
             needed, we can provide rational-method sizing checks and supporting documentation for approvals.
           </p>
           <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
-            <div className="h-40">
+            
 					    <img
 						    src={gradingImg}
 						    alt="Grading and drainage plan example"
-						    className="h-full w-full object-cover"
+						    className="h-48 w-full object-cover"
 			      />
-		        </div>
+		        
           </div>
           <ul className="mt-4 space-y-2 text-sm text-slate-600">
             <li className="flex gap-2">
