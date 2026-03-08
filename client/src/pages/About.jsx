@@ -18,11 +18,11 @@ function About() {
  
       <div className="mt-8 max-w-2xl border-l-4 border-indigo-500 pl-6">
         <section className="pb-5">
-          <h3 className="text-xl font-semibold text-slate-900">Core strengths</h3>
+          <h3 className="text-xl font-semibold text-slate-900">Our Service Capabilities</h3>
           <ul className="mt-3 list-disc space-y-1 pl-6 text-slate-700">
-            <li>Experience in aqueduct, sewer, and storm drainage systems</li>
-            <li>Hydrology and hydraulic design for road and urban projects</li>
-            <li>Practical grading and site-servicing design approach</li>
+            <li>Integrated design for aqueduct, sewer, and storm drainage infrastructure</li>
+            <li>Hydrology and hydraulic engineering for road and urban development projects</li>
+            <li>Practical grading and site-servicing solutions focused on constructability</li>
           </ul>
         </section>
       </div>  
