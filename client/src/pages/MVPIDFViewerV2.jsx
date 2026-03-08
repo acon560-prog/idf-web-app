@@ -131,7 +131,6 @@ const MVPIDFViewerV2 = () => {
   const [selectedReturnPeriods, setSelectedReturnPeriods] =
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
-  const [locationInputValue, setLocationInputValue] = useState("");
   const chartDataRef = useRef(null);
   
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
@@ -703,11 +702,6 @@ const MVPIDFViewerV2 = () => {
                   onPlaceSelected={(selectedPlace) => {
                     if (!selectedPlace || !selectedPlace.geometry) return;
                     setPlace(selectedPlace);
-                    const formatted =
-                      selectedPlace?.formatted_address ||
-                      selectedPlace?.name ||
-                      "";
-                    setLocationInputValue(formatted);
                   }}
                   options={{
                     types: ["(cities)"],
