@@ -36,7 +36,7 @@
   {
     "stationId": "8300100",
     "name": "ALLISTON",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "Climate-Staffed",
@@ -70,7 +70,7 @@
   {
     "stationId": "8300128",
     "name": "BANGOR",
-    "provinceCode": "SK",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "Climate-Staffed",
@@ -87,7 +87,7 @@
   {
     "stationId": "8300150",
     "name": "BORDEN",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "N/A",
@@ -206,7 +206,7 @@
   {
     "stationId": "8300420",
     "name": "ELLERSLIE",
-    "provinceCode": "AB",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "N/A",
@@ -223,7 +223,7 @@
   {
     "stationId": "8300430",
     "name": "GEORGETOWN",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "N/A",
@@ -240,7 +240,7 @@
   {
     "stationId": "8300438",
     "name": "HAMILTON",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "N/A",
@@ -291,7 +291,7 @@
   {
     "stationId": "8300445",
     "name": "MONTAGUE",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "N/A",
@@ -308,7 +308,7 @@
   {
     "stationId": "8300447",
     "name": "MONTICELLO",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "Climate-Staffed",
@@ -325,7 +325,7 @@
   {
     "stationId": "8300497",
     "name": "NEW GLASGOW",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "Climate-Staffed",
@@ -427,7 +427,7 @@
   {
     "stationId": "8300585",
     "name": "SOURIS",
-    "provinceCode": "MB",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "N/A",
@@ -461,7 +461,7 @@
   {
     "stationId": "8300590",
     "name": "STANHOPE",
-    "provinceCode": "QC",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "Climate-Staffed",
@@ -546,7 +546,7 @@
   {
     "stationId": "8300900",
     "name": "WELLINGTON",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "N/A",
@@ -614,7 +614,7 @@
   {
     "stationId": "8300907",
     "name": "VICTORIA",
-    "provinceCode": "ON",
+    "provinceCode": "PE",
     "provinceNameEng": "PRINCE EDWARD ISLAND",
     "provinceNameFre": "ÎLE DU PRINCE-ÉDOUARD",
     "status": "Climate-Staffed",

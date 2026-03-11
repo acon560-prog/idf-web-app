@@ -1549,7 +1549,7 @@
   {
     "stationId": "8402R20",
     "name": "PARADISE",
-    "provinceCode": "NS",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -1583,7 +1583,7 @@
   {
     "stationId": "8402050",
     "name": "GRAND FALLS",
-    "provinceCode": "NB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "Climate-Staffed",
@@ -2025,7 +2025,7 @@
   {
     "stationId": "8402544",
     "name": "LETHBRIDGE",
-    "provinceCode": "AB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "Climate-Staffed",
@@ -2688,7 +2688,7 @@
   {
     "stationId": "8403290",
     "name": "ST ALBANS",
-    "provinceCode": "MB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -2705,7 +2705,7 @@
   {
     "stationId": "8403300",
     "name": "ST ANDREWS",
-    "provinceCode": "MB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -2824,7 +2824,7 @@
   {
     "stationId": "8403448",
     "name": "ST GEORGES",
-    "provinceCode": "QC",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -2841,7 +2841,7 @@
   {
     "stationId": "8403450",
     "name": "ST GEORGES",
-    "provinceCode": "QC",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -3062,7 +3062,7 @@
   {
     "stationId": "8403650",
     "name": "SEAL COVE",
-    "provinceCode": "NB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -3181,7 +3181,7 @@
   {
     "stationId": "8403700",
     "name": "SPRINGDALE",
-    "provinceCode": "AB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -3215,7 +3215,7 @@
   {
     "stationId": "8403775",
     "name": "STANHOPE",
-    "provinceCode": "QC",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "Climate-Staffed",
@@ -3283,7 +3283,7 @@
   {
     "stationId": "8403825",
     "name": "SWIFT CURRENT",
-    "provinceCode": "SK",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "Climate-Staffed",
@@ -3402,7 +3402,7 @@
   {
     "stationId": "8403870",
     "name": "TOMPKINS",
-    "provinceCode": "SK",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -3538,7 +3538,7 @@
   {
     "stationId": "8404100",
     "name": "VICTORIA",
-    "provinceCode": "ON",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "Climate-Staffed",
@@ -3793,7 +3793,7 @@
   {
     "stationId": "8501100",
     "name": "CARTWRIGHT",
-    "provinceCode": "MB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "Aviation-Staffed",
@@ -4252,7 +4252,7 @@
   {
     "stationId": "8504050",
     "name": "TWIN FALLS",
-    "provinceCode": "ON",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -4269,7 +4269,7 @@
   {
     "stationId": "8504060",
     "name": "TWIN FALLS A",
-    "provinceCode": "ON",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -4371,7 +4371,7 @@
   {
     "stationId": "8402RB0",
     "name": "PARADISE",
-    "provinceCode": "NS",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "N/A",
@@ -5391,7 +5391,7 @@
   {
     "stationId": "8501101",
     "name": "CARTWRIGHT A",
-    "provinceCode": "MB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "Aviation-Staffed",
@@ -5408,7 +5408,7 @@
   {
     "stationId": "8501106",
     "name": "CARTWRIGHT A",
-    "provinceCode": "MB",
+    "provinceCode": "NL",
     "provinceNameEng": "NEWFOUNDLAND AND LABRADOR",
     "provinceNameFre": "TERRE-NEUVE ET LABRADOR",
     "status": "Aviation-Auto",

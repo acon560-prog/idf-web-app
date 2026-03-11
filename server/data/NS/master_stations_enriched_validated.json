@@ -393,7 +393,7 @@
   {
     "stationId": "8200638",
     "name": "CANNING",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -733,7 +733,7 @@
   {
     "stationId": "8201200",
     "name": "CORNWALL",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -1124,7 +1124,7 @@
   {
     "stationId": "8202000",
     "name": "GREENWOOD A",
-    "provinceCode": "BC",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -1277,7 +1277,7 @@
   {
     "stationId": "8202350",
     "name": "HELLS GATE",
-    "provinceCode": "BC",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -1447,7 +1447,7 @@
   {
     "stationId": "8202700",
     "name": "KEMPTVILLE",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -1855,7 +1855,7 @@
   {
     "stationId": "8203320",
     "name": "MAITLAND",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -2093,7 +2093,7 @@
   {
     "stationId": "8203564",
     "name": "MILFORD",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -3674,7 +3674,7 @@
   {
     "stationId": "8206260",
     "name": "WESTPORT",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -3742,7 +3742,7 @@
   {
     "stationId": "8206400",
     "name": "WINDSOR",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "N/A",
@@ -3929,7 +3929,7 @@
   {
     "stationId": "8202535",
     "name": "INVERNESS",
-    "provinceCode": "QC",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "Climate-Staffed",
@@ -4337,7 +4337,7 @@
   {
     "stationId": "8205185",
     "name": "SOUTH MOUNTAIN",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "Climate-Staffed",
@@ -4609,7 +4609,7 @@
   {
     "stationId": "8205895",
     "name": "TRACADIE",
-    "provinceCode": "NB",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "Climate-Auto",
@@ -4813,7 +4813,7 @@
   {
     "stationId": "8204493",
     "name": "HAWKESBURY",
-    "provinceCode": "ON",
+    "provinceCode": "NS",
     "provinceNameEng": "NOVA SCOTIA",
     "provinceNameFre": "NOUVELLE-ÉCOSSE",
     "status": "Climate-Staffed",

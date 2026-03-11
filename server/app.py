@@ -1143,7 +1143,57 @@ def _idf_key_seems_to_match_station(station, idf_key: str) -> bool:
     if not tokens:
         return False
     return any(t in key for t in tokens)
-    
+
+
+PROVINCE_NAME_TO_CODE = {
+    "ALBERTA": "AB",
+    "BRITISH COLUMBIA": "BC",
+    "COLOMBIE BRITANNIQUE": "BC",
+    "MANITOBA": "MB",
+    "NEW BRUNSWICK": "NB",
+    "NOUVEAU BRUNSWICK": "NB",
+    "NEWFOUNDLAND AND LABRADOR": "NL",
+    "TERRE NEUVE ET LABRADOR": "NL",
+    "NORTHWEST TERRITORIES": "NT",
+    "TERRITOIRES DU NORD OUEST": "NT",
+    "NUNAVUT": "NU",
+    "ONTARIO": "ON",
+    "PRINCE EDWARD ISLAND": "PE",
+    "ILE DU PRINCE EDOUARD": "PE",
+    "QUEBEC": "QC",
+    "QUÉBEC": "QC",
+    "SASKATCHEWAN": "SK",
+    "YUKON": "YT",
+    "YUKON TERRITORY": "YT",
+}
+
+
+def _province_code_from_name(name):
+    cleaned = (name or "").strip().upper()
+    if not cleaned:
+        return ""
+    cleaned = cleaned.replace(".", " ")
+    cleaned = cleaned.replace("-", " ")
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return PROVINCE_NAME_TO_CODE.get(cleaned, "")
+
+
+def _station_matches_province(station, requested_province_code: str) -> bool:
+    station_code = (station.get("provinceCode") or "").strip().upper()
+    province_name_code = _province_code_from_name(station.get("provinceNameEng"))
+    if not province_name_code:
+        province_name_code = _province_code_from_name(station.get("provinceNameFre"))
+
+    # If code and name disagree in source metadata, trust the full province name.
+    if station_code and province_name_code and station_code != province_name_code:
+        return province_name_code == requested_province_code
+
+    if province_name_code:
+        return province_name_code == requested_province_code
+
+    return station_code == requested_province_code
+
+
 @app.route('/api/stations', methods=['GET'])
 def get_stations():
     return jsonify(STATIONS_DATA)
@@ -1164,13 +1214,14 @@ def nearest_station():
 
     candidates = STATIONS_DATA
     if province:
-        candidates = [s for s in STATIONS_DATA if (s.get("provinceCode") or "").strip().upper() == province]
+        candidates = [s for s in STATIONS_DATA if _station_matches_province(s, province)]
         if not candidates:
             candidates = STATIONS_DATA
 
     closest_station = None
     min_distance = float('inf')
     best_quality = 10  # lower is better
+    QUALITY_TIE_DISTANCE_KM = 25.0
 
     for station in candidates:
         station_lat = station.get('lat')
@@ -1192,10 +1243,25 @@ def nearest_station():
                 else:
                     quality = 2
 
-                if quality < best_quality or (quality == best_quality and distance < min_distance):
+                # Distance-first selection avoids extreme mismatches (e.g., 1000+ km away).
+                # Only use quality as a tiebreaker among nearby candidates.
+                if closest_station is None:
                     best_quality = quality
                     min_distance = distance
                     closest_station = station
+                    continue
+
+                if distance < min_distance:
+                    best_quality = quality
+                    min_distance = distance
+                    closest_station = station
+                    continue
+
+                if abs(distance - min_distance) <= QUALITY_TIE_DISTANCE_KM:
+                    if quality < best_quality or (quality == best_quality and distance < min_distance):
+                        best_quality = quality
+                        min_distance = distance
+                        closest_station = station
 
             except (ValueError, TypeError):
                 continue

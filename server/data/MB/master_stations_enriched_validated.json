@@ -903,7 +903,7 @@
   {
     "stationId": "5011762",
     "name": "MINTO",
-    "provinceCode": "YT",
+    "provinceCode": "MB",
     "provinceNameEng": "MANITOBA",
     "provinceNameFre": "MANITOBA",
     "status": "N/A",
@@ -2501,7 +2501,7 @@
   {
     "stationId": "5021210",
     "name": "GREENWOOD",
-    "provinceCode": "BC",
+    "provinceCode": "MB",
     "provinceNameEng": "MANITOBA",
     "provinceNameFre": "MANITOBA",
     "status": "N/A",
@@ -5425,7 +5425,7 @@
   {
     "stationId": "5040214",
     "name": "BIG VALLEY",
-    "provinceCode": "AB",
+    "provinceCode": "MB",
     "provinceNameEng": "MANITOBA",
     "provinceNameFre": "MANITOBA",
     "status": "N/A",
@@ -7091,7 +7091,7 @@
   {
     "stationId": "5060621",
     "name": "CROSS LAKE A",
-    "provinceCode": "AB",
+    "provinceCode": "MB",
     "provinceNameEng": "MANITOBA",
     "provinceNameFre": "MANITOBA",
     "status": "N/A",
@@ -8434,7 +8434,7 @@
   {
     "stationId": "5022055",
     "name": "OAKVILLE",
-    "provinceCode": "ON",
+    "provinceCode": "MB",
     "provinceNameEng": "MANITOBA",
     "provinceNameFre": "MANITOBA",
     "status": "N/A",
