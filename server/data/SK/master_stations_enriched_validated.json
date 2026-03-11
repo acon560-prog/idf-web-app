@@ -3198,7 +3198,7 @@
   {
     "stationId": "4017734",
     "name": "SPY HILL",
-    "provinceCode": "AB",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "N/A",
@@ -3895,7 +3895,7 @@
   {
     "stationId": "4020121",
     "name": "ALSASK",
-    "provinceCode": "AB",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "N/A",
@@ -6190,7 +6190,7 @@
   {
     "stationId": "4039000",
     "name": "WILLOW CREEK",
-    "provinceCode": "AB",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "N/A",
@@ -6207,7 +6207,7 @@
   {
     "stationId": "4039001",
     "name": "WILLOW CREEK",
-    "provinceCode": "AB",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "N/A",
@@ -6241,7 +6241,7 @@
   {
     "stationId": "4040120",
     "name": "ALSASK",
-    "provinceCode": "AB",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "N/A",
@@ -6751,7 +6751,7 @@
   {
     "stationId": "4044558",
     "name": "LLOYDMINSTER",
-    "provinceCode": "AB",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "N/A",
@@ -9267,7 +9267,7 @@
   {
     "stationId": "4064590",
     "name": "LOON LAKE",
-    "provinceCode": "BC",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "N/A",
@@ -10610,7 +10610,7 @@
   {
     "stationId": "4050500",
     "name": "BEAVER CREEK",
-    "provinceCode": "YT",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "Climate-Staffed",
@@ -11375,7 +11375,7 @@
   {
     "stationId": "4015580",
     "name": "NORQUAY",
-    "provinceCode": "MB",
+    "provinceCode": "SK",
     "provinceNameEng": "SASKATCHEWAN",
     "provinceNameFre": "SASKATCHEWAN",
     "status": "Climate-Staffed",

@@ -903,7 +903,7 @@
   {
     "stationId": "3011663",
     "name": "CLEARWATER",
-    "provinceCode": "BC",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "N/A",
@@ -2586,7 +2586,7 @@
   {
     "stationId": "3014995",
     "name": "PARADISE VALLEY",
-    "provinceCode": "BC",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "Climate-Staffed",
@@ -3776,7 +3776,7 @@
   {
     "stationId": "3017595",
     "name": "WINFIELD",
-    "provinceCode": "BC",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "Climate-Staffed",
@@ -17206,7 +17206,7 @@
   {
     "stationId": "3076564",
     "name": "TROUT LAKE",
-    "provinceCode": "BC",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "N/A",
@@ -19348,7 +19348,7 @@
   {
     "stationId": "3063518",
     "name": "JARVIS LAKE",
-    "provinceCode": "ON",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "Climate-Staffed",
@@ -19875,7 +19875,7 @@
   {
     "stationId": "3015670",
     "name": "ST ALBERT",
-    "provinceCode": "ON",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "Climate-Staffed",
@@ -20368,7 +20368,7 @@
   {
     "stationId": "306A008",
     "name": "PRAIRIE RIVER",
-    "provinceCode": "SK",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "Climate-Auto",
@@ -20725,7 +20725,7 @@
   {
     "stationId": "3072246",
     "name": "EGG ISLAND",
-    "provinceCode": "BC",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "Climate-Auto",
@@ -22153,7 +22153,7 @@
   {
     "stationId": "3032818",
     "name": "GLENWOOD",
-    "provinceCode": "NL",
+    "provinceCode": "AB",
     "provinceNameEng": "ALBERTA",
     "provinceNameFre": "ALBERTA",
     "status": "Climate-Auto",

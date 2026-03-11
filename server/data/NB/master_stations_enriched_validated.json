@@ -631,7 +631,7 @@
   {
     "stationId": "8100850",
     "name": "CENTREVILLE",
-    "provinceCode": "ON",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -682,7 +682,7 @@
   {
     "stationId": "8100990",
     "name": "CHATHAM",
-    "provinceCode": "ON",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -733,7 +733,7 @@
   {
     "stationId": "8101098",
     "name": "CHIPMAN",
-    "provinceCode": "AB",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -750,7 +750,7 @@
   {
     "stationId": "8101100",
     "name": "CHIPMAN",
-    "provinceCode": "AB",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -767,7 +767,7 @@
   {
     "stationId": "8101101",
     "name": "CHIPMAN",
-    "provinceCode": "AB",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -886,7 +886,7 @@
   {
     "stationId": "8101230",
     "name": "DORCHESTER",
-    "provinceCode": "ON",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -1141,7 +1141,7 @@
   {
     "stationId": "8102000",
     "name": "GREEN RIVER",
-    "provinceCode": "ON",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -1787,7 +1787,7 @@
   {
     "stationId": "8103000",
     "name": "MINTO",
-    "provinceCode": "YT",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -2025,7 +2025,7 @@
   {
     "stationId": "8103825",
     "name": "PARKER RIDGE",
-    "provinceCode": "AB",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -2467,7 +2467,7 @@
   {
     "stationId": "8104600",
     "name": "ST ANDREWS",
-    "provinceCode": "MB",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -2484,7 +2484,7 @@
   {
     "stationId": "8104700",
     "name": "ST GEORGE",
-    "provinceCode": "ON",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "N/A",
@@ -3181,7 +3181,7 @@
   {
     "stationId": "8105600",
     "name": "WOODSTOCK",
-    "provinceCode": "ON",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "Climate-Staffed",
@@ -3691,7 +3691,7 @@
   {
     "stationId": "8103780",
     "name": "OAK POINT",
-    "provinceCode": "MB",
+    "provinceCode": "NB",
     "provinceNameEng": "NEW BRUNSWICK",
     "provinceNameFre": "NOUVEAU-BRUNSWICK",
     "status": "Climate-Staffed",
