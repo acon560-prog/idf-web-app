@@ -10,6 +10,7 @@ const enrichRoute = require('./routes/enrich');
 const projectRoute = require('./routes/project');
 const reportRoute = require('./routes/report');
 const idfRoute = require('./routes/idf');
+const authRoute = require('./routes/auth');
 
 const app = express();
 app.use(cors());
@@ -36,11 +37,17 @@ async function startServer() {
     });
 
     // === 2. API Routes ===
+    app.use('/api/auth', authRoute);
     app.use('/api/idf', idfRoute);
     app.use('/api/contact', contactRoute);
     app.use('/api/enrich-location', enrichRoute);
     app.use('/api/project', projectRoute);
     app.use('/api/report', reportRoute);
+
+    // Ensure unknown API routes return JSON (not HTML)
+    app.use('/api', (req, res) => {
+      res.status(404).json({ error: 'Not Found' });
+    });
 
     // === 3. Serve React Frontend (Production) ===
     app.use(express.static(path.join(__dirname, 'client/build')));
