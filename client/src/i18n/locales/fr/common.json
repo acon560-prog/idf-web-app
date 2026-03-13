@@ -1,0 +1,126 @@
+{
+  "about": {
+    "title": "À propos",
+    "intro": "Forts de plus de 18 ans d'expérience en génie civil, nous aidons chaque client à planifier et réaliser des solutions d'infrastructure pratiques, conformes aux normes et rentables.",
+    "capabilitiesTitle": "Nos capacités de service",
+    "capabilities": {
+      "aqueduct": "Conception intégrée de réseaux d'aqueduc, d'égout et de drainage pluvial",
+      "hydrology": "Ingénierie hydrologique et hydraulique pour les projets routiers et de développement urbain",
+      "grading": "Solutions pratiques de nivellement et de viabilisation axées sur la constructibilité"
+    }
+  },
+  "home": {
+    "hero": {
+      "badge": "Recherche de données pluviométriques • Canada",
+      "title": "Des données pluviométriques puissantes pour les ingénieurs et planificateurs canadiens",
+      "subtitle": "Recherchez des milliers de stations d'Environnement Canada, accédez aux courbes IDF et partagez des rapports avec votre équipe en quelques secondes. Conçu pour les ingénieurs civils, hydrologues et services municipaux de planification.",
+      "cta": {
+        "dashboard": "Aller au tableau de bord",
+        "login": "Se connecter",
+        "exploreFeatures": "Découvrir les fonctionnalités"
+      },
+      "stats": {
+        "stationsLabel": "Stations couvertes",
+        "stationsValue": "7 000+ à l'échelle nationale",
+        "idfLabel": "Jeux de données IDF",
+        "idfValue": "695 enregistrements sélectionnés",
+        "responseLabel": "Temps de réponse",
+        "responseValue": "Moins de 2 secondes"
+      },
+      "preview": {
+        "label": "Aperçu en direct",
+        "title": "Mission, B.-C. — intensité de pointe pour une période de retour de 100 ans",
+        "subtitle": "Obtenez des courbes IDF précises pour n'importe quel emplacement au Canada — en un seul clic.",
+        "imageAlt": "Aperçu du graphique de pluie"
+      }
+    },
+    "features": {
+      "title": "Tous les outils dont vous avez besoin pour la conception pluviométrique sur un seul écran",
+      "subtitle": "Conçu pour les ingénieurs civils, spécialistes des ressources en eau, hydrologues et planificateurs municipaux qui ont besoin de données pluviométriques rapides et défendables.",
+      "items": {
+        "smartLookup": {
+          "title": "Recherche intelligente de stations",
+          "description": "Recherchez des milliers de stations d'Environnement Canada par municipalité, code postal ou coordonnées GPS."
+        },
+        "instantCurves": {
+          "title": "Courbes IDF instantanées",
+          "description": "Générez des graphiques intensité-durée-fréquence en unités métriques et impériales, prêts pour la conception."
+        },
+        "shareable": {
+          "title": "Livrables partageables",
+          "description": "Exportez des rapports pour les dépôts de plans, les revues de consultants et les collaborateurs SIG en un seul clic."
+        }
+      }
+    },
+    "cta": {
+        "title": "Fournissez des données pluviométriques avec confiance, à chaque fois",
+        "subtitle": "Rainfall Data Finder regroupe les jeux de données d'Environnement Canada, les nettoie et offre à votre équipe d'ingénierie un point unique pour obtenir des courbes IDF à jour, les métadonnées des stations pluviométriques et des rapports prêts à partager.",
+        "launchViewer": "Lancer le visualiseur",
+        "bookWalkthrough": "Réserver une démonstration"
+    },
+    "pricing": {
+    "title": "Choisissez l'offre adaptée à votre équipe",
+    "subtitle": "Des forfaits simples pour les consultants, firmes d'ingénierie et services municipaux. Annulez en tout temps.",
+    "buttons": {
+        "terms": "Conditions",
+        "createAccount": "Créer un compte",
+        "subscribe": "S'abonner",
+        "verifyTrial": "Vérifier la carte et démarrer l'essai de 7 jours",
+        "openingVerification": "Ouverture de la vérification…",
+        "openingCheckout": "Ouverture du paiement…",
+        "close": "Fermer"
+    },
+    "labels": {
+        "popular": "Populaire"
+    },
+    "cards": {
+        "trial": {
+            "name": "Essai de 7 jours",
+            "cadence": "vérification remboursable",
+            "description": "Démarrez un essai de 7 jours après vérification de votre carte. Le 1 $ est remboursé après vérification.",
+            "termsTitle": "Conditions de l'essai",
+            "perks": {
+            "cardRequired": "Carte requise",
+            "refundAfterVerification": "Remboursé après vérification",
+            "oneTrialPerEmail": "Un essai par courriel"
+            }
+        },
+        "consultantMonthly": {
+            "name": "Consultant mensuel",
+            "cadence": "par mois",
+            "description": "Accès illimité aux stations, courbes IDF et exports PDF.",
+            "perks": {
+            "stationAccess": "Accès illimité aux stations pluviométriques",
+            "exports": "Exports métriques et impériaux",
+            "support": "Réponse du support par courriel < 24 h"
+            }
+        },
+        "lifetime": {
+            "name": "Adhésion à vie (durée limitée)",
+            "cadence": "paiement unique",
+            "description": "Accès à vie pour les 300 premiers acheteurs. Conditions applicables.",
+            "termsTitle": "Conditions à vie",
+            "perks": {
+            "oneTime": "Paiement unique (sans renouvellement)",
+            "lifetimeOneAccount": "Accès à vie pour 1 compte",
+            "first300": "Limité aux 300 premiers acheteurs"
+                }
+            }
+        },
+        "terms": {
+            "trial": {
+                "title": "Conditions de l'essai",
+                "body": "Une carte de crédit/débit valide est requise pour démarrer l'essai de 7 jours. Un débit temporaire de 1 $ sera effectué puis remboursé après vérification réussie.\n\nL'accès d'essai est limité à un par courriel/compte. Nous pouvons refuser ou révoquer l'accès en cas d'abus ou de fraude suspectés.\n\nVotre essai se termine après 7 jours, sauf si vous achetez un forfait payant."
+            },
+            "lifetime": {
+                "title": "Conditions à vie",
+                "body": "L'adhésion à vie est un achat unique qui accorde l'accès à l'application Civispec pour un compte, tant que le service est offert.\n\nL'offre est limitée aux 300 premiers achats complétés et peut être modifiée ou retirée à tout moment avant l'achat.\n\nL'adhésion est non transférable et destinée à un seul compte/utilisateur. L'accès peut être suspendu en cas de violation des Conditions d'utilisation ou de fraude suspectée. Des taxes peuvent s'appliquer. Les remboursements sont soumis à notre politique de remboursement."
+            }
+            },
+            "errors": {
+            "checkoutStart": "Impossible de démarrer le paiement.",
+            "trialStart": "Impossible de démarrer la vérification de l'essai."
+            }
+        }
+    }
+}

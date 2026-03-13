@@ -1,0 +1,126 @@
+{
+  "about": {
+    "title": "About Us",
+    "intro": "With over 18 years of experience in civil engineering, we help each client plan and deliver practical, code-compliant and cost-effective infrastructure solutions.",
+    "capabilitiesTitle": "Our Service Capabilities",
+    "capabilities": {
+      "aqueduct": "Integrated design for aqueduct, sewer, and storm drainage infrastructure",
+      "hydrology": "Hydrology and hydraulic engineering for road and urban development projects",
+      "grading": "Practical grading and site-servicing solutions focused on constructability"
+    }
+  },
+  "home": {
+    "hero": {
+      "badge": "Rainfall Data Finder • Canada",
+      "title": "Powerful rainfall insights for Canadian engineers and planners",
+      "subtitle": "Search thousands of Environment Canada stations, access IDF curves, and share reports with your team in seconds. Built for civil engineers, hydrologists, and municipal planning departments.",
+      "cta": {
+        "dashboard": "Go to dashboard",
+        "login": "Log in",
+        "exploreFeatures": "Explore features"
+      },
+      "stats": {
+        "stationsLabel": "Stations covered",
+        "stationsValue": "7,000+ nationwide",
+        "idfLabel": "IDF datasets",
+        "idfValue": "695 curated records",
+        "responseLabel": "Response time",
+        "responseValue": "Under 2 seconds"
+      },
+      "preview": {
+        "label": "Live preview",
+        "title": "Mission, BC — 100 year return period peak intensity",
+        "subtitle": "Retrieve accurate IDF curves for any location in Canada—in just one click.",
+        "imageAlt": "Rainfall chart preview"
+      }
+    },
+    "features": {
+      "title": "All the tools you need for rainfall design on one screen",
+      "subtitle": "Built for civil engineers, water resource specialists, hydrologists, and municipal planners who need quick, defensible design rainfall data.",
+      "items": {
+        "smartLookup": {
+          "title": "Smart Station Lookup",
+          "description": "Search thousands of Environment Canada stations by municipality, postal code, or GPS coordinates."
+        },
+        "instantCurves": {
+          "title": "Instant IDF Curves",
+          "description": "Generate intensity-duration-frequency charts in both metric and imperial units, ready for design work."
+        },
+       "shareable": {
+          "title": "Shareable Deliverables",
+          "description": "Export reports for plan submissions, consultant reviews, and GIS collaborators in a single click."
+        }
+      }
+    },
+    "cta": {
+    "title": "Deliver rainfall data with confidence every time",
+    "subtitle": "Rainfall Data Finder aggregates Environment Canada datasets, cleans them, and gives your engineering team a single place to retrieve up-to-date IDF curves, rainfall station metadata, and ready-to-share reports.",
+    "launchViewer": "Launch the viewer",
+    "bookWalkthrough": "Book a walkthrough"
+    },
+    "pricing": {
+        "title": "Choose the plan that fits your team",
+        "subtitle": "Simple subscription tiers for individual consultants, engineering firms, and municipal departments. Cancel anytime.",
+        "buttons": {
+            "terms": "Terms",
+            "createAccount": "Create account",
+            "subscribe": "Subscribe",
+            "verifyTrial": "Verify card & start 7-day trial",
+            "openingVerification": "Opening verification…",
+            "openingCheckout": "Opening checkout…",
+            "close": "Close"
+        },
+        "labels": {
+            "popular": "Popular"
+        },
+        "cards": {
+            "trial": {
+            "name": "7-day trial",
+            "cadence": "refundable verification",
+            "description": "Start a 7-day trial after verifying your card. We refund the $1 after verification.",
+            "termsTitle": "Trial terms",
+            "perks": {
+            "cardRequired": "Card required",
+            "refundAfterVerification": "Refunded after verification",
+            "oneTrialPerEmail": "One trial per email"
+            }
+        },
+        "consultantMonthly": {
+            "name": "Consultant Monthly",
+            "cadence": "per month",
+            "description": "Unlimited station lookups, IDF curves, and PDF exports.",
+            "perks": {
+            "stationAccess": "Unlimited rainfall station access",
+            "exports": "Metric & imperial exports",
+            "support": "Email support response < 24h"
+            }
+        },
+        "lifetime": {
+            "name": "Lifetime Membership (limited-time)",
+            "cadence": "one-time",
+            "description": "Lifetime access for the first 300 purchasers. Conditions apply.",
+            "termsTitle": "Lifetime terms",
+            "perks": {
+            "oneTime": "One-time payment (no renewal)",
+            "lifetimeOneAccount": "Lifetime access for 1 account",
+            "first300": "Limited to first 300 purchasers"
+            }
+        }
+        },
+        "terms": {
+            "trial": {
+                "title": "Trial terms",
+                "body": "A valid credit/debit card is required to start the 7-day trial. A temporary $1 verification charge will be placed and refunded after successful verification.\n\nTrial access is limited to one per email/account. We may decline or revoke trial access for suspected abuse or fraud.\n\nYour trial ends after 7 days unless you purchase a paid plan."
+            },
+            "lifetime": {
+                "title": "Lifetime terms",
+                "body": "Lifetime membership is a one-time purchase that grants access to the Civispec application for one account, for as long as the service is offered.\n\nOffer is limited to the first 300 completed purchases and may be modified or ended at any time before purchase.\n\nMembership is non-transferable and intended for a single account/user. Access may be suspended for violations of our Terms of Service or suspected fraud. Taxes may apply. Refunds are subject to our refund policy."
+            }
+            },
+            "errors": {
+            "checkoutStart": "Unable to start checkout.",
+            "trialStart": "Unable to start trial verification."
+            }
+    }
+    }
+}

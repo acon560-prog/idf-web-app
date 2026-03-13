@@ -3,65 +3,13 @@ import Card from "./ui/Card";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { buildApiUrl, readJsonResponse } from "../utils/apiConfig.js";
+import { useTranslation } from "react-i18next";
 
-const TRIAL_TERMS = `Trial terms
 
-A valid credit/debit card is required to start the 7-day trial. A temporary $1 verification charge will be placed and refunded after successful verification.
 
-Trial access is limited to one per email/account. We may decline or revoke trial access for suspected abuse or fraud.
-
-Your trial ends after 7 days unless you purchase a paid plan.`;
-
-const LIFETIME_TERMS = `Lifetime terms
-
-Lifetime membership is a one-time purchase that grants access to the Civispec application for one account, for as long as the service is offered.
-
-Offer is limited to the first 300 completed purchases and may be modified or ended at any time before purchase.
-
-Membership is non-transferable and intended for a single account/user. Access may be suspended for violations of our Terms of Service or suspected fraud. Taxes may apply. Refunds are subject to our refund policy.`;
-
-const trialOption = {
-  name: "7-day trial",
-  price: "$1",
-  cadence: "refundable verification",
-  description: "Start a 7-day trial after verifying your card. We refund the $1 after verification.",
-  termsTitle: "Trial terms",
-  termsBody: TRIAL_TERMS,
-  perks: ["Card required", "Refunded after verification", "One trial per email"],
-  highlight: false,
-};
-
-const plans = [
-  {
-    name: "Consultant Monthly",
-    price: "$30",
-    cadence: "per month",
-    planKey: "consultant_monthly",
-    description: "Unlimited station lookups, IDF curves, and PDF exports.",
-    perks: [
-      "Unlimited rainfall station access",
-      "Metric & imperial exports",
-      "Email support response < 24h",
-    ],
-  },
-  {
-    name: "Lifetime Membership (limited-time)",
-    price: "$300",
-    cadence: "one-time",
-    planKey: "lifetime",
-    description: "Lifetime access for the first 300 purchasers. Conditions apply.",
-    termsTitle: "Lifetime terms",
-    termsBody: LIFETIME_TERMS,
-    perks: [
-      "One-time payment (no renewal)",
-      "Lifetime access for 1 account",
-      "Limited to first 300 purchasers",
-    ],
-    highlight: true,
-  },
-];
 
 const Pricing = () => {
+  const { t } = useTranslation();
   const { user, token } = useAuth();
   const [checkoutPlanKey, setCheckoutPlanKey] = useState(null);
   const [checkoutError, setCheckoutError] = useState("");
@@ -72,14 +20,57 @@ const Pricing = () => {
   const [termsBody, setTermsBody] = useState("");
 
   const primaryHref = user ? "/start" : "/signup";
-  const loggedOutLabel = "Create account";
-  const subscribeLabel = "Subscribe";
-  const trialLabel = "Verify card & start 7-day trial";
+  const loggedOutLabel = t("home.pricing.buttons.createAccount");
+  const subscribeLabel = t("home.pricing.buttons.subscribe");
+  const trialLabel = t("home.pricing.buttons.verifyTrial");
+  const trialOption = {
+  name: t("home.pricing.cards.trial.name"),
+  price: "$1",
+  cadence: t("home.pricing.cards.trial.cadence"),
+  description: t("home.pricing.cards.trial.description"),
+  termsTitle: t("home.pricing.cards.trial.termsTitle"),
+  termsBody: t("home.pricing.terms.trial.body"),
+  perks: [
+    t("home.pricing.cards.trial.perks.cardRequired"),
+    t("home.pricing.cards.trial.perks.refundAfterVerification"),
+    t("home.pricing.cards.trial.perks.oneTrialPerEmail")
+  ],
+  highlight: false
+};
 
+const plans = [
+  {
+    name: t("home.pricing.cards.consultantMonthly.name"),
+    price: "$30",
+    cadence: t("home.pricing.cards.consultantMonthly.cadence"),
+    planKey: "consultant_monthly",
+    description: t("home.pricing.cards.consultantMonthly.description"),
+    perks: [
+      t("home.pricing.cards.consultantMonthly.perks.stationAccess"),
+      t("home.pricing.cards.consultantMonthly.perks.exports"),
+      t("home.pricing.cards.consultantMonthly.perks.support")
+    ]
+  },
+  {
+    name: t("home.pricing.cards.lifetime.name"),
+    price: "$300",
+    cadence: t("home.pricing.cards.lifetime.cadence"),
+    planKey: "lifetime",
+    description: t("home.pricing.cards.lifetime.description"),
+    termsTitle: t("home.pricing.cards.lifetime.termsTitle"),
+    termsBody: t("home.pricing.terms.lifetime.body"),
+    perks: [
+      t("home.pricing.cards.lifetime.perks.oneTime"),
+      t("home.pricing.cards.lifetime.perks.lifetimeOneAccount"),
+      t("home.pricing.cards.lifetime.perks.first300")
+    ],
+      highlight: true
+    }
+  ];
   const openTerms = (title, body) => {
-    setTermsTitle(title || "Terms");
-    setTermsBody(body || "");
-    setTermsOpen(true);
+  setTermsTitle(title || t("home.pricing.buttons.terms"));
+  setTermsBody(body || "");
+  setTermsOpen(true);
   };
 
   const closeTerms = () => {
@@ -129,20 +120,20 @@ const Pricing = () => {
       });
 
       if (!res.ok) {
-        const data = await readJsonResponse(res, "Unable to start checkout.");
-        setCheckoutError(data?.error || "Unable to start checkout.");
+        const data = await readJsonResponse(res, t("home.pricing.errors.checkoutStart"));
+        setCheckoutError(data?.error || t("home.pricing.errors.checkoutStart"));
         return;
       }
 
-      const data = await readJsonResponse(res, "Unable to start checkout.");
+      const data = await readJsonResponse(res, t("home.pricing.errors.checkoutStart"));
       if (!data?.url) {
-        setCheckoutError("Unable to start checkout.");
+        setCheckoutError(t("home.pricing.errors.checkoutStart"));
         return;
       }
 
       window.location.assign(data.url);
     } catch (err) {
-      setCheckoutError(err?.message || "Unable to start checkout.");
+      setCheckoutError(err?.message || t("home.pricing.errors.checkoutStart"));
     } finally {
       setCheckoutPlanKey(null);
     }
@@ -168,20 +159,20 @@ const Pricing = () => {
         body: JSON.stringify({}),
       });
 
-      const data = await readJsonResponse(res, "Unable to start trial verification.");
+      const data = await readJsonResponse(res, t("home.pricing.errors.trialStart"));
       if (!res.ok) {
-        setTrialError(data?.error || "Unable to start trial verification.");
+        setTrialError(data?.error || t("home.pricing.errors.trialStart"));
         return;
       }
 
       if (!data?.url) {
-        setTrialError("Unable to start trial verification.");
+        setTrialError(t("home.pricing.errors.trialStart"));
         return;
       }
 
       window.location.assign(data.url);
     } catch (err) {
-      setTrialError(err?.message || "Unable to start trial verification.");
+      setTrialError(err?.message || t("home.pricing.errors.trialStart"));
     } finally {
       setTrialLoading(false);
     }
@@ -191,10 +182,11 @@ const Pricing = () => {
     <section className="bg-white py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Choose the plan that fits your team</h2>
+          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+            {t("home.pricing.title")}
+          </h2>
           <p className="mt-4 text-lg text-slate-600">
-            Simple subscription tiers for individual consultants, engineering firms, and municipal departments. Cancel
-            anytime.
+            {t("home.pricing.subtitle")}
           </p>
         </div>
 
@@ -211,7 +203,7 @@ const Pricing = () => {
               onClick={() => openTerms(trialOption.termsTitle, trialOption.termsBody)}
               className="mt-2 inline-flex text-sm font-semibold text-sky-700 underline decoration-sky-300 underline-offset-4 hover:text-sky-800"
             >
-              Terms
+              {t("home.pricing.buttons.terms")}
             </button>
 
             <ul className="mt-6 space-y-3 text-sm text-slate-600">
@@ -230,7 +222,7 @@ const Pricing = () => {
                 disabled={trialLoading}
                 className="mt-8 inline-flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {trialLoading ? "Opening verification…" : trialLabel}
+                {trialLoading ? t("home.pricing.buttons.openingVerification") : trialLabel}
               </button>
             ) : (
               <Link
@@ -252,7 +244,7 @@ const Pricing = () => {
             <Card key={plan.name} className={`relative ${plan.highlight ? "border-sky-500 shadow-lg" : ""}`}>
               {plan.highlight && (
                 <span className="absolute -top-3 right-6 rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700 shadow">
-                  Popular
+                  {t("home.pricing.labels.popular")}
                 </span>
               )}
 
@@ -269,7 +261,7 @@ const Pricing = () => {
                   onClick={() => openTerms(plan.termsTitle, plan.termsBody)}
                   className="mt-2 inline-flex text-sm font-semibold text-sky-700 underline decoration-sky-300 underline-offset-4 hover:text-sky-800"
                 >
-                  Terms
+                  {t("home.pricing.buttons.terms")}
                 </button>
               )}
 
@@ -293,7 +285,7 @@ const Pricing = () => {
                       : "border border-slate-300 text-slate-700 hover:border-slate-400 hover:text-slate-900 focus:ring-slate-400"
                   }`}
                 >
-                  {checkoutPlanKey === plan.planKey ? "Opening checkout…" : subscribeLabel}
+                  {checkoutPlanKey === plan.planKey ? t("home.pricing.buttons.openingCheckout") : subscribeLabel}
                 </button>
               ) : (
                 <Link
@@ -323,23 +315,23 @@ const Pricing = () => {
           className="fixed inset-0 z-50 flex items-center justify-center px-4"
           role="dialog"
           aria-modal="true"
-          aria-label={termsTitle || "Terms"}
+          aria-label={termsTitle || t("home.pricing.buttons.terms")}
         >
           <button
             type="button"
             className="absolute inset-0 bg-slate-900/40"
-            aria-label="Close terms"
+            aria-label={t("home.pricing.buttons.close")}
             onClick={closeTerms}
           />
           <div className="relative w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
-              <h3 className="text-lg font-semibold text-slate-900">{termsTitle || "Terms"}</h3>
+              <h3 className="text-lg font-semibold text-slate-900">{termsTitle || t("home.pricing.buttons.terms")}</h3>
               <button
                 type="button"
                 onClick={closeTerms}
                 className="rounded-lg px-2 py-1 text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               >
-                Close
+                {t("home.pricing.buttons.close")}
               </button>
             </div>
             <div className="mt-4 space-y-3 text-sm text-slate-700">
