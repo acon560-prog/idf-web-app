@@ -1,7 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from "react-i18next";
 
 function About() {
+  const { t } = useTranslation();
   return (
     <motion.div
       className="p-4"
@@ -10,19 +12,19 @@ function About() {
       transition={{ duration: 0.8 }}
     >
       <div className="max-w-2xl w-full">
-        <h2 className="text-3xl font-bold text-slate-900">About Us</h2>
+        <h2 className="text-3xl font-bold text-slate-900">{t("about.title")}</h2>
         <p className="mt-4 text-lg text-slate-700 leading-relaxed">
-         With over 18 years of experience in civil engineering, we help each client plan and deliver practical, code-compliant and cost-effective infrastructure solutions. Our work spans residential, industrial, mining and public projects, covering drinking water, wastewater and stormwater systems, earthworks, road drainage and hydraulic and hydrologic modeling.
+         {t("about.intro")}
         </p>
       </div>
  
       <div className="mt-8 max-w-2xl border-l-4 border-indigo-500 pl-6">
         <section className="pb-5">
-          <h3 className="text-xl font-semibold text-slate-900">Our Service Capabilities</h3>
+          <h3 className="text-xl font-semibold text-slate-900">{t("about.capabilitiesTitle")}</h3>
           <ul className="mt-3 list-disc space-y-1 pl-6 text-slate-700">
-            <li>Integrated design for aqueduct, sewer, and storm drainage infrastructure</li>
-            <li>Hydrology and hydraulic engineering for road and urban development projects</li>
-            <li>Practical grading and site-servicing solutions focused on constructability</li>
+            <li>{t("about.capabilities.aqueduct")}</li>
+            <li>{t("about.capabilities.hydrology")}</li>
+            <li>{t("about.capabilities.grading")}</li>
           </ul>
         </section>
       </div>  

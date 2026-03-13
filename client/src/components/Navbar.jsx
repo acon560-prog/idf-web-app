@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";      // ❶ add this
+import LanguageToggle from "./LanguageToggle.jsx";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -17,6 +18,7 @@ function Navbar() {
           <li><Link to="/services" className="hover:underline">Services</Link></li>
           <li><Link to="/contact" className="hover:underline">Contact</Link></li>
           {isAdmin && <li><Link to="/admin" className="hover:underline">Admin</Link></li>}
+          <li><LanguageToggle /></li>
           <li><Link to="/start" className="hover:underline text-yellow-300 font-semibold">Start</Link></li>
           {user && (                                       // ❸ show logout when logged in
             <li>
@@ -44,6 +46,7 @@ function Navbar() {
           {isAdmin && (
             <li><Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link></li>
           )}
+          <li><LanguageToggle /></li>
           <li><Link to="/start" onClick={() => setMenuOpen(false)} className="text-yellow-300 font-semibold">Start</Link></li>
           {user && (
             <li>

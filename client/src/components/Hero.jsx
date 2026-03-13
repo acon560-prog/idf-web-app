@@ -1,12 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useTranslation } from "react-i18next";
 import rainHero from "../assets/rain-hero.jpg";
+
 const Hero = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const primaryHref = user ? "/start" : "/login";
-  const primaryLabel = user ? "Go to dashboard" : "Log in";
+  const primaryLabel = user
+    ? t("home.hero.cta.dashboard")
+    : t("home.hero.cta.login");
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-white to-white">
@@ -16,13 +21,13 @@ const Hero = () => {
       <div className="relative mx-auto flex max-w-6xl flex-col-reverse items-center gap-12 px-4 py-24 md:flex-row md:justify-between md:px-8">
         <div className="max-w-2xl text-center md:text-left">
           <p className="inline-flex items-center rounded-full bg-sky-100 px-4 py-1 text-sm font-medium text-sky-700">
-            Rainfall Data Finder • Canada
+            {t("home.hero.badge")}
           </p>
           <h1 className="mt-6 text-4xl font-extrabold text-slate-900 sm:text-5xl lg:text-6xl">
-            Powerful rainfall insights for Canadian engineers and planners
+            {t("home.hero.title")}
           </h1>
           <p className="mt-6 text-lg text-slate-600">
-            Search thousands of Environment Canada stations, access IDF curves, and share reports with your team in seconds. Built for civil engineers, hydrologists, and municipal planning departments.
+            {t("home.hero.subtitle")}
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center md:justify-start">
             <Link
@@ -35,22 +40,28 @@ const Hero = () => {
               to="/features"
               className="inline-flex items-center justify-center rounded-full border border-slate-300 px-8 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
             >
-              Explore features
+              {t("home.hero.cta.exploreFeatures")}
             </Link>
           </div>
 
           <dl className="mt-12 grid grid-cols-2 gap-6 text-sm text-slate-500 sm:grid-cols-3">
             <div>
-              <dt className="font-medium text-slate-800">Stations covered</dt>
-              <dd>7,000+ nationwide</dd>
+              <dt className="font-medium text-slate-800">
+                {t("home.hero.stats.stationsLabel")}
+              </dt>
+              <dd>{t("home.hero.stats.stationsValue")}</dd>
             </div>
             <div>
-              <dt className="font-medium text-slate-800">IDF datasets</dt>
-              <dd>695 curated records</dd>
+              <dt className="font-medium text-slate-800">
+                {t("home.hero.stats.idfLabel")}
+              </dt>
+              <dd>{t("home.hero.stats.idfValue")}</dd>
             </div>
             <div>
-              <dt className="font-medium text-slate-800">Response time</dt>
-              <dd>Under 2 seconds</dd>
+              <dt className="font-medium text-slate-800">
+                {t("home.hero.stats.responseLabel")}
+              </dt>
+              <dd>{t("home.hero.stats.responseValue")}</dd>
             </div>
           </dl>
         </div>
@@ -59,16 +70,18 @@ const Hero = () => {
           <div className="relative overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200">
             <img
               src={rainHero}
-              alt="Rainfall chart preview"
+              alt={t("home.hero.preview.imageAlt")}
               className="h-96 w-full object-cover"
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-6 text-white">
-              <p className="text-sm uppercase tracking-wide text-sky-200">Live preview</p>
+              <p className="text-sm uppercase tracking-wide text-sky-200">
+                {t("home.hero.preview.label")}
+              </p>
               <p className="mt-3 text-lg font-semibold">
-                Mission, BC — 100 year return period peak intensity
+                {t("home.hero.preview.title")}
               </p>
               <p className="text-sm text-slate-200/80">
-                Retrieve accurate IDF curves for any location in Canada—in just one click.
+                {t("home.hero.preview.subtitle")}
               </p>
             </div>
           </div>
