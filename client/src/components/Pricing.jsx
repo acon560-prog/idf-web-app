@@ -19,6 +19,15 @@ const Pricing = () => {
   const [termsTitle, setTermsTitle] = useState("");
   const [termsBody, setTermsBody] = useState("");
 
+  const localizeServerError = (msg, fallbackKey) => {
+  const map = {
+    "Trial already used for this account.": t("home.pricing.errors.trialAlreadyUsed"),
+    "Unable to start trial verification.": t("home.pricing.errors.trialStart"),
+    "Unable to start checkout.": t("home.pricing.errors.checkoutStart")
+  };
+  return map[msg] || msg || t(fallbackKey);
+};
+
   const primaryHref = user ? "/start" : "/signup";
   const loggedOutLabel = t("home.pricing.buttons.createAccount");
   const subscribeLabel = t("home.pricing.buttons.subscribe");
@@ -99,85 +108,85 @@ const plans = [
 
   const termsLines = useMemo(() => (termsBody ? termsBody.split("\n") : []), [termsBody]);
 
-  const startCheckout = async (planKey) => {
-    if (!user) return;
-    if (!token) {
-      window.location.assign("/login");
+const startCheckout = async (planKey) => {
+  if (!user) return;
+  if (!token) {
+    window.location.assign("/login");
+    return;
+  }
+
+  try {
+    setCheckoutError("");
+    setCheckoutPlanKey(planKey || "consultant_monthly");
+
+    const res = await fetch(buildApiUrl("/billing/create-checkout-session"), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ plan: planKey || "consultant_monthly" }),
+    });
+
+    const data = await readJsonResponse(res, t("home.pricing.errors.checkoutStart"));
+
+    if (!res.ok) {
+      setCheckoutError(localizeServerError(data?.error, "home.pricing.errors.checkoutStart"));
       return;
     }
 
-    try {
-      setCheckoutError("");
-      setCheckoutPlanKey(planKey || "consultant_monthly");
-
-      const res = await fetch(buildApiUrl("/billing/create-checkout-session"), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ plan: planKey || "consultant_monthly" }),
-      });
-
-      if (!res.ok) {
-        const data = await readJsonResponse(res, t("home.pricing.errors.checkoutStart"));
-        setCheckoutError(data?.error || t("home.pricing.errors.checkoutStart"));
-        return;
-      }
-
-      const data = await readJsonResponse(res, t("home.pricing.errors.checkoutStart"));
-      if (!data?.url) {
-        setCheckoutError(t("home.pricing.errors.checkoutStart"));
-        return;
-      }
-
-      window.location.assign(data.url);
-    } catch (err) {
-      setCheckoutError(err?.message || t("home.pricing.errors.checkoutStart"));
-    } finally {
-      setCheckoutPlanKey(null);
+    if (!data?.url) {
+      setCheckoutError(t("home.pricing.errors.checkoutStart"));
+      return;
     }
-  };
+
+    window.location.assign(data.url);
+  } catch (err) {
+    setCheckoutError(localizeServerError(err?.message, "home.pricing.errors.checkoutStart"));
+  } finally {
+    setCheckoutPlanKey(null);
+  }
+};
 
   const startTrialVerification = async () => {
-    if (!user) return;
-    if (!token) {
-      window.location.assign("/login");
+  if (!user) return;
+  if (!token) {
+    window.location.assign("/login");
+    return;
+  }
+
+  try {
+    setTrialError("");
+    setTrialLoading(true);
+
+    const res = await fetch(buildApiUrl("/billing/create-trial-verification-session"), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const data = await readJsonResponse(res, t("home.pricing.errors.trialStart"));
+
+    if (!res.ok) {
+      setTrialError(localizeServerError(data?.error, "home.pricing.errors.trialStart"));
       return;
     }
 
-    try {
-      setTrialError("");
-      setTrialLoading(true);
-
-      const res = await fetch(buildApiUrl("/billing/create-trial-verification-session"), {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-      });
-
-      const data = await readJsonResponse(res, t("home.pricing.errors.trialStart"));
-      if (!res.ok) {
-        setTrialError(data?.error || t("home.pricing.errors.trialStart"));
-        return;
-      }
-
-      if (!data?.url) {
-        setTrialError(t("home.pricing.errors.trialStart"));
-        return;
-      }
-
-      window.location.assign(data.url);
-    } catch (err) {
-      setTrialError(err?.message || t("home.pricing.errors.trialStart"));
-    } finally {
-      setTrialLoading(false);
+    if (!data?.url) {
+      setTrialError(t("home.pricing.errors.trialStart"));
+      return;
     }
-  };
 
+    window.location.assign(data.url);
+  } catch (err) {
+    setTrialError(localizeServerError(err?.message, "home.pricing.errors.trialStart"));
+  } finally {
+    setTrialLoading(false);
+  }
+};
   return (
     <section className="bg-white py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">

@@ -117,10 +117,11 @@
                 "body": "Lifetime membership is a one-time purchase that grants access to the Civispec application for one account, for as long as the service is offered.\n\nOffer is limited to the first 300 completed purchases and may be modified or ended at any time before purchase.\n\nMembership is non-transferable and intended for a single account/user. Access may be suspended for violations of our Terms of Service or suspected fraud. Taxes may apply. Refunds are subject to our refund policy."
             }
             },
-            "errors": {
+         "errors": {
             "checkoutStart": "Unable to start checkout.",
-            "trialStart": "Unable to start trial verification."
-            }
+            "trialStart": "Unable to start trial verification.",
+            "trialAlreadyUsed": "Trial already used for this account."
+         }
     }
     }
 }

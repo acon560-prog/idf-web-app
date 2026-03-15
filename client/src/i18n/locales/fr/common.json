@@ -119,8 +119,9 @@
             },
             "errors": {
             "checkoutStart": "Impossible de démarrer le paiement.",
-            "trialStart": "Impossible de démarrer la vérification de l'essai."
-            }
+            "trialStart": "Impossible de démarrer la vérification de l'essai.",
+            "trialAlreadyUsed": "L’essai a déjà été utilisé pour ce compte."
+          }
         }
     }
 }
