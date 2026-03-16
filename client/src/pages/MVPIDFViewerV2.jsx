@@ -126,6 +126,7 @@ const MVPIDFViewerV2 = () => {
   const [idfFallbackInfo, setIdfFallbackInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const [isStationInfoVisible, setIsStationInfoVisible] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [selectedReturnPeriods, setSelectedReturnPeriods] =
@@ -835,34 +836,58 @@ const MVPIDFViewerV2 = () => {
           <div className="w-full md:w-2/3 space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">IDF Curves</h2>
-              <div className="flex gap-2">
-                {/* JSON Download button (your existing) */}
+              <div className="relative">
                 <button
-                  onClick={handleDownload}
-                  className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="button"
                   disabled={!idfData.length}
+                  title={!idfData.length ? "Run a station search first" : ""}
+                  onClick={() => setExportOpen((v) => !v)}
+                  className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <DownloadIcon className="mr-2 h-4 w-4" />
-                  Download JSON
+                  Export
+                  <span className="ml-2 text-xs">▾</span>
                 </button>
 
-                <button
-                  onClick={handleGeoJSONDownload}
-                  className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!idfData.length}
-                >
-                  <DownloadIcon className="mr-2 h-4 w-4" />
-                  Download GeoJSON (GIS)
-                </button>
+                {exportOpen && !!idfData.length && (
+                  <div className="absolute right-0 z-30 mt-2 w-64 max-w-[90vw] overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleCSVDownload();
+                        setExportOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-gray-50"
+                    >
+                      <div className="text-sm font-semibold">CSV</div>
+                      <div className="text-[11px] text-gray-500">Spreadsheet and tabular analysis</div>
+                    </button>
 
-                <button
-                  onClick={handleCSVDownload}
-                  className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!idfData.length}
-                >
-                  <DownloadIcon className="mr-2 h-4 w-4" />
-                  Download CSV
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleGeoJSONDownload();
+                        setExportOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-gray-50"
+                    >
+                      <div className="text-sm font-semibold">GeoJSON (GIS)</div>
+                      <div className="text-[11px] text-gray-500">For QGIS / ArcGIS collaborators</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleDownload();
+                        setExportOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-gray-50"
+                    >
+                      <div className="text-sm font-semibold">JSON (Advanced)</div>
+                      <div className="text-[11px] text-gray-500">Raw structured data for automation</div>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
