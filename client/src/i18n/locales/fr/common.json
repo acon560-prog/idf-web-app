@@ -123,5 +123,25 @@
             "trialAlreadyUsed": "L’essai a déjà été utilisé pour ce compte."
           }
         }
+    },
+    "idf": {
+  "export": {
+    "button": "Exporter",
+    "emptyHint": "Lancez d'abord une recherche de station",
+    "items": {
+      "csv": {
+        "label": "CSV",
+        "hint": "Analyse tabulaire / tableur"
+      },
+      "geojson": {
+        "label": "GeoJSON (SIG)",
+        "hint": "Pour collaborateurs QGIS / ArcGIS"
+      },
+      "json": {
+        "label": "JSON (Avancé)",
+        "hint": "Données brutes structurées pour l'automatisation"
+      }
     }
+  }
+}
 }

@@ -23,6 +23,7 @@ import {
   getApiBaseUrl,
   readJsonResponse,
 } from "../utils/apiConfig";
+import { useTranslation } from "react-i18next";
 // To make the app functional, please replace 'YOUR_API_KEY' with your actual Google Maps API key.
 // Example: const GOOGLE_MAPS_API_KEY = 'AIzaSyB-C1...';
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || "";
@@ -116,6 +117,7 @@ const MVPIDFViewerV2 = () => {
   const auth = useAuth();
   const user = auth?.user ?? null;
   const authFetch = auth?.authFetch ?? null;
+  const { t } = useTranslation();
   const [trialMessage, setTrialMessage] = useState("");
   const [station, setStation] = useState(null);
   const [idfData, setIDFData] = useState([]);
@@ -840,12 +842,12 @@ const MVPIDFViewerV2 = () => {
                 <button
                   type="button"
                   disabled={!idfData.length}
-                  title={!idfData.length ? "Run a station search first" : ""}
+                  title={!idfData.length ? t("idf.export.emptyHint") : ""}
                   onClick={() => setExportOpen((v) => !v)}
                   className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <DownloadIcon className="mr-2 h-4 w-4" />
-                  Export
+                  {t("idf.export.button")}
                   <span className="ml-2 text-xs">▾</span>
                 </button>
 
@@ -859,8 +861,8 @@ const MVPIDFViewerV2 = () => {
                       }}
                       className="w-full px-3 py-2 text-left hover:bg-gray-50"
                     >
-                      <div className="text-sm font-semibold">CSV</div>
-                      <div className="text-[11px] text-gray-500">Spreadsheet and tabular analysis</div>
+                      <div className="text-sm font-semibold">{t("idf.export.items.csv.label")}</div>
+                      <div className="text-[11px] text-gray-500">{t("idf.export.items.csv.hint")}</div>
                     </button>
 
                     <button
@@ -871,8 +873,8 @@ const MVPIDFViewerV2 = () => {
                       }}
                       className="w-full px-3 py-2 text-left hover:bg-gray-50"
                     >
-                      <div className="text-sm font-semibold">GeoJSON (GIS)</div>
-                      <div className="text-[11px] text-gray-500">For QGIS / ArcGIS collaborators</div>
+                      <div className="text-sm font-semibold">{t("idf.export.items.geojson.label")}</div>
+                      <div className="text-[11px] text-gray-500">{t("idf.export.items.geojson.hint")}</div>
                     </button>
 
                     <button
@@ -883,8 +885,8 @@ const MVPIDFViewerV2 = () => {
                       }}
                       className="w-full px-3 py-2 text-left hover:bg-gray-50"
                     >
-                      <div className="text-sm font-semibold">JSON (Advanced)</div>
-                      <div className="text-[11px] text-gray-500">Raw structured data for automation</div>
+                      <div className="text-sm font-semibold">{t("idf.export.items.json.label")}</div>
+                      <div className="text-[11px] text-gray-500">{t("idf.export.items.json.hint")}</div>
                     </button>
                   </div>
                 )}
