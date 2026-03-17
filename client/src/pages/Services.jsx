@@ -15,29 +15,28 @@ function Services() {
       <div className="mx-auto max-w-3xl text-center">
         <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl"> t("services.title")</h2>
         <p className="mt-4 text-lg text-slate-600">
-          Practical, code-compliant civil and structural engineering for small projects, renovations, and site development.
-          Clear drawings, constructible details, and responsive support through permitting and construction.
+          {t("services.intro")}
         </p>
       </div>
 
       <div className="mt-12 grid gap-8 md:grid-cols-3">
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-xl font-semibold text-slate-900">t("services.structural.title")</h3>
+          <h3 className="text-xl font-semibold text-slate-900">{t("services.structural.title")}</h3>
           <p className="mt-3 text-sm text-slate-600">
-            t("services.structural.description")
+            {t("services.structural.description")}
           </p>
           <ul className="mt-4 space-y-2 text-sm text-slate-600">
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.structural.bullets.memberSizing")</span>
+              <span>{t("services.structural.bullets.memberSizing")}</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.structural.bullets.foundationChecks")</span>
+              <span>{t("services.structural.bullets.foundationChecks")}</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.structural.bullets.retrofit")</span>
+              <span>{t("services.structural.bullets.retrofit")}</span>
             </li>
           </ul>
         </section>
@@ -45,7 +44,7 @@ function Services() {
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-slate-900">t("services.permit.title")</h3>
           <p className="mt-3 text-sm text-slate-600">
-            t("services.permit.description")
+            {t("services.permit.description")}
           </p>
           <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
             
@@ -60,15 +59,15 @@ function Services() {
           <ul className="mt-4 space-y-2 text-sm text-slate-600">
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.permit.bullets.notesDetails")</span>
+              <span>{t("services.permit.bullets.notesDetails")}</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.permit.bullets.coordination")</span>
+              <span>{t("services.permit.bullets.coordination")}</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.permit.bullets.revisions")</span>
+              <span>{t("services.permit.bullets.revisions")}</span>
             </li>
           </ul>
         </section>
@@ -76,7 +75,7 @@ function Services() {
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-slate-900">t("services.grading.title")</h3>
           <p className="mt-3 text-sm text-slate-600">
-            t("services.grading.description")
+            {t("services.grading.description")}
           </p>
           <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
             
@@ -90,15 +89,15 @@ function Services() {
           <ul className="mt-4 space-y-2 text-sm text-slate-600">
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.grading.bullets.spotElevations")</span>
+              <span>{t("services.grading.bullets.spotElevations")}</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.grading.bullets.catchBasins")</span>
+              <span>{t("services.grading.bullets.catchBasins")}</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-sky-500" />
-              <span>t("services.grading.bullets.erosionControl")</span>
+              <span>{t("services.grading.bullets.erosionControl")}</span>
             </li>
           </ul>
         </section>
@@ -107,7 +106,7 @@ function Services() {
       <div className="mt-12 rounded-2xl border border-slate-200 bg-slate-50 p-6">
         <h3 className="text-lg font-semibold text-slate-900">t("services.sitePlanning.title")</h3>
         <p className="mt-2 text-sm text-slate-600">
-          t("services.sitePlanning.description")
+          {t("services.sitePlanning.description")}
         </p>
       </div>
     </motion.div>
