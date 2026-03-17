@@ -13,7 +13,7 @@ function Services() {
       transition={{ duration: 0.8 }}
     >
       <div className="mx-auto max-w-3xl text-center">
-        <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl"> t("services.title")</h2>
+        <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">{t("services.title")}</h2>
         <p className="mt-4 text-lg text-slate-600">
           {t("services.intro")}
         </p>
@@ -42,7 +42,7 @@ function Services() {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-xl font-semibold text-slate-900">t("services.permit.title")</h3>
+          <h3 className="text-xl font-semibold text-slate-900">{t("services.permit.title")}</h3>
           <p className="mt-3 text-sm text-slate-600">
             {t("services.permit.description")}
           </p>
@@ -73,7 +73,7 @@ function Services() {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-xl font-semibold text-slate-900">t("services.grading.title")</h3>
+          <h3 className="text-xl font-semibold text-slate-900">{t("services.grading.title")}</h3>
           <p className="mt-3 text-sm text-slate-600">
             {t("services.grading.description")}
           </p>
@@ -104,7 +104,7 @@ function Services() {
       </div>
 
       <div className="mt-12 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-        <h3 className="text-lg font-semibold text-slate-900">t("services.sitePlanning.title")</h3>
+        <h3 className="text-lg font-semibold text-slate-900">{t("services.sitePlanning.title")}</h3>
         <p className="mt-2 text-sm text-slate-600">
           {t("services.sitePlanning.description")}
         </p>
