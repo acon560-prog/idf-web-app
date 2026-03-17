@@ -125,23 +125,27 @@
     }
     },
     "idf": {
-  "export": {
-    "button": "Export",
-    "emptyHint": "Run a station search first",
-    "items": {
-      "csv": {
-        "label": "CSV",
-        "hint": "Spreadsheet and tabular analysis"
-      },
-      "geojson": {
-        "label": "GeoJSON (GIS)",
-        "hint": "For QGIS / ArcGIS collaborators"
-      },
-      "json": {
-        "label": "JSON (Advanced)",
-        "hint": "Raw structured data for automation"
+      "export": {
+        "button": "Export",
+        "emptyHint": "Run a station search first",
+        "items": {
+          "csv": {
+            "label": "CSV",
+            "hint": "Spreadsheet and tabular analysis"
+          },
+          "geojson": {
+            "label": "GeoJSON (GIS)",
+            "hint": "For QGIS / ArcGIS collaborators"
+          },
+          "json": {
+            "label": "JSON (Advanced)",
+            "hint": "Raw structured data for automation"
+          },
+          "pdf": {
+          "label": "PDF Report",
+          "hint": "Best for sharing and submissions"
+          }
+        }
       }
     }
-  }
-}
 }

@@ -140,6 +140,10 @@
       "json": {
         "label": "JSON (Avancé)",
         "hint": "Données brutes structurées pour l'automatisation"
+      },
+      "pdf": {
+        "label": "Rapport PDF",
+        "hint": "Idéal pour le partage et les dépôts"
       }
     }
   }

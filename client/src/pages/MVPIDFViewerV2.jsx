@@ -24,6 +24,8 @@ import {
   readJsonResponse,
 } from "../utils/apiConfig";
 import { useTranslation } from "react-i18next";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 // To make the app functional, please replace 'YOUR_API_KEY' with your actual Google Maps API key.
 // Example: const GOOGLE_MAPS_API_KEY = 'AIzaSyB-C1...';
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_PLACES_API_KEY || "";
@@ -511,7 +513,36 @@ const MVPIDFViewerV2 = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   }, [station]);
+  const handlePdfDownload = useCallback(() => {
+  if (!idfData?.length || !station) return;
 
+  const doc = new jsPDF();
+  doc.setFontSize(14);
+  doc.text("IDF Report", 14, 16);
+
+  doc.setFontSize(10);
+  doc.text(`Station ID: ${station.stationId}`, 14, 24);
+  doc.text(`Station: ${station.stationName || station.name || ""}`, 14, 30);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 36);
+
+  const headers = ["Duration", ...allReturnPeriods.map((p) => `${p}-Year`)];
+  const rows = idfData.map((row) => [
+    formatDurationLabel(row.duration),
+    ...allReturnPeriods.map((p) =>
+      row[p] != null && Number.isFinite(row[p]) ? Number(row[p]).toFixed(1) : "-"
+    ),
+  ]);
+
+  autoTable(doc, {
+    startY: 42,
+    head: [headers],
+    body: rows,
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [31, 41, 55] },
+  });
+
+  doc.save(`idf_report_${station.stationId}.pdf`);
+}, [idfData, station]);
   const getLineColor = (period) => {
     const colors = {
        2: "#03a9f4",
@@ -850,7 +881,17 @@ const MVPIDFViewerV2 = () => {
                   {t("idf.export.button")}
                   <span className="ml-2 text-xs">▾</span>
                 </button>
-
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePdfDownload();
+                    setExportOpen(false);
+                  }}
+                  className="w-full px-3 py-2 text-left hover:bg-gray-50"
+                >
+                  <div className="text-sm font-semibold">{t("idf.export.items.pdf.label")}</div>
+                  <div className="text-[11px] text-gray-500">{t("idf.export.items.pdf.hint")}</div>
+                </button>  
                 {exportOpen && !!idfData.length && (
                   <div className="absolute right-0 z-30 mt-2 w-64 max-w-[90vw] overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
                     <button
