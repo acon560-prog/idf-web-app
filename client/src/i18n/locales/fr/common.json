@@ -184,5 +184,43 @@
     "title": "Planification et analyse de site",
     "description": "Apport en faisabilité dès les premières étapes pour réduire les reprises : contraintes d’implantation, chemins de drainage, impacts de nivellement et considérations pratiques de séquencement de construction."
   }
-}
+},
+  "contact": {
+    "title": "Contactez-nous",
+    "placeholders": {
+      "name": "Votre nom",
+      "email": "Votre courriel",
+      "message": "Votre message"
+    },
+    "sendCopy": "M’envoyer une copie",
+    "send": "Envoyer",
+    "status": {
+      "spamBlocked": "Spam détecté. Envoi bloqué.",
+      "sent": "Message envoyé avec succès!",
+      "genericError": "Un problème est survenu. Réessayez.",
+      "sendError": "Erreur lors de l’envoi du message."
+    }
+  },
+    "login": {
+    "title": "Se connecter",
+    "fields": {
+      "identifier": "Courriel ou nom d'utilisateur",
+      "password": "Mot de passe"
+    },
+    "buttons": {
+      "show": "Afficher",
+      "hide": "Masquer",
+      "signIn": "Se connecter",
+      "signingIn": "Connexion en cours..."
+    },
+    "links": {
+      "needAccount": "Besoin d'un compte?",
+      "signUp": "S'inscrire"
+    },
+    "errors": {
+      "invalidCredentials": "Impossible de se connecter. Veuillez vérifier vos identifiants.",
+      "unexpectedResponse": "Réponse inattendue du serveur de connexion.",
+      "unexpected": "Erreur inattendue. Veuillez réessayer."
+    }
+  }
 }

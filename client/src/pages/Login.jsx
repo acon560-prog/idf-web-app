@@ -3,12 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { buildApiUrl } from "../utils/apiConfig";
 import { Link } from "react-router-dom";
-
+import { useTranslation } from "react-i18next";
 function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { t } = useTranslation();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -33,19 +33,19 @@ function Login() {
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Unable to sign in. Please verify your credentials.",
+          data.error || t("login.errors.invalidCredentials")
         );
       }
 
       if (!data.user || !data.accessToken || !data.refreshToken) {
-        throw new Error("Unexpected login response from server.");
+        throw new Error(t("login.errors.unexpectedResponse"));
       }
 
       login?.(data.user, data.accessToken, data.refreshToken);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       console.error("Login failed", err);
-      setError(err.message || "Unexpected error. Please try again.");
+      setError(err.message || t("login.errors.unexpected"));
     } finally {
       setLoading(false);
     }
@@ -54,14 +54,14 @@ function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-6">Sign in</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">{t("login.title")}</h1>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label
               htmlFor="identifier"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Email or username
+              {t("login.fields.identifier")}
             </label>
             <input
               id="identifier"
@@ -79,7 +79,7 @@ function Login() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Password
+              {t("login.fields.password")}
             </label>
             <div className="relative">
               <input
@@ -96,7 +96,7 @@ function Login() {
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-3 flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 focus:outline-none"
               >
-                {showPassword ? "Hide" : "Show"}
+                {showPassword ? t("login.buttons.hide") : t("login.buttons.show")}
               </button>
             </div>
           </div>
@@ -108,13 +108,13 @@ function Login() {
             disabled={loading}
             className="w-full rounded bg-indigo-600 py-2 text-white font-medium hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? t("login.buttons.signingIn") : t("login.buttons.signIn")}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          Need an account?{" "}
+          {t("login.links.needAccount")}
           <Link to="/signup" className="text-indigo-600 hover:text-indigo-700">
-            Sign up
+            {t("login.links.signUp")}
           </Link>
         </p>
       </div>

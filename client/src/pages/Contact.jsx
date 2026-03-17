@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { buildApiUrl } from "../utils/apiConfig";
-
+import { useTranslation } from "react-i18next";
 function Contact() {
   const [formData, setFormData] = useState({
     name: "",
@@ -14,7 +14,7 @@ function Contact() {
   });
 
   const [status, setStatus] = useState("");
-
+  const { t } = useTranslation();
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
@@ -28,7 +28,7 @@ function Contact() {
 
     // Honeypot protection: if filled, likely a bot
     if (formData.honeypot) {
-      setStatus("Spam detected. Submission blocked.");
+      setStatus(t("contact.status.spamBlocked"));
       return;
     }
 
@@ -41,7 +41,7 @@ function Contact() {
       });
 
       if (res.data.success) {
-        setStatus("✅ Message sent successfully!");
+        setStatus(`✅ ${t("contact.status.sent")}`);
         setFormData({
            name: "",
           email: "",
@@ -50,17 +50,17 @@ function Contact() {
           honeypot: "",
         });
       } else {
-        setStatus("❌ Something went wrong. Try again.");;
+        setStatus(`❌ ${t("contact.status.genericError")}`);
       }
     } catch (err) {
       console.error(err);
-      setStatus("❌ Error sending message.");
+      setStatus(`❌ ${t("contact.status.sendError")}`);
     }
   };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Contact Us</h2>
+      <h2 className="text-2xl font-bold mb-4">{t("contact.title")}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Honeypot field (hidden from real users) */}
         <input
@@ -75,7 +75,7 @@ function Contact() {
         <input
           type="text"
           name="name"
-          placeholder="Your Name"
+          placeholder={t("contact.placeholders.name")}
           className="w-full p-2 border rounded"
           value={formData.name}
           onChange={handleChange}
@@ -85,7 +85,7 @@ function Contact() {
         <input
           type="email"
           name="email"
-          placeholder="Your Email"
+          placeholder={t("contact.placeholders.email")}
           className="w-full p-2 border rounded"
           value={formData.email}
           onChange={handleChange}
@@ -94,7 +94,7 @@ function Contact() {
 
         <textarea
           name="message"
-          placeholder="Your Message"
+          placeholder={t("contact.placeholders.message")}
           className="w-full p-2 border rounded"
           rows="5"
           value={formData.message}
@@ -110,14 +110,14 @@ function Contact() {
             onChange={handleChange}
             className="mr-2"
           />
-          Send me a copy
+          {t("contact.sendCopy")}
         </label>
 
         <button
           type="submit"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Send
+          {t("contact.send")}
         </button>
       </form>
 
