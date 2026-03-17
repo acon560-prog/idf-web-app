@@ -147,5 +147,42 @@
           }
         }
       }
+    },
+    "services": {
+    "title": "Our Services",
+    "intro": "Practical, code-compliant civil and structural engineering for small projects, renovations, and site development. Clear drawings, constructible details, and responsive support through permitting and construction.",
+    "structural": {
+      "title": "Structural design",
+      "description": "Design of wood, steel, and reinforced concrete components for safe load paths and efficient framing. Typical deliverables include foundation sizing, beam and lintel design, connection detailing, and notes aligned with the applicable building code.",
+      "bullets": {
+        "memberSizing": "Member sizing and connection details",
+        "foundationChecks": "Foundation and retaining element checks",
+        "retrofit": "Repair / retrofit concepts for renovations"
+      }
+    },
+    "permit": {
+      "title": "Permit drawings",
+      "description": "Permit-ready drawing sets that help reviewers quickly understand the scope and compliance approach. We focus on clean sheets, clear notes, and coordination between architectural intent and engineering details.",
+      "imageAlt": "Permit drawings example",
+      "bullets": {
+        "notesDetails": "General notes, typical details, and schedules",
+        "coordination": "Coordination with site and grading drawings",
+        "revisions": "Revisions and responses during plan review"
+      }
+    },
+    "grading": {
+      "title": "Grading & drainage plans",
+      "description": "Site grading concepts focused on constructability, positive drainage, and sensible stormwater routing. Where needed, we can provide rational-method sizing checks and supporting documentation for approvals.",
+      "imageAlt": "Grading and drainage plan example",
+      "bullets": {
+        "spotElevations": "Spot elevations, slopes, swales, and flow arrows",
+        "catchBasins": "Catch basins / culverts / driveway drainage concepts",
+        "erosionControl": "Erosion and sediment control notes (as applicable)"
+      }
+    },
+    "sitePlanning": {
+      "title": "Site planning & analysis",
+      "description": "Early feasibility input to reduce redesign: layout constraints, drainage paths, grading implications, and practical construction sequencing considerations."
     }
+  }
 }

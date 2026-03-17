@@ -147,5 +147,42 @@
       }
     }
   }
+  },
+  "services": {
+  "title": "Nos services",
+  "intro": "Ingénierie civile et structurale pratique et conforme aux codes pour les petits projets, les rénovations et l’aménagement de sites. Dessins clairs, détails constructibles et accompagnement réactif pendant les étapes de permis et de construction.",
+  "structural": {
+    "title": "Conception structurale",
+    "description": "Conception d’éléments en bois, en acier et en béton armé pour assurer des chemins de charge sécuritaires et un système structural efficace. Les livrables typiques incluent le dimensionnement des fondations, la conception des poutres et des linteaux, les détails de connexions et des notes conformes au code du bâtiment applicable.",
+    "bullets": {
+      "memberSizing": "Dimensionnement des éléments et détails de connexions",
+      "foundationChecks": "Vérifications des fondations et des ouvrages de soutènement",
+      "retrofit": "Concepts de réparation / renforcement pour les rénovations"
+    }
+  },
+  "permit": {
+    "title": "Dessins de permis",
+    "description": "Jeux de plans prêts pour permis qui aident les réviseurs à comprendre rapidement la portée du projet et l’approche de conformité. Nous privilégions des plans épurés, des notes claires et une bonne coordination entre l’intention architecturale et les détails d’ingénierie.",
+    "imageAlt": "Exemple de dessins de permis",
+    "bullets": {
+      "notesDetails": "Notes générales, détails types et tableaux",
+      "coordination": "Coordination avec les plans de site et de nivellement",
+      "revisions": "Révisions et réponses pendant l’examen des plans"
+    }
+  },
+  "grading": {
+    "title": "Plans de nivellement et de drainage",
+    "description": "Concepts de nivellement axés sur la constructibilité, le drainage positif et une gestion logique des eaux pluviales. Au besoin, nous pouvons fournir des vérifications de dimensionnement selon la méthode rationnelle et la documentation d’appui pour les approbations.",
+    "imageAlt": "Exemple de plan de nivellement et de drainage",
+    "bullets": {
+      "spotElevations": "Cotes ponctuelles, pentes, noues et flèches d’écoulement",
+      "catchBasins": "Concepts de puisards / ponceaux / drainage d’entrées",
+      "erosionControl": "Notes de contrôle de l’érosion et des sédiments (au besoin)"
+    }
+  },
+  "sitePlanning": {
+    "title": "Planification et analyse de site",
+    "description": "Apport en faisabilité dès les premières étapes pour réduire les reprises : contraintes d’implantation, chemins de drainage, impacts de nivellement et considérations pratiques de séquencement de construction."
+  }
 }
 }
