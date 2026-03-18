@@ -13,7 +13,7 @@ import TestAutocomplete from "./pages/TestAutocomplete.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
-
+import Disclaimer from "./pages/Disclaimer.jsx";
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -24,6 +24,7 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route

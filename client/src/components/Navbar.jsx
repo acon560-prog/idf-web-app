@@ -17,6 +17,7 @@ function Navbar() {
           <li><Link to="/about" className="hover:underline">About</Link></li>
           <li><Link to="/services" className="hover:underline">Services</Link></li>
           <li><Link to="/contact" className="hover:underline">Contact</Link></li>
+          <li><Link to="/disclaimer" className="hover:underline">Disclaimer</Link></li>
           {isAdmin && <li><Link to="/admin" className="hover:underline">Admin</Link></li>}
           <li><LanguageToggle /></li>
           <li><Link to="/start" className="hover:underline text-yellow-300 font-semibold">Start</Link></li>
@@ -43,6 +44,7 @@ function Navbar() {
           <li><Link to="/about" onClick={() => setMenuOpen(false)}>About</Link></li>
           <li><Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link></li>
           <li><Link to="/contact" onClick={() => setMenuOpen(false)}>Contact</Link></li>
+          <li><Link to="/disclaimer" onClick={() => setMenuOpen(false)}>Disclaimer</Link></li>
           {isAdmin && (
             <li><Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link></li>
           )}

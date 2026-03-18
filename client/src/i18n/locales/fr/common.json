@@ -222,5 +222,53 @@
       "unexpectedResponse": "Réponse inattendue du serveur de connexion.",
       "unexpected": "Erreur inattendue. Veuillez réessayer."
     }
+  },
+    "disclaimer": {
+    "title": "Avis de non-responsabilité",
+    "shortNotice": "Cet outil est fourni à des fins d'information et de planification. Vérifiez toujours les valeurs auprès des sources officielles et des exigences locales avant toute décision de conception ou de construction.",
+    "acknowledgement": "Je comprends que ces résultats sont fournis à titre informatif seulement, qu'ils peuvent comporter des incertitudes, et qu'ils doivent être vérifiés indépendamment avant toute utilisation pour la conception, les permis, la construction ou des décisions liées à la sécurité.",
+    "sections": {
+      "purpose": {
+        "title": "Objet de l'outil",
+        "body": "Cette application aide à consulter des données de pluie et des courbes IDF au Canada pour la planification et le pré-dimensionnement. Elle ne remplace pas le jugement professionnel d'un ingénieur."
+      },
+      "sources": {
+        "title": "Sources de données",
+        "body": "Les données proviennent de publications publiques officielles (y compris Environnement et Changement climatique Canada) et peuvent aussi dépendre de services tiers, comme la géolocalisation ou la cartographie."
+      },
+      "processing": {
+        "title": "Production des résultats",
+        "body": "Pour produire les résultats, l'application peut appliquer un appariement de stations, du nettoyage/formatage, des conversions d'unités, des interpolations et une logique d'ajustement climatique. Pour cette raison, les sorties peuvent différer des tableaux sources."
+      },
+      "uncertainty": {
+        "title": "Limites et incertitudes",
+        "body": "Les sorties peuvent contenir des erreurs, omissions, données périmées, problèmes de métadonnées de station, recours à une station de repli et incertitude des modèles (surtout pour les scénarios climatiques)."
+      },
+      "userResponsibility": {
+        "title": "Votre responsabilité",
+        "body": "Vous devez valider indépendamment toutes les valeurs auprès des publications officielles, confirmer les exigences des codes/municipalités et obtenir une révision professionnelle qualifiée au besoin."
+      },
+      "noWarranty": {
+        "title": "Aucune garantie",
+        "body": "Ce service est fourni « tel quel » et « selon disponibilité », sans garantie d'exactitude, d'exhaustivité, d'adéquation à un usage particulier ou de disponibilité continue."
+      },
+      "liability": {
+        "title": "Limitation de responsabilité",
+        "body": "Dans la mesure maximale permise par la loi, nous ne sommes pas responsables des pertes, retards, coûts, dommages ou réclamations découlant de l'utilisation de cette application ou de la confiance accordée à ses résultats."
+      },
+      "criticalUse": {
+        "title": "Ne pas utiliser seul pour des décisions critiques",
+        "body": "N'utilisez pas cette application comme seule base pour des décisions de sécurité des personnes, d'urgence ou d'infrastructures critiques."
+      },
+      "changes": {
+        "title": "Mises à jour et changements",
+        "body": "Les données, méthodes, correspondances de stations et résultats peuvent changer au fil du temps sans préavis."
+      },
+      "contact": {
+        "title": "Questions",
+        "body": "Pour toute question au sujet de cet avis, veuillez contacter le support."
+      }
+    },
+    "exportFooter": "Généré par CiviSpec à titre informatif seulement. Vérifiez auprès des publications officielles et des exigences locales avant utilisation."
   }
 }
