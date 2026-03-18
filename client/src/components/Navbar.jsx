@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";      // ❶ add this
 import LanguageToggle from "./LanguageToggle.jsx";
-
+import { useTranslation } from "react-i18next";
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, logout } = useAuth();                     // ❷ get user + logout
   const isAdmin = user?.role === "admin";
-
+  const { t } = useTranslation();
   return (
     <nav className="bg-gray-800 text-white">
       <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -17,7 +17,7 @@ function Navbar() {
           <li><Link to="/about" className="hover:underline">About</Link></li>
           <li><Link to="/services" className="hover:underline">Services</Link></li>
           <li><Link to="/contact" className="hover:underline">Contact</Link></li>
-          <li><Link to="/disclaimer" className="hover:underline">Disclaimer</Link></li>
+          <li><Link to="/disclaimer" className="hover:underline">{t("nav.disclaimer")}</Link></li>
           {isAdmin && <li><Link to="/admin" className="hover:underline">Admin</Link></li>}
           <li><LanguageToggle /></li>
           <li><Link to="/start" className="hover:underline text-yellow-300 font-semibold">Start</Link></li>
@@ -44,7 +44,7 @@ function Navbar() {
           <li><Link to="/about" onClick={() => setMenuOpen(false)}>About</Link></li>
           <li><Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link></li>
           <li><Link to="/contact" onClick={() => setMenuOpen(false)}>Contact</Link></li>
-          <li><Link to="/disclaimer" onClick={() => setMenuOpen(false)}>Disclaimer</Link></li>
+          <li><Link to="/disclaimer" onClick={() => setMenuOpen(false)}>{t("nav.disclaimer")}</Link></li>
           {isAdmin && (
             <li><Link to="/admin" onClick={() => setMenuOpen(false)}>Admin</Link></li>
           )}

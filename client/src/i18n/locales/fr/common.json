@@ -270,5 +270,8 @@
       }
     },
     "exportFooter": "Généré par CiviSpec à titre informatif seulement. Vérifiez auprès des publications officielles et des exigences locales avant utilisation."
+  },
+    "nav": {
+    "disclaimer": "Avertissement"
   }
 }
