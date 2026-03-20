@@ -18,8 +18,9 @@ function Services() {
           {t("services.intro")}
         </p>
       </div>
-
+      
       <div className="mt-12 grid gap-8 md:grid-cols-3">
+        {/*}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-slate-900">{t("services.structural.title")}</h3>
           <p className="mt-3 text-sm text-slate-600">
@@ -40,7 +41,7 @@ function Services() {
             </li>
           </ul>
         </section>
-
+        */}  
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-slate-900">{t("services.permit.title")}</h3>
           <p className="mt-3 text-sm text-slate-600">
