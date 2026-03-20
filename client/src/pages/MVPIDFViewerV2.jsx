@@ -165,20 +165,21 @@ const MVPIDFViewerV2 = () => {
   const trialExpired = useMemo(() => {
     const message = (trialMessage || "").toLowerCase();
     const errorMessage = (error || "").toLowerCase();
+    const expiredText = t("idf.trial.expired").toLowerCase();
     return (
+      message.includes(expiredText) ||
       message.includes("free trial has expired") ||
       errorMessage.includes("free trial has expired")
+      
     );
-  }, [trialMessage, error]);
+  }, [trialMessage, error, t]);
   
   // We rely on `react-google-autocomplete` to load/init Places correctly.
-  useEffect(() => {
-    if (!hasGoogleApiKey) {
-      setError(
-        "Google Maps API key is missing or invalid. Set REACT_APP_GOOGLE_PLACES_API_KEY in your environment or .env file.",
-      );
-    }
-  }, [hasGoogleApiKey]);
+ useEffect(() => {
+  if (!hasGoogleApiKey) {
+    setError(t("idf.errors.googleApiMissing"));
+  }
+}, [hasGoogleApiKey, t]);
 
   useEffect(() => {
   if (!user) {
@@ -207,22 +208,18 @@ const MVPIDFViewerV2 = () => {
     const diffMs = endsAt - now;
     if (diffMs > 0) {
       const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-      setTrialMessage(
-        `Your free trial ends in ${daysLeft} day${daysLeft !== 1 ? "s" : ""}.`,
-      );
+      setTrialMessage(t("idf.trial.endsIn", { count: daysLeft }));
     } else {
-      setTrialMessage(
-        "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
-      );
+      setTrialMessage(t("idf.trial.expired"));
     }
-  } else if (user.subscriptionStatus === "trialing") {
-    setTrialMessage("Your free trial is active.");
-  } else if (user.subscriptionStatus !== "active") {
-    setTrialMessage("Your subscription status could not be verified.");
-  } else {
-    setTrialMessage("");
-  }
-}, [user]);
+    } else if (user.subscriptionStatus === "trialing") {
+      setTrialMessage(t("idf.trial.active"));
+    } else if (user.subscriptionStatus !== "active") {
+      setTrialMessage(t("idf.trial.unverified"));
+    } else {
+      setTrialMessage("");
+    }
+    }, [user, t]);
 
   const handleSearch = useCallback(
     async (e) => {
@@ -237,7 +234,7 @@ const MVPIDFViewerV2 = () => {
         setLoading(true);
 
       if (!place || !place.geometry) {
-        setError("Please select a valid location from the dropdown.");
+        setError(t("idf.errors.selectValidLocation"));
         setLoading(false);
         return;
       }
@@ -266,11 +263,11 @@ const MVPIDFViewerV2 = () => {
         );
         const nearestData = await readJsonResponse(
           nearestResponse,
-          "Failed to find nearest station.",
+          t("idf.errors.nearestStationFailed"),
         );
         if (!nearestResponse.ok) {
           throw new Error(
-            nearestData?.error || "Failed to find nearest station.",
+            nearestData?.error || t("idf.errors.nearestStationFailed"),
           );
         }
         const nearestStation = nearestData;
@@ -299,18 +296,16 @@ const MVPIDFViewerV2 = () => {
 
         const idfJson = await readJsonResponse(
           idfResponse,
-          "Failed to fetch IDF data.",
+          t("idf.errors.idfFetchFailed"),
         );
         if (!idfResponse.ok) {
           if (
             (idfResponse.status === 402 || idfResponse.status === 403) &&
             idfJson?.code === "trial_expired"
           ) {
-            setTrialMessage(
-              "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
-            );
+           setTrialMessage(t("idf.trial.expired"));
           }
-          throw new Error(idfJson?.error || "Failed to fetch IDF data.");
+          throw new Error(idfJson?.error || t("idf.errors.idfFetchFailed"));
         }
         setClimateInfo(idfJson?.climate || null);
         setIdfFallbackInfo(idfJson?.fallback || null);
@@ -402,9 +397,7 @@ const MVPIDFViewerV2 = () => {
             chartDataRef.current = sortedData;
             setShowChart(true);
           } else {
-            setError(
-              "No valid IDF curve data could be found for this station. The data may be missing or malformed.",
-            );
+            setError(t("idf.errors.noValidCurveData"));
             setShowChart(false);
           }
         } catch (err) {
@@ -413,13 +406,13 @@ const MVPIDFViewerV2 = () => {
           setError(
             err.message
               ? `${err.message}${apiHint}`
-              : `Unexpected error while contacting the server.${apiHint}`,
+              : `${t("idf.errors.unexpectedServer")}${apiHint}`,
           );
         } finally {
           setLoading(false);
         }
       },
-      [authFetch, place, applyClimate2050High, applyQc18, allowSubhourFallback],
+      [authFetch, place, applyClimate2050High, applyQc18, allowSubhourFallback, t],
     );
 
   const handleCheckboxChange = useCallback((event) => {
@@ -456,7 +449,10 @@ const MVPIDFViewerV2 = () => {
   const handleCSVDownload = useCallback(() => {
    if (!chartDataRef.current) return;
 
-   const headers = ["Duration", ...allReturnPeriods.map((p) => `${p}-Year`)];
+   const headers = [
+  t("idf.chart.tableDuration"),
+  ...allReturnPeriods.map((p) => t("idf.chart.legend", { period: p })),
+];
     const rows = chartDataRef.current.map((item) => {
       return [
         formatDurationLabel(item.duration),
@@ -474,7 +470,7 @@ const MVPIDFViewerV2 = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [station]);
+  }, [station, t]);
   const handleGeoJSONDownload = useCallback(() => {
     if (!chartDataRef.current || !station) return;
 
@@ -518,14 +514,17 @@ const MVPIDFViewerV2 = () => {
 
   const doc = new jsPDF();
   doc.setFontSize(14);
-  doc.text("IDF Report", 14, 16);
+  doc.text(t("idf.pdf.title"), 14, 16);
 
   doc.setFontSize(10);
-  doc.text(`Station ID: ${station.stationId}`, 14, 24);
-  doc.text(`Station: ${station.stationName || station.name || ""}`, 14, 30);
-  doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 36);
+  doc.text(`${t("idf.pdf.stationId")} ${station.stationId}`, 14, 24);
+  doc.text(`${t("idf.pdf.station")} ${station.stationName || station.name || ""}`, 14, 30);
+  doc.text(`${t("idf.pdf.generated")} ${new Date().toLocaleString()}`, 14, 36);
 
-  const headers = ["Duration", ...allReturnPeriods.map((p) => `${p}-Year`)];
+  const headers = [
+  t("idf.pdf.durationHeader"),
+  ...allReturnPeriods.map((p) => t("idf.chart.legend", { period: p })),
+  ];
   const rows = idfData.map((row) => [
     formatDurationLabel(row.duration),
     ...allReturnPeriods.map((p) =>
@@ -542,7 +541,7 @@ const MVPIDFViewerV2 = () => {
   });
 
   doc.save(`idf_report_${station.stationId}.pdf`);
-}, [idfData, station]);
+}, [idfData, station, t]);
   const getLineColor = (period) => {
     const colors = {
        2: "#03a9f4",
@@ -577,7 +576,7 @@ const MVPIDFViewerV2 = () => {
   };
 
   const formatTooltipLabel = (value) => {
-    return `Duration: ${formatDurationLabel(value)}`;
+  return t("idf.chart.tooltipDuration", { value: formatDurationLabel(value) });
   };
   
   const yAxisDomain = useMemo(() => {
@@ -604,11 +603,11 @@ const MVPIDFViewerV2 = () => {
     return (
       <div className="max-w-3xl mx-auto p-6 mt-10 border border-yellow-400 bg-yellow-100 rounded text-center text-yellow-900">
         <p className="mb-4 text-lg font-semibold">
-          Please{" "}
+          {t("idf.authPrompt.prefix")}{" "}
           <Link to="/login" className="text-blue-700 underline">
-            log in
+            {t("idf.authPrompt.link")}
           </Link>{" "}
-          to access IDF curves and tables.
+          {t("idf.authPrompt.suffix")}
         </p>
       </div>
     );
@@ -622,9 +621,7 @@ const MVPIDFViewerV2 = () => {
           <div className="w-full max-w-5xl mb-4">
             <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm space-y-3">
             <p>
-              {trialExpired
-                ? "Your free trial has expired. Please upgrade to continue accessing IDF curves."
-                : trialMessage}
+              {trialExpired ? t("idf.trial.expired") : trialMessage}
             </p>
               {trialExpired && (
                 <div className="flex flex-wrap gap-3">
@@ -632,13 +629,13 @@ const MVPIDFViewerV2 = () => {
                     to="/contact"
                     className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
                   >
-                    Contact us to upgrade
+                    {t("idf.trial.contactUpgrade")}
                   </Link>
                   <a
                     href="mailto:support@civispec.com"
                     className="inline-flex items-center justify-center rounded-md border border-indigo-600 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition"
                   >
-                    Email support
+                    {t("idf.trial.emailSupport")}
                   </a>
                 </div>
               )}
@@ -649,13 +646,12 @@ const MVPIDFViewerV2 = () => {
         {/* Left Side: Search and Controls */}
         <div className="w-full md:w-1/3 space-y-6">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">IDF Viewer</h1>
+            <h1 className="text-2xl font-bold text-gray-800">{t("idf.viewer.title")}</h1>
             <MapPinIcon className="text-gray-600 text-3xl" />
           </div>
 
           <p className="text-gray-600">
-             Enter a location to find the nearest weather station and its
-            Intensity-Duration-Frequency (IDF) curves.
+             {t("idf.viewer.intro")}
           </p>
 
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
@@ -671,24 +667,29 @@ const MVPIDFViewerV2 = () => {
                 className="mt-1"
               />
               <span>
-                Apply climate change (Canada, except Québec): <span className="font-semibold">2050 + high emissions (SSP5-8.5)</span>
+                {t("idf.climate.canadaToggleLabel")}{" "}
+                  <span className="font-semibold">{t("idf.climate.canadaToggleValue")}</span>
               </span>
             </label>
             <p className="mt-2 text-xs text-gray-500">
-              Uses IDF_CC factors when available for the selected station, otherwise the nearest station with factors.
+              {t("idf.climate.canadaHint")}
             </p>
             {applyClimate2050High && (
               <div className="mt-2 text-xs">
                 {climateInfo?.applied ? (
                   <div className="text-emerald-700">
-                    Climate applied: <span className="font-semibold">Yes</span>
-                    {climateInfo?.modelsUsed ? ` (models: ${climateInfo.modelsUsed})` : ""}
-                  </div>
+                {t("idf.climate.appliedLabel")}{" "}
+                <span className="font-semibold">{t("idf.climate.yes")}</span>
+                {climateInfo?.modelsUsed
+                  ? ` (${t("idf.climate.models")}: ${climateInfo.modelsUsed})`
+                  : ""}
+              </div>
                 ) : (
-                  <div className="text-amber-700">
-                    Climate applied: <span className="font-semibold">No</span>
-                    {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
-                  </div>
+                 <div className="text-amber-700">
+                  {t("idf.climate.appliedLabel")}{" "}
+                  <span className="font-semibold">{t("idf.climate.no")}</span>
+                  {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
+                </div>
                 )}
               </div>
             )}
@@ -707,26 +708,30 @@ const MVPIDFViewerV2 = () => {
                 className="mt-1"
               />
               <span>
-                Apply climate change (Québec): <span className="font-semibold">+18% uplift</span>
+                {t("idf.climate.qcToggleLabel")}{" "}
+                <span className="font-semibold">{t("idf.climate.qcToggleValue")}</span>
               </span>
             </label>
             <p className="mt-2 text-xs text-gray-500">
-              Applied only to stations in QC.
+              {t("idf.climate.qcHint")}
             </p>
             {applyQc18 && (
-              <div className="mt-2 text-xs">
-                {climateInfo?.applied ? (
-                  <div className="text-emerald-700">
-                    Climate applied: <span className="font-semibold">Yes</span> (factor: 1.18)
-                  </div>
-                ) : (
-                  <div className="text-amber-700">
-                    Climate applied: <span className="font-semibold">No</span>
-                    {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="mt-2 text-xs">
+              {climateInfo?.applied ? (
+                <div className="text-emerald-700">
+                  {t("idf.climate.appliedLabel")}{" "}
+                  <span className="font-semibold">{t("idf.climate.yes")}</span>{" "}
+                  ({t("idf.climate.factor")}: 1.18)
+                </div>
+              ) : (
+                <div className="text-amber-700">
+                  {t("idf.climate.appliedLabel")}{" "}
+                  <span className="font-semibold">{t("idf.climate.no")}</span>
+                  {climateInfo?.reason ? ` — ${climateInfo.reason}` : ""}
+                </div>
+              )}
+            </div>
+          )}
           </div>
 
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
@@ -738,17 +743,19 @@ const MVPIDFViewerV2 = () => {
                 className="mt-1"
               />
               <span>
-                If the selected station has no <span className="font-semibold">5–30 min</span> data, use the nearest station for short durations
+                {t("idf.fallback.toggleLabelPrefix")}{" "}
+                <span className="font-semibold">{t("idf.fallback.toggleLabelEmphasis")}</span>{" "}
+                {t("idf.fallback.toggleLabelSuffix")}
               </span>
             </label>
             <p className="mt-2 text-xs text-gray-500">
-              Some ECCC stations have missing sub-hour data; enabling this keeps your table/plot on the standard short-duration grid.
+              {t("idf.fallback.hint")}
             </p>
             {idfFallbackInfo?.shortDurationFallback && (
               <div className="mt-2 text-xs text-amber-700">
-                Using short-duration IDF from{" "}
+                {t("idf.fallback.usingFrom")}{" "}
                 <span className="font-semibold">
-                  {idfFallbackInfo.shortDurationUsedStationName || "nearest station"}{" "}
+                  {idfFallbackInfo.shortDurationUsedStationName || t("idf.fallback.nearestStation")}
                 </span>
                 {idfFallbackInfo.shortDurationUsedStationId
                   ? `(${idfFallbackInfo.shortDurationUsedStationId})`
@@ -767,7 +774,7 @@ const MVPIDFViewerV2 = () => {
                   htmlFor="location"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Location
+                  {t("idf.search.locationLabel")}
                 </label>
                 <Autocomplete
                   apiKey={GOOGLE_MAPS_API_KEY}
@@ -781,7 +788,7 @@ const MVPIDFViewerV2 = () => {
                   }}
                   id="location"
                   name="location"
-                  placeholder="e.g., Montreal, QC"
+                  placeholder={t("idf.search.locationPlaceholder")}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
@@ -812,12 +819,12 @@ const MVPIDFViewerV2 = () => {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  <span>Searching...</span>
+                  <span>{t("idf.search.searching")}</span>
                 </div>
               ) : (
                 <>
                   <SearchIcon className="mr-2 h-5 w-5" />
-                  <span>Find Station</span>
+                  <span>{t("idf.search.findStation")}</span>
                 </>
               )}
             </button>
@@ -835,29 +842,29 @@ const MVPIDFViewerV2 = () => {
           {isStationInfoVisible && station && (
             <div className="bg-gray-100 p-4 rounded-md mt-4 shadow">
               <div className="flex justify-between items-center mb-2">
-                <h3 className="font-semibold text-gray-700">Station Found</h3>
+                <h3 className="font-semibold text-gray-700">{t("idf.station.title")}</h3>
                 <button onClick={() => setIsStationInfoVisible(false)}>
                   <CloseIcon className="h-4 w-4 text-gray-500 hover:text-gray-700" />
                 </button>
               </div>
               <p className="text-gray-600">
-                 <strong className="text-gray-800">ID:</strong>{" "}
+                 <strong className="text-gray-800">{t("idf.station.id")}</strong>{" "}
                 {station.stationId}
               </p>
               <p className="text-gray-600">
-                 <strong className="text-gray-800">Name:</strong>{" "}
+                 <strong className="text-gray-800">{t("idf.station.name")}</strong>{" "}
                 {station.stationName || station.name || ""}
               </p>
               <p className="text-gray-600">
-                 <strong className="text-gray-800">Latitude:</strong>{" "}
+                 <strong className="text-gray-800">{t("idf.station.latitude")}</strong>{" "}
                 {station.lat}
               </p>
               <p className="text-gray-600">
-                <strong className="text-gray-800">Longitude:</strong>{" "}
+                <strong className="text-gray-800">{t("idf.station.longitude")}</strong>{" "}
                 {station.lon}
               </p>
                 <p className="text-gray-600">
-                <strong className="text-gray-800">Distance:</strong>{" "}
+                <strong className="text-gray-800">{t("idf.station.distance")}</strong>{" "}
                 {station.distance_km} km
               </p>
             </div>
@@ -868,7 +875,7 @@ const MVPIDFViewerV2 = () => {
         {showChart && (
           <div className="w-full md:w-2/3 space-y-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">IDF Curves</h2>
+              <h2 className="text-xl font-bold text-gray-800">{t("idf.chart.title")}</h2>
               <div className="relative">
                 <button
                   type="button"
@@ -945,7 +952,7 @@ const MVPIDFViewerV2 = () => {
                     className="rounded-md text-indigo-600 focus:ring-indigo-500"
                   />
                   <span className="ml-2 text-sm text-gray-700">
-                    {period} Year
+                    {t("idf.chart.returnPeriod", { period })}
                   </span>
                 </label>
               ))}
@@ -958,7 +965,7 @@ const MVPIDFViewerV2 = () => {
                   <XAxis
                     dataKey="duration"
                     label={{
-                      value: "Duration (min)",
+                      value: t("idf.chart.durationAxis"),
                       position: "insideBottom",
                       offset: -5,
                     }}
@@ -970,7 +977,7 @@ const MVPIDFViewerV2 = () => {
                   />
                   <YAxis
                     label={{
-                      value: "Intensity (mm/h)",
+                      value: t("idf.chart.intensityAxis"),
                       angle: -90,
                       position: "insideLeft",
                       offset: 15,
@@ -993,7 +1000,7 @@ const MVPIDFViewerV2 = () => {
                           dot={false}
                           strokeDasharray={getLineDash(period)}
                           isAnimationActive={false}
-                          name={`${period}-Year`}
+                          name={t("idf.chart.legend", { period })}
                         />
                       ),
                   )}
@@ -1004,10 +1011,10 @@ const MVPIDFViewerV2 = () => {
               <table className="min-w-full text-sm text-left text-gray-700 border">
                 <thead className="bg-gray-100 text-xs uppercase text-gray-600">
                   <tr>
-                    <th className="px-4 py-2 border">Duration</th>
+                    <th className="px-4 py-2 border">{t("idf.chart.tableDuration")}</th>
                     {allReturnPeriods.map((period) => (
                       <th key={period} className="px-4 py-2 border">
-                        {period}-Year
+                        {t("idf.chart.legend", { period })}
                       </th>
                     ))}
                   </tr>
