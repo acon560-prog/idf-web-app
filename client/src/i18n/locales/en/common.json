@@ -146,6 +146,83 @@
           "hint": "Best for sharing and submissions"
           }
         }
+      },
+      "viewer": {
+        "title": "IDF Viewer",
+        "intro": "Enter a location to find the nearest weather station and its intensity-duration-frequency (IDF) curves."
+      },
+      "authPrompt": {
+        "prefix": "Please",
+        "link": "log in",
+        "suffix": "to access IDF curves and tables."
+      },
+      "trial": {
+        "endsIn_one": "Your free trial ends in {{count}} day.",
+        "endsIn_other": "Your free trial ends in {{count}} days.",
+        "expired": "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
+        "active": "Your free trial is active.",
+        "unverified": "Your subscription status could not be verified.",
+        "contactUpgrade": "Contact us to upgrade",
+        "emailSupport": "Email support"
+      },
+      "climate": {
+        "canadaToggleLabel": "Apply climate change (Canada, except Québec):",
+        "canadaToggleValue": "2050 + high emissions (SSP5-8.5)",
+        "canadaHint": "Uses IDF_CC factors when available for the selected station, otherwise the nearest station with factors.",
+        "qcToggleLabel": "Apply climate change (Québec):",
+        "qcToggleValue": "+18% uplift",
+        "qcHint": "Applied only to stations in QC.",
+        "appliedLabel": "Climate applied:",
+        "yes": "Yes",
+        "no": "No",
+        "models": "models",
+        "factor": "factor"
+      },
+      "fallback": {
+        "toggleLabelPrefix": "If the selected station has no",
+        "toggleLabelEmphasis": "5–30 min",
+        "toggleLabelSuffix": "data, use the nearest station for short durations",
+        "hint": "Some ECCC stations have missing sub-hour data; enabling this keeps your table/plot on the standard short-duration grid.",
+        "usingFrom": "Using short-duration IDF from",
+        "nearestStation": "nearest station"
+      },
+      "search": {
+        "locationLabel": "Location",
+        "locationPlaceholder": "e.g., Montreal, QC",
+        "searching": "Searching...",
+        "findStation": "Find Station"
+      },
+      "station": {
+        "title": "Station Found",
+        "id": "ID:",
+        "name": "Name:",
+        "latitude": "Latitude:",
+        "longitude": "Longitude:",
+        "distance": "Distance:"
+      },
+      "chart": {
+        "title": "IDF Curves",
+        "durationAxis": "Duration (min)",
+        "intensityAxis": "Intensity (mm/h)",
+        "tooltipDuration": "Duration: {{value}}",
+        "returnPeriod": "{{period}} Year",
+        "legend": "{{period}}-Year",
+        "tableDuration": "Duration"
+      },
+      "errors": {
+        "googleApiMissing": "Google Maps API key is missing or invalid. Set REACT_APP_GOOGLE_PLACES_API_KEY in your environment or .env file.",
+        "selectValidLocation": "Please select a valid location from the dropdown.",
+        "nearestStationFailed": "Failed to find nearest station.",
+        "idfFetchFailed": "Failed to fetch IDF data.",
+        "noValidCurveData": "No valid IDF curve data could be found for this station. The data may be missing or malformed.",
+        "unexpectedServer": "Unexpected error while contacting the server."
+      },
+      "pdf": {
+        "title": "IDF Report",
+        "stationId": "Station ID:",
+        "station": "Station:",
+        "generated": "Generated:",
+        "durationHeader": "Duration"
       }
     },
     "services": {

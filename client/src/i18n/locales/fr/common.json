@@ -146,8 +146,85 @@
         "hint": "Idéal pour le partage et les dépôts"
       }
     }
-  }
   },
+  "viewer": {
+    "title": "Visualiseur IDF",
+    "intro": "Entrez un lieu pour trouver la station météo la plus proche et ses courbes intensité-durée-fréquence (IDF)."
+  },
+  "authPrompt": {
+    "prefix": "Veuillez",
+    "link": "vous connecter",
+    "suffix": "pour accéder aux courbes et tableaux IDF."
+  },
+  "trial": {
+    "endsIn_one": "Votre essai gratuit se termine dans {{count}} jour.",
+    "endsIn_other": "Votre essai gratuit se termine dans {{count}} jours.",
+    "expired": "Votre essai gratuit a expiré. Veuillez passer à une offre payante pour continuer à accéder aux courbes IDF.",
+    "active": "Votre essai gratuit est actif.",
+    "unverified": "Le statut de votre abonnement n'a pas pu être vérifié.",
+    "contactUpgrade": "Contactez-nous pour passer à une offre payante",
+    "emailSupport": "Contacter le support"
+  },
+  "climate": {
+    "canadaToggleLabel": "Appliquer le changement climatique (Canada, sauf Québec) :",
+    "canadaToggleValue": "2050 + fortes émissions (SSP5-8.5)",
+    "canadaHint": "Utilise les facteurs IDF_CC lorsqu'ils sont disponibles pour la station sélectionnée, sinon la station la plus proche ayant des facteurs.",
+    "qcToggleLabel": "Appliquer le changement climatique (Québec) :",
+    "qcToggleValue": "+18 %",
+    "qcHint": "Appliqué uniquement aux stations du QC.",
+    "appliedLabel": "Climat appliqué :",
+    "yes": "Oui",
+    "no": "Non",
+    "models": "modèles",
+    "factor": "facteur"
+  },
+  "fallback": {
+    "toggleLabelPrefix": "Si la station sélectionnée n'a pas de données",
+    "toggleLabelEmphasis": "5–30 min",
+    "toggleLabelSuffix": ", utiliser la station la plus proche pour les courtes durées",
+    "hint": "Certaines stations ECCC n'ont pas de données sous-horaires; activer cette option conserve la grille standard de courtes durées dans le tableau/graphique.",
+    "usingFrom": "Utilisation des IDF de courte durée de",
+    "nearestStation": "la station la plus proche"
+  },
+  "search": {
+    "locationLabel": "Lieu",
+    "locationPlaceholder": "ex. : Montréal, QC",
+    "searching": "Recherche...",
+    "findStation": "Trouver une station"
+  },
+  "station": {
+    "title": "Station trouvée",
+    "id": "ID :",
+    "name": "Nom :",
+    "latitude": "Latitude :",
+    "longitude": "Longitude :",
+    "distance": "Distance :"
+  },
+  "chart": {
+    "title": "Courbes IDF",
+    "durationAxis": "Durée (min)",
+    "intensityAxis": "Intensité (mm/h)",
+    "tooltipDuration": "Durée : {{value}}",
+    "returnPeriod": "{{period}} ans",
+    "legend": "{{period}} ans",
+    "tableDuration": "Durée"
+  },
+  "errors": {
+    "googleApiMissing": "La clé API Google Maps est absente ou invalide. Définissez REACT_APP_GOOGLE_PLACES_API_KEY dans votre environnement ou votre fichier .env.",
+    "selectValidLocation": "Veuillez sélectionner un lieu valide dans la liste déroulante.",
+    "nearestStationFailed": "Impossible de trouver la station la plus proche.",
+    "idfFetchFailed": "Impossible de récupérer les données IDF.",
+    "noValidCurveData": "Aucune donnée de courbe IDF valide n'a été trouvée pour cette station. Les données peuvent être absentes ou mal formatées.",
+    "unexpectedServer": "Erreur inattendue lors de la communication avec le serveur."
+  },
+  "pdf": {
+    "title": "Rapport IDF",
+    "stationId": "ID station :",
+    "station": "Station :",
+    "generated": "Généré le :",
+    "durationHeader": "Durée"
+  }
+},
   "services": {
   "title": "Nos services",
   "intro": "Ingénierie civile et structurale pratique et conforme aux codes pour les petits projets, les rénovations et l’aménagement de sites. Dessins clairs, détails constructibles et accompagnement réactif pendant les étapes de permis et de construction.",
