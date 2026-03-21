@@ -19,7 +19,7 @@ function Services() {
         </p>
       </div>
       
-      <div className="mt-12 grid gap-8 md:grid-cols-3">
+      <div className="mt-12 grid gap-8 md:grid-cols-2">
         {/*}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-slate-900">{t("services.structural.title")}</h3>
