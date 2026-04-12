@@ -502,10 +502,20 @@ def send_contact_email(name, email, message, send_copy=False):
         print("Email credentials not configured; skipping email dispatch.")
         return True
 
+    # Normalize user-supplied fields before putting them in headers.
+    safe_name = " ".join(str(name or "").splitlines()).strip()
+    safe_email = " ".join(str(email or "").splitlines()).strip()
+
     msg_admin = EmailMessage()
     msg_admin['Subject'] = 'New Contact Form Submission'
     msg_admin['From'] = email_user
     msg_admin['To'] = email_user
+    if safe_email and '@' in safe_email:
+        msg_admin['Reply-To'] = safe_email
+    if safe_name or safe_email:
+        msg_admin['X-Original-Sender'] = (
+            f"{safe_name} <{safe_email}>" if safe_name and safe_email else safe_name or safe_email
+        )
     msg_admin.set_content(f"Name: {name}\nEmail: {email}\nMessage:\n{message}")
 
     try:
