@@ -48,6 +48,11 @@ CORS(
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve_frontend(path):
+    # Never serve the SPA shell for API routes.
+    # Without this, missing API endpoints (or wrong HTTP methods) can return HTML,
+    # which breaks the frontend when it tries to parse JSON.
+    if request.path.startswith("/api"):
+        return jsonify({'error': 'Not Found'}), 404
     file_path = os.path.join(app.static_folder, path)
     if path and os.path.exists(file_path):
         return send_from_directory(app.static_folder, path)
@@ -57,6 +62,20 @@ def handle_not_found(_error):
     if request.path.startswith("/api"):
         return jsonify({'error': 'Not Found'}), 404
     return send_from_directory(app.static_folder, 'index.html')
+
+@app.errorhandler(405)
+def handle_method_not_allowed(_error):
+    # Prevent Flask's default HTML 405 page for API routes.
+    if request.path.startswith("/api"):
+        return jsonify({'error': 'Method Not Allowed'}), 405
+    return _error
+
+@app.errorhandler(400)
+def handle_bad_request(_error):
+    # Prevent Flask's default HTML 400 page for API routes (often triggered by invalid JSON).
+    if request.path.startswith("/api"):
+        return jsonify({'error': 'Bad Request'}), 400
+    return _error
 
 app.config['MONGO_URI'] = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/civispec')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', 'change-me')
@@ -703,7 +722,7 @@ def find_nearest_station_with_idf_cc(station_id: str):
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
-    payload = request.get_json() or {}
+    payload = request.get_json(silent=True) or {}
     email = normalize_email(payload.get('email'))
     username = payload.get('username')
     password = payload.get('password')
@@ -1092,7 +1111,7 @@ def stripe_webhook():
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
-    payload = request.get_json() or {}
+    payload = request.get_json(silent=True) or {}
     identifier = payload.get('email') or payload.get('username')
     password = payload.get('password')
 

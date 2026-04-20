@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { buildApiUrl } from "../utils/apiConfig";
+import { buildApiUrl, readJsonResponse } from "../utils/apiConfig";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 function Login() {
@@ -29,7 +29,10 @@ function Login() {
         body: JSON.stringify({ email: identifier, password }),
       });
 
-      const data = await response.json().catch(() => ({}));
+      const data = await readJsonResponse(
+        response,
+        "Unable to sign in. Please verify your credentials.",
+      );
 
       if (!response.ok) {
         throw new Error(

@@ -7,6 +7,7 @@
     "csv-parser": "^3.2.0",
     "dotenv": "^17.2.0",
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.3",
     "meteostat": "^2.0.0",
     "mongoose": "^8.16.3",
     "nodemailer": "^7.0.5",
@@ -15,7 +16,9 @@
   },
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "build": "npm --prefix client install && npm --prefix client run build",
+    "postinstall": "npm --prefix client install && npm --prefix client run build"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
