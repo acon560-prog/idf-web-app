@@ -137,7 +137,7 @@ const MVPIDFViewerV2 = () => {
     useState(allReturnPeriods);
   const [place, setPlace] = useState(null);
   const chartDataRef = useRef(null);
-  
+  const exportMenuRef = useRef(null);
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
 
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
@@ -231,6 +231,21 @@ const MVPIDFViewerV2 = () => {
 
   document.addEventListener("keydown", onKeyDown);
   return () => document.removeEventListener("keydown", onKeyDown);
+  }, [exportOpen]);
+  useEffect(() => {
+  if (!exportOpen) return;
+
+  const onMouseDown = (event) => {
+    if (
+      exportMenuRef.current &&
+      !exportMenuRef.current.contains(event.target)
+    ) {
+      setExportOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", onMouseDown);
+  return () => document.removeEventListener("mousedown", onMouseDown);
   }, [exportOpen]);  
   const handleSearch = useCallback(
     async (e) => {
@@ -887,7 +902,7 @@ const MVPIDFViewerV2 = () => {
           <div className="w-full md:w-2/3 space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800">{t("idf.chart.title")}</h2>
-              <div className="relative">
+              <div className="relative" ref={exportMenuRef}>
                 <button
                   type="button"
                   disabled={!idfData.length}
