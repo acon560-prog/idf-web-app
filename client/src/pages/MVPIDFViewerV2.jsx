@@ -186,7 +186,7 @@ const MVPIDFViewerV2 = () => {
     setTrialMessage("");
     return;
   }
-
+  
   const role = (user.role || "").toLowerCase();
   const hasPaidSubscription = Boolean(user.stripeCustomerId || user.plan);
 
@@ -220,7 +220,18 @@ const MVPIDFViewerV2 = () => {
       setTrialMessage("");
     }
     }, [user, t]);
+  useEffect(() => {
+  if (!exportOpen) return;
 
+  const onKeyDown = (event) => {
+    if (event.key === "Escape") {
+      setExportOpen(false);
+    }
+  };
+
+  document.addEventListener("keydown", onKeyDown);
+  return () => document.removeEventListener("keydown", onKeyDown);
+  }, [exportOpen]);  
   const handleSearch = useCallback(
     async (e) => {
       e.preventDefault();
