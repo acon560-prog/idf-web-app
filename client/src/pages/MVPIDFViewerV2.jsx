@@ -139,7 +139,7 @@ const MVPIDFViewerV2 = () => {
   const chartDataRef = useRef(null);
   const exportMenuRef = useRef(null);
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
-
+  const [searchMode, setSearchMode] = useState("nearest");
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -793,7 +793,34 @@ const MVPIDFViewerV2 = () => {
               </div>
             )}
           </div>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+          <p className="mb-2 font-medium">Search mode</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setSearchMode("nearest")}
+              className={`px-3 py-1 rounded-md border ${
+                searchMode === "nearest"
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : "bg-white text-gray-700 border-gray-300"
+              }`}
+            >
+              Nearest by location
+            </button>
 
+            <button
+              type="button"
+              onClick={() => setSearchMode("direct")}
+              className={`px-3 py-1 rounded-md border ${
+                searchMode === "direct"
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : "bg-white text-gray-700 border-gray-300"
+              }`}
+            >
+              Select station directly
+            </button>
+          </div>
+        </div>    
           <form onSubmit={handleSearch} className="space-y-4">
              <div>
                 <label
