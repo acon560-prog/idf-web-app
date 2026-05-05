@@ -140,6 +140,9 @@ const MVPIDFViewerV2 = () => {
   const exportMenuRef = useRef(null);
   const hasGoogleApiKey = HAS_GOOGLE_API_KEY;
   const [searchMode, setSearchMode] = useState("nearest");
+  const [stations, setStations] = useState([]);
+  const [stationsLoading, setStationsLoading] = useState(false);
+  const [stationsError, setStationsError] = useState(null);
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -458,6 +461,34 @@ const MVPIDFViewerV2 = () => {
       return newPeriods.sort((a, b) => parseInt(a) - parseInt(b));
     });
   }, []);
+  const loadStationsIfNeeded = useCallback(async () => {
+  if (stations.length > 0 || stationsLoading) return;
+
+  try {
+    setStationsLoading(true);
+    setStationsError(null);
+
+    const res = await fetch(buildApiUrl("/stations"));
+    const data = await readJsonResponse(res, "Failed to load stations.");
+
+    if (!res.ok) {
+      throw new Error(data?.error || "Failed to load stations.");
+    }
+
+    setStations(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error(err);
+    setStationsError(err.message || "Failed to load stations.");
+  } finally {
+    setStationsLoading(false);
+  }
+  }, [stations.length, stationsLoading]);
+
+  useEffect(() => {
+  if (searchMode === "direct") {
+    loadStationsIfNeeded();
+  }
+  }, [searchMode, loadStationsIfNeeded]);
 
   const handleDownload = useCallback(() => {
     if (chartDataRef.current) {
@@ -820,6 +851,15 @@ const MVPIDFViewerV2 = () => {
               Select station directly
             </button>
           </div>
+          {searchMode === "direct" && (
+          <p className="mt-2 text-xs text-gray-500">
+            {stationsLoading
+              ? "Loading stations..."
+              : stationsError
+              ? stationsError
+              : `${stations.length} stations loaded`}
+          </p>
+          )}
         </div>    
           <form onSubmit={handleSearch} className="space-y-4">
              <div>
