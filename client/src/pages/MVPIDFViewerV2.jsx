@@ -299,7 +299,124 @@ const handleStationInputKeyDown = (event) => {
   } else if (event.key === "Escape") {
     setStationMenuOpen(false);
   }
-};  
+};
+  const handleDirectLoad = useCallback(async () => {
+  if (!selectedStation?.stationId) {
+    setError("Please select a station from the list.");
+    return;
+  }
+
+  setError(null);
+  setIDFData([]);
+  setClimateInfo(null);
+  setIdfFallbackInfo(null);
+  setStation(selectedStation);
+  setIsStationInfoVisible(true);
+  setShowChart(false);
+  setLoading(true);
+
+  try {
+    const idfUrlBase = `${buildApiUrl("/idf/curves")}?stationId=${selectedStation.stationId}`;
+    const climateParam = applyClimate2050High
+      ? "cc_2050_high"
+      : applyQc18
+      ? "qc18"
+      : "";
+
+    const extraParams = [];
+    if (climateParam) extraParams.push(`climate=${encodeURIComponent(climateParam)}`);
+    if (allowSubhourFallback) extraParams.push("allowSubhourFallback=1");
+
+    const idfUrl = extraParams.length
+      ? `${idfUrlBase}&${extraParams.join("&")}`
+      : idfUrlBase;
+
+    const idfResponse = await (authFetch ? authFetch(idfUrl) : fetch(idfUrl));
+
+    const idfJson = await readJsonResponse(
+      idfResponse,
+      "Failed to fetch IDF data.",
+    );
+
+    if (!idfResponse.ok) {
+      if (
+        (idfResponse.status === 402 || idfResponse.status === 403) &&
+        idfJson?.code === "trial_expired"
+      ) {
+        setTrialMessage("Your free trial has expired. Please upgrade to continue accessing IDF curves.");
+      }
+      throw new Error(idfJson?.error || "Failed to fetch IDF data.");
+    }
+
+    setClimateInfo(idfJson?.climate || null);
+    setIdfFallbackInfo(idfJson?.fallback || null);
+
+    const processedData = idfJson.data
+      .map((item) => {
+        let durationInMinutes = 0;
+
+        if (typeof item.duration === "number") {
+          durationInMinutes = item.duration;
+        } else {
+          const durationString = String(item.duration);
+          if (durationString.includes("min")) {
+            durationInMinutes = parseInt(durationString.replace(" min", ""), 10);
+          } else if (durationString.includes("h")) {
+            durationInMinutes = parseInt(durationString.replace(" h", ""), 10) * 60;
+          } else if (durationString.includes("d")) {
+            durationInMinutes = parseInt(durationString.replace(" d", ""), 10) * 24 * 60;
+          }
+        }
+
+        if (durationInMinutes <= 0) return null;
+
+        const newItem = { duration: durationInMinutes };
+        let hasValidData = false;
+
+        allReturnPeriods.forEach((period) => {
+          const value = parseFloat(item[period]);
+          if (!isNaN(value)) {
+            const durationHours = durationInMinutes / 60;
+            const intensity = durationHours > 0 ? value / durationHours : null;
+            if (intensity !== null && !isNaN(intensity) && isFinite(intensity)) {
+              newItem[period] = intensity;
+              hasValidData = true;
+            }
+          }
+        });
+
+        return hasValidData ? newItem : null;
+      })
+      .filter(Boolean);
+
+    const sortedData = processedData.sort((a, b) => a.duration - b.duration);
+
+    if (sortedData.length > 0) {
+      setIDFData(sortedData);
+      chartDataRef.current = sortedData;
+      setShowChart(true);
+    } else {
+      setError("No valid IDF curve data could be found for this station. The data may be missing or malformed.");
+      setShowChart(false);
+    }
+  } catch (err) {
+    console.error(err);
+    const apiHint = API_BASE_URL ? ` (API base: ${API_BASE_URL})` : "";
+    setError(
+      err.message
+        ? `${err.message}${apiHint}`
+        : `Unexpected error while contacting the server.${apiHint}`,
+    );
+  } finally {
+    setLoading(false);
+  }
+}, [
+  selectedStation,
+  authFetch,
+  applyClimate2050High,
+  applyQc18,
+  allowSubhourFallback,
+]);  
   const handleSearch = useCallback(
     async (e) => {
       e.preventDefault();
@@ -1014,6 +1131,15 @@ const handleStationInputKeyDown = (event) => {
                 Selected: {formatStationLabel(selectedStation)}
               </p>
             )}
+
+            <button
+              type="button"
+              onClick={handleDirectLoad}
+              disabled={loading || !selectedStation}
+              className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Loading..." : "Load Selected Station"}
+            </button>
           </div>
         )}
           {error && (
