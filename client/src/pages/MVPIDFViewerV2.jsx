@@ -143,6 +143,10 @@ const MVPIDFViewerV2 = () => {
   const [stations, setStations] = useState([]);
   const [stationsLoading, setStationsLoading] = useState(false);
   const [stationsError, setStationsError] = useState(null);
+  const [stationQuery, setStationQuery] = useState("");
+  const [selectedStation, setSelectedStation] = useState(null);
+  const [stationMenuOpen, setStationMenuOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -249,7 +253,53 @@ const MVPIDFViewerV2 = () => {
 
   document.addEventListener("mousedown", onMouseDown);
   return () => document.removeEventListener("mousedown", onMouseDown);
-  }, [exportOpen]);  
+  }, [exportOpen]);
+  const formatStationLabel = (station) =>
+  `${station.stationName || station.name || "Unknown"} (${station.stationId})${station.provinceCode ? ` — ${station.provinceCode}` : ""}`;
+
+  const stationOptions = useMemo(() => {
+  const q = stationQuery.trim().toLowerCase();
+  if (!q) return stations.slice(0, 50);
+
+  return stations
+    .filter((s) => {
+      const name = (s.stationName || s.name || "").toLowerCase();
+      const id = String(s.stationId || "").toLowerCase();
+      const prov = String(s.provinceCode || "").toLowerCase();
+      return name.includes(q) || id.includes(q) || prov.includes(q);
+    })
+    .slice(0, 50);
+}, [stations, stationQuery]);
+
+const handleStationQueryChange = (value) => {
+  setStationQuery(value);
+  setSelectedStation(null);
+  setStationMenuOpen(true);
+  setHighlightedIndex(0);
+};
+
+const handleStationSelect = (station) => {
+  setSelectedStation(station);
+  setStationQuery(formatStationLabel(station));
+  setStationMenuOpen(false);
+};
+
+const handleStationInputKeyDown = (event) => {
+  if (!stationMenuOpen || stationOptions.length === 0) return;
+
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    setHighlightedIndex((prev) => Math.min(prev + 1, stationOptions.length - 1));
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    setHighlightedIndex((prev) => Math.max(prev - 1, 0));
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    handleStationSelect(stationOptions[highlightedIndex]);
+  } else if (event.key === "Escape") {
+    setStationMenuOpen(false);
+  }
+};  
   const handleSearch = useCallback(
     async (e) => {
       e.preventDefault();
@@ -860,7 +910,8 @@ const MVPIDFViewerV2 = () => {
               : `${stations.length} stations loaded`}
           </p>
           )}
-        </div>    
+        </div>
+        {searchMode === "nearest" && (    
           <form onSubmit={handleSearch} className="space-y-4">
              <div>
                 <label
@@ -922,7 +973,49 @@ const MVPIDFViewerV2 = () => {
               )}
             </button>
           </form>
+          )}
+          {searchMode === "direct" && (
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">
+              Station name or ID
+            </label>
 
+            <div className="relative">
+              <input
+                type="text"
+                value={stationQuery}
+                onChange={(e) => handleStationQueryChange(e.target.value)}
+                onFocus={() => setStationMenuOpen(true)}
+                onKeyDown={handleStationInputKeyDown}
+                placeholder="Type station name or station ID"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+
+              {stationMenuOpen && stationOptions.length > 0 && (
+                <div className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                  {stationOptions.map((station, idx) => (
+                    <button
+                      key={`${station.stationId}-${idx}`}
+                      type="button"
+                      onClick={() => handleStationSelect(station)}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${
+                        idx === highlightedIndex ? "bg-indigo-50" : ""
+                      }`}
+                    >
+                      {formatStationLabel(station)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {selectedStation && (
+              <p className="text-xs text-emerald-700">
+                Selected: {formatStationLabel(selectedStation)}
+              </p>
+            )}
+          </div>
+        )}
           {error && (
             <div
               className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative"
