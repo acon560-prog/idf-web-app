@@ -187,10 +187,22 @@
     "nearestStation": "la station la plus proche"
   },
   "search": {
-    "locationLabel": "Lieu",
-    "locationPlaceholder": "ex. : Montréal, QC",
-    "searching": "Recherche...",
-    "findStation": "Trouver une station"
+  "locationLabel": "Lieu",
+  "locationPlaceholder": "ex. : Montréal, QC",
+  "searching": "Recherche...",
+  "findStation": "Trouver une station",
+  "modeLabel": "Mode de recherche",
+  "modeNearest": "Station la plus proche par lieu",
+  "modeDirect": "Sélectionner une station directement",
+  "direct": {
+    "provinceLabel": "Province",
+    "allProvinces": "Toutes les provinces",
+    "stationLabel": "Nom de station ou ID",
+    "stationPlaceholder": "Tapez le nom de station ou l'ID",
+    "selectedPrefix": "Sélectionnée :",
+    "loadButton": "Charger la station sélectionnée",
+    "loadingButton": "Chargement..."
+  }
   },
   "station": {
     "title": "Station trouvée",
@@ -215,7 +227,8 @@
     "nearestStationFailed": "Impossible de trouver la station la plus proche.",
     "idfFetchFailed": "Impossible de récupérer les données IDF.",
     "noValidCurveData": "Aucune donnée de courbe IDF valide n'a été trouvée pour cette station. Les données peuvent être absentes ou mal formatées.",
-    "unexpectedServer": "Erreur inattendue lors de la communication avec le serveur."
+    "unexpectedServer": "Erreur inattendue lors de la communication avec le serveur.",
+    "selectStation": "Veuillez sélectionner une station dans la liste."
   },
   "pdf": {
     "title": "Rapport IDF",

@@ -147,6 +147,7 @@ const MVPIDFViewerV2 = () => {
   const [selectedStation, setSelectedStation] = useState(null);
   const [stationMenuOpen, setStationMenuOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const [selectedProvince, setSelectedProvince] = useState("ALL");
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -259,9 +260,14 @@ const MVPIDFViewerV2 = () => {
 
   const stationOptions = useMemo(() => {
   const q = stationQuery.trim().toLowerCase();
-  if (!q) return stations.slice(0, 50);
 
-  return stations
+  const base = selectedProvince === "ALL"
+    ? stations
+    : stations.filter((s) => (s.provinceCode || "").trim() === selectedProvince);
+
+  if (!q) return base.slice(0, 50);
+
+  return base
     .filter((s) => {
       const name = (s.stationName || s.name || "").toLowerCase();
       const id = String(s.stationId || "").toLowerCase();
@@ -269,7 +275,7 @@ const MVPIDFViewerV2 = () => {
       return name.includes(q) || id.includes(q) || prov.includes(q);
     })
     .slice(0, 50);
-}, [stations, stationQuery]);
+}, [stations, stationQuery, selectedProvince]);
 
 const handleStationQueryChange = (value) => {
   setStationQuery(value);
@@ -302,7 +308,7 @@ const handleStationInputKeyDown = (event) => {
 };
   const handleDirectLoad = useCallback(async () => {
   if (!selectedStation?.stationId) {
-    setError("Please select a station from the list.");
+    setError(t("idf.errors.selectStation"));
     return;
   }
 
@@ -416,7 +422,18 @@ const handleStationInputKeyDown = (event) => {
   applyClimate2050High,
   applyQc18,
   allowSubhourFallback,
-]);  
+]);
+ const provinceOptions = useMemo(() => {
+  const codes = Array.from(
+    new Set(
+      stations
+        .map((s) => (s.provinceCode || "").trim())
+        .filter(Boolean)
+    )
+  ).sort();
+
+  return ["ALL", ...codes];
+  }, [stations]); 
   const handleSearch = useCallback(
     async (e) => {
       e.preventDefault();
@@ -992,7 +1009,7 @@ const handleStationInputKeyDown = (event) => {
             )}
           </div>
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
-          <p className="mb-2 font-medium">Search mode</p>
+          <p className="mb-2 font-medium">{t("idf.search.modeLabel")}</p>
           <div className="flex gap-2">
             <button
               type="button"
@@ -1003,7 +1020,7 @@ const handleStationInputKeyDown = (event) => {
                   : "bg-white text-gray-700 border-gray-300"
               }`}
             >
-              Nearest by location
+              {t("idf.search.modeNearest")}
             </button>
 
             <button
@@ -1015,7 +1032,7 @@ const handleStationInputKeyDown = (event) => {
                   : "bg-white text-gray-700 border-gray-300"
               }`}
             >
-              Select station directly
+              {t("idf.search.modeDirect")}
             </button>
           </div>
           {searchMode === "direct" && (
@@ -1093,8 +1110,28 @@ const handleStationInputKeyDown = (event) => {
           )}
           {searchMode === "direct" && (
           <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                {t("idf.search.direct.provinceLabel")}
+              </label>
+              <select
+                value={selectedProvince}
+                onChange={(e) => {
+                  setSelectedProvince(e.target.value);
+                  setStationMenuOpen(true);
+                  setHighlightedIndex(0);
+                }}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              >
+                {provinceOptions.map((prov) => (
+                  <option key={prov} value={prov}>
+                    {prov === "ALL" ? t("idf.search.direct.allProvinces") : prov}
+                  </option>
+                ))}
+              </select>
+            </div>
             <label className="block text-sm font-medium text-gray-700">
-              Station name or ID
+              {t("idf.search.direct.stationLabel")}
             </label>
 
             <div className="relative">
@@ -1104,7 +1141,7 @@ const handleStationInputKeyDown = (event) => {
                 onChange={(e) => handleStationQueryChange(e.target.value)}
                 onFocus={() => setStationMenuOpen(true)}
                 onKeyDown={handleStationInputKeyDown}
-                placeholder="Type station name or station ID"
+                placeholder={t("idf.search.direct.stationPlaceholder")}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
 
@@ -1128,7 +1165,7 @@ const handleStationInputKeyDown = (event) => {
 
             {selectedStation && (
               <p className="text-xs text-emerald-700">
-                Selected: {formatStationLabel(selectedStation)}
+                {t("idf.search.direct.selectedPrefix")} {formatStationLabel(selectedStation)}
               </p>
             )}
 
@@ -1138,7 +1175,7 @@ const handleStationInputKeyDown = (event) => {
               disabled={loading || !selectedStation}
               className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Loading..." : "Load Selected Station"}
+              {loading ? t("idf.search.direct.loadingButton") : t("idf.search.direct.loadButton")}
             </button>
           </div>
         )}

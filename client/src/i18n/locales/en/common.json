@@ -190,7 +190,19 @@
         "locationLabel": "Location",
         "locationPlaceholder": "e.g., Montreal, QC",
         "searching": "Searching...",
-        "findStation": "Find Station"
+        "findStation": "Find Station",
+        "modeLabel": "Search mode",
+        "modeNearest": "Nearest by location",
+        "modeDirect": "Select station directly",
+        "direct": {
+          "provinceLabel": "Province",
+          "allProvinces": "All provinces",
+          "stationLabel": "Station name or ID",
+          "stationPlaceholder": "Type station name or station ID",
+          "selectedPrefix": "Selected:",
+          "loadButton": "Load Selected Station",
+          "loadingButton": "Loading..."
+        }
       },
       "station": {
         "title": "Station Found",
@@ -215,7 +227,8 @@
         "nearestStationFailed": "Failed to find nearest station.",
         "idfFetchFailed": "Failed to fetch IDF data.",
         "noValidCurveData": "No valid IDF curve data could be found for this station. The data may be missing or malformed.",
-        "unexpectedServer": "Unexpected error while contacting the server."
+        "unexpectedServer": "Unexpected error while contacting the server.",
+        "selectStation": "Please select a station from the list."
       },
       "pdf": {
         "title": "IDF Report",
