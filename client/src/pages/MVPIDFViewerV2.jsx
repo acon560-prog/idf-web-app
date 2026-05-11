@@ -422,6 +422,7 @@ const handleStationInputKeyDown = (event) => {
   applyClimate2050High,
   applyQc18,
   allowSubhourFallback,
+  t,
 ]);
  const provinceOptions = useMemo(() => {
   const codes = Array.from(
