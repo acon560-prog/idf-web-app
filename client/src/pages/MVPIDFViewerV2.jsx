@@ -148,6 +148,7 @@ const MVPIDFViewerV2 = () => {
   const [stationMenuOpen, setStationMenuOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [selectedProvince, setSelectedProvince] = useState("ALL");
+  const [selectedCountry, setSelectedCountry] = useState("CA");
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -307,6 +308,11 @@ const handleStationInputKeyDown = (event) => {
   }
 };
   const handleDirectLoad = useCallback(async () => {
+  if (selectedCountry !== "CA") {
+    setError(t("idf.country.usComingSoon"));
+    return;
+  }
+
   if (!selectedStation?.stationId) {
     setError(t("idf.errors.selectStation"));
     return;
@@ -417,6 +423,7 @@ const handleStationInputKeyDown = (event) => {
     setLoading(false);
   }
 }, [
+  selectedCountry,
   selectedStation,
   authFetch,
   applyClimate2050High,
@@ -438,6 +445,11 @@ const handleStationInputKeyDown = (event) => {
   const handleSearch = useCallback(
     async (e) => {
       e.preventDefault();
+      if (selectedCountry !== "CA") {
+        setError(t("idf.country.usComingSoon"));
+        return;
+      }
+
         setError(null);
         setIDFData([]);
         setClimateInfo(null);
@@ -626,7 +638,7 @@ const handleStationInputKeyDown = (event) => {
           setLoading(false);
         }
       },
-      [authFetch, place, applyClimate2050High, applyQc18, allowSubhourFallback, t],
+      [authFetch, place, applyClimate2050High, applyQc18, allowSubhourFallback, selectedCountry, t],
     );
 
   const handleCheckboxChange = useCallback((event) => {
@@ -896,6 +908,33 @@ const handleStationInputKeyDown = (event) => {
              {t("idf.viewer.intro")}
           </p>
 
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+            <label className="block text-sm font-medium text-gray-700">
+              {t("idf.country.label")}
+            </label>
+            <select
+              value={selectedCountry}
+              onChange={(e) => {
+                const nextCountry = e.target.value;
+                setSelectedCountry(nextCountry);
+                setIDFData([]);
+                chartDataRef.current = null;
+                setShowChart(false);
+                setStation(null);
+                setIsStationInfoVisible(false);
+                setClimateInfo(null);
+                setIdfFallbackInfo(null);
+                setError(null);
+              }}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            >
+              <option value="CA">{t("idf.country.options.ca")}</option>
+              <option value="US">{t("idf.country.options.us")}</option>
+            </select>
+          </div>
+
+          {selectedCountry === "CA" ? (
+          <>
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
             <label className="flex items-start gap-2">
               <input
@@ -1217,6 +1256,12 @@ const handleStationInputKeyDown = (event) => {
                 <strong className="text-gray-800">{t("idf.station.distance")}</strong>{" "}
                 {station.distance_km} km
               </p>
+            </div>
+          )}
+          </>
+          ) : (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              {t("idf.country.usComingSoon")}
             </div>
           )}
         </div>

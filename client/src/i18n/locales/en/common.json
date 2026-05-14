@@ -151,6 +151,14 @@
         "title": "IDF Viewer",
         "intro": "Enter a location to find the nearest weather station and its intensity-duration-frequency (IDF) curves."
       },
+      "country": {
+        "label": "Country",
+        "options": {
+          "ca": "Canada",
+          "us": "United States"
+        },
+        "usComingSoon": "United States IDF provider is coming soon. Please use Canada for now."
+      },
       "authPrompt": {
         "prefix": "Please",
         "link": "log in",

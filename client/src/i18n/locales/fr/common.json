@@ -151,6 +151,14 @@
     "title": "Visualiseur IDF",
     "intro": "Entrez un lieu pour trouver la station météo la plus proche et ses courbes intensité-durée-fréquence (IDF)."
   },
+  "country": {
+    "label": "Pays",
+    "options": {
+      "ca": "Canada",
+      "us": "États-Unis"
+    },
+    "usComingSoon": "Le fournisseur IDF des États-Unis arrive bientôt. Veuillez utiliser le Canada pour le moment."
+  },
   "authPrompt": {
     "prefix": "Veuillez",
     "link": "vous connecter",
