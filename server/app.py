@@ -1313,6 +1313,13 @@ def _station_matches_province(station, requested_province_code: str) -> bool:
     return station_code == requested_province_code
 
 
+def _normalize_country(country_value):
+    country = (country_value or "CA").strip().upper()
+    if not country:
+        return "CA"
+    return country
+
+
 @app.route('/api/stations', methods=['GET'])
 def get_stations():
     return jsonify(STATIONS_DATA)
@@ -1634,6 +1641,28 @@ def idf_curves():
     except Exception as e:
         print(f"An unexpected error occurred in idf_curves: {e}")
         return jsonify({"error": "An unexpected error occurred."}), 500
+
+
+@app.route('/api/v2/idf/curves', methods=['GET'])
+@jwt_required()
+def idf_curves_v2():
+    country = _normalize_country(request.args.get("country"))
+
+    if country == "CA":
+        return idf_curves()
+
+    if country == "US":
+        return jsonify({
+            "error": "US provider not implemented yet.",
+            "country": "US",
+            "code": "us_provider_not_implemented",
+        }), 501
+
+    return jsonify({
+        "error": "Unsupported country. Use CA or US.",
+        "code": "invalid_country",
+        "country": country,
+    }), 400
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
