@@ -1424,13 +1424,53 @@ const handleStationInputKeyDown = (event) => {
                 <label className="block text-sm font-medium text-amber-900">
                   {t("idf.country.usForm.placeLabel")}
                 </label>
-                <input
-                  type="text"
-                  value={usLocationQuery}
-                  onChange={(e) => setUsLocationQuery(e.target.value)}
-                  placeholder={t("idf.country.usForm.placePlaceholder")}
-                  className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                />
+                {hasGoogleApiKey ? (
+                  <Autocomplete
+                    apiKey={GOOGLE_MAPS_API_KEY}
+                    onPlaceSelected={(selectedPlace) => {
+                      const placeLabel =
+                        selectedPlace?.formatted_address || selectedPlace?.name || "";
+                      if (placeLabel) setUsLocationQuery(placeLabel);
+
+                      if (selectedPlace?.geometry?.location) {
+                        const placeLat = selectedPlace.geometry.location.lat();
+                        const placeLon = selectedPlace.geometry.location.lng();
+                        setUsLatitude(String(Number(placeLat).toFixed(6)));
+                        setUsLongitude(String(Number(placeLon).toFixed(6)));
+                        setUsProviderMessage(t("idf.country.usForm.autofilled"));
+                      }
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setUsLocationQuery(value);
+                      setUsLatitude("");
+                      setUsLongitude("");
+                      setUsResolvedLocation(null);
+                    }}
+                    options={{
+                      types: ["(regions)"],
+                      componentRestrictions: { country: "us" },
+                    }}
+                    id="us-location"
+                    name="us-location"
+                    placeholder={t("idf.country.usForm.placePlaceholder")}
+                    className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    value={usLocationQuery}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setUsLocationQuery(value);
+                      setUsLatitude("");
+                      setUsLongitude("");
+                      setUsResolvedLocation(null);
+                    }}
+                    placeholder={t("idf.country.usForm.placePlaceholder")}
+                    className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                )}
                 <p className="mt-1 text-xs text-amber-700">
                   {t("idf.country.usForm.placeHint")}
                 </p>
