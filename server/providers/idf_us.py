@@ -127,6 +127,16 @@ def _fetch_noaa_pfds_point(lat: float, lon: float) -> Dict[str, Any]:
     with urlopen(request, timeout=NOAA_TIMEOUT_SECONDS) as response:
         body = response.read().decode("utf-8", errors="replace")
 
+    result = _extract_js_assignment(body, "result")
+    if isinstance(result, str) and result.lower() != "values":
+        error_message = (
+            _extract_js_assignment(body, "ErrorMsg")
+            or _extract_js_assignment(body, "errorMsg")
+            or _extract_js_assignment(body, "error")
+            or "NOAA PFDS did not return values for this location."
+        )
+        raise LookupError(str(error_message))
+
     quantiles = _extract_js_assignment(body, "quantiles")
     if not isinstance(quantiles, list):
         raise ValueError("NOAA response did not include quantiles data.")
@@ -138,6 +148,20 @@ def _fetch_noaa_pfds_point(lat: float, lon: float) -> Dict[str, Any]:
         "version": _extract_js_assignment(body, "version"),
         "source_file": _extract_js_assignment(body, "file"),
     }
+
+
+def _normalize_noaa_error_message(message: str) -> str:
+    text = (message or "").strip()
+    if not text:
+        return "NOAA PFDS did not return values for this location."
+    text = text.replace("\n", " ").strip()
+    text = re.sub(r"^Error\s*\d+(\.\d+)?:\s*", "", text, flags=re.IGNORECASE)
+    if "not within a project area" in text.lower():
+        return (
+            "The selected coordinate is outside NOAA PFDS project coverage for this endpoint. "
+            "Try a different U.S. coordinate."
+        )
+    return text
 
 
 def _to_float(value: Any) -> Optional[float]:
@@ -291,6 +315,15 @@ def get_us_idf_curves(
             )
             payload["code"] = "us_provider_no_matching_rows"
             payload["message"] = payload["provider"]["message"]
+        return payload, 200
+    except LookupError as exc:
+        friendly_message = _normalize_noaa_error_message(str(exc))
+        payload["provider"]["status"] = "live_no_coverage"
+        payload["provider"]["code"] = "us_provider_no_coverage"
+        payload["provider"]["message"] = friendly_message
+        payload["code"] = "us_provider_no_coverage"
+        payload["message"] = friendly_message
+        payload["error"] = str(exc)
         return payload, 200
     except (HTTPError, URLError, TimeoutError, ValueError) as exc:
         payload["provider"]["status"] = "live_fetch_failed"
