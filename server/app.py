@@ -1661,6 +1661,7 @@ def idf_curves_v2():
             lat=request.args.get("lat"),
             lon=request.args.get("lon"),
             station_id=request.args.get("stationId"),
+            location_query=request.args.get("q"),
             return_periods=request.args.get("returnPeriods"),
             durations_minutes=request.args.get("durations"),
         )

@@ -23,6 +23,7 @@ NOAA_DURATION_MINUTES_BY_INDEX: List[int] = [
 NOAA_PFDS_CGI_URL = os.environ.get("NOAA_PFDS_CGI_URL", "https://hdsc.nws.noaa.gov/cgi-bin/new/cgi_readH5.py")
 NOAA_TIMEOUT_SECONDS = float(os.environ.get("NOAA_PFDS_TIMEOUT_SECONDS", "10"))
 REVERSE_GEOCODE_URL = os.environ.get("US_REVERSE_GEOCODE_URL", "https://nominatim.openstreetmap.org/reverse")
+FORWARD_GEOCODE_URL = os.environ.get("US_FORWARD_GEOCODE_URL", "https://nominatim.openstreetmap.org/search")
 
 
 def _coerce_float(value: Any, name: str) -> Optional[float]:
@@ -72,6 +73,7 @@ def _build_base_payload(
     station_id: Optional[str],
     return_periods: List[str],
     durations_minutes: List[int],
+    location_query: Optional[str] = None,
 ) -> Dict[str, Any]:
     return {
         "country": "US",
@@ -91,6 +93,7 @@ def _build_base_payload(
             "lat": lat,
             "lon": lon,
             "stationId": station_id,
+            "locationQuery": location_query,
             "returnPeriods": return_periods,
             "durationsMinutes": durations_minutes,
         },
@@ -209,11 +212,74 @@ def _reverse_geocode_location(lat: float, lon: float) -> Optional[Dict[str, Any]
 
     return {
         "label": label,
+        "lat": lat,
+        "lon": lon,
         "city": city,
         "state": state,
         "countryCode": country_code,
         "displayName": display_name,
         "source": "nominatim",
+    }
+
+
+def _forward_geocode_location_query(query_text: str) -> Optional[Dict[str, Any]]:
+    query = urlencode(
+        {
+            "format": "jsonv2",
+            "q": query_text,
+            "countrycodes": "us",
+            "limit": "1",
+            "addressdetails": "1",
+        }
+    )
+    request = Request(
+        f"{FORWARD_GEOCODE_URL}?{query}",
+        headers={"User-Agent": "civispec-us-idf/1.0"},
+    )
+    try:
+        with urlopen(request, timeout=NOAA_TIMEOUT_SECONDS) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="replace"))
+    except Exception:
+        return None
+
+    if not isinstance(payload, list) or not payload:
+        return None
+
+    first = payload[0]
+    if not isinstance(first, dict):
+        return None
+
+    lat_value = _to_float(first.get("lat"))
+    lon_value = _to_float(first.get("lon"))
+    if lat_value is None or lon_value is None:
+        return None
+
+    address = first.get("address") or {}
+    if not isinstance(address, dict):
+        address = {}
+
+    city = (
+        address.get("city")
+        or address.get("town")
+        or address.get("village")
+        or address.get("municipality")
+        or address.get("county")
+    )
+    state = address.get("state")
+    country_code = (address.get("country_code") or "").upper() or "US"
+    display_name = first.get("display_name")
+    label_parts = [part for part in [city, state] if part]
+    label = ", ".join(label_parts) if label_parts else (display_name or query_text)
+
+    return {
+        "label": label,
+        "lat": lat_value,
+        "lon": lon_value,
+        "city": city,
+        "state": state,
+        "countryCode": country_code,
+        "displayName": display_name,
+        "source": "nominatim_search",
     }
 
 
@@ -266,6 +332,7 @@ def get_us_idf_curves(
     lat: Any = None,
     lon: Any = None,
     station_id: Any = None,
+    location_query: Any = None,
     return_periods: Any = None,
     durations_minutes: Any = None,
     **_kwargs: Any,
@@ -273,6 +340,9 @@ def get_us_idf_curves(
     rp_values = _parse_return_periods(return_periods)
     duration_values = _parse_durations(durations_minutes)
     station_id_str = str(station_id).strip() if station_id is not None else None
+    location_query_str = str(location_query).strip() if location_query is not None else None
+    if location_query_str == "":
+        location_query_str = None
 
     try:
         lat_value = _coerce_float(lat, "latitude")
@@ -284,6 +354,7 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
         payload["message"] = str(exc)
@@ -300,6 +371,7 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
         payload["message"] = "Latitude out of range. Expected -90..90."
@@ -316,6 +388,7 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
         payload["message"] = "Longitude out of range. Expected -180..180."
@@ -331,9 +404,12 @@ def get_us_idf_curves(
         station_id=station_id_str,
         return_periods=rp_values,
         durations_minutes=duration_values,
+        location_query=location_query_str,
     )
     payload["location"] = {
         "label": f"{lat_value:.4f}, {lon_value:.4f}" if lat_value is not None and lon_value is not None else None,
+        "lat": lat_value,
+        "lon": lon_value,
         "city": None,
         "state": None,
         "countryCode": "US",
@@ -342,10 +418,26 @@ def get_us_idf_curves(
 
     # PR6: first live NOAA fetch path by coordinates.
     if lat_value is None or lon_value is None:
-        payload["provider"]["status"] = "awaiting_coordinates"
-        payload["provider"]["message"] = "Provide US latitude/longitude for live NOAA Atlas 14 retrieval."
-        payload["message"] = payload["provider"]["message"]
-        return payload, 200
+        if location_query_str:
+            geocoded = _forward_geocode_location_query(location_query_str)
+            if geocoded:
+                lat_value = geocoded["lat"]
+                lon_value = geocoded["lon"]
+                payload["request"]["lat"] = lat_value
+                payload["request"]["lon"] = lon_value
+                payload["location"] = geocoded
+            else:
+                payload["provider"]["status"] = "geocode_not_found"
+                payload["provider"]["code"] = "us_provider_geocode_not_found"
+                payload["provider"]["message"] = "Could not resolve that U.S. location name. Try a city, town, or ZIP."
+                payload["code"] = "us_provider_geocode_not_found"
+                payload["message"] = payload["provider"]["message"]
+                return payload, 200
+        else:
+            payload["provider"]["status"] = "awaiting_coordinates"
+            payload["provider"]["message"] = "Provide US latitude/longitude or a location name for live NOAA Atlas 14 retrieval."
+            payload["message"] = payload["provider"]["message"]
+            return payload, 200
 
     resolved_location = _reverse_geocode_location(lat_value, lon_value)
     if resolved_location:
