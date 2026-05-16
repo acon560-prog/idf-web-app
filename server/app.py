@@ -24,6 +24,11 @@ from flask_jwt_extended import (
 )
 from flask_pymongo import PyMongo
 from flask import send_from_directory
+try:
+    from providers.idf_us import get_us_idf_curves
+except ModuleNotFoundError:
+    # Supports contexts where app.py is imported as server.app from repo root.
+    from server.providers.idf_us import get_us_idf_curves
 
 app = Flask(__name__, static_folder='build', static_url_path='')
 default_origins = [
@@ -1652,17 +1657,14 @@ def idf_curves_v2():
         return idf_curves()
 
     if country == "US":
-        return jsonify({
-            "country": "US",
-            "code": "us_provider_not_implemented",
-            "message": "US provider not implemented yet.",
-            "data": [],
-            "provider": {
-                "status": "placeholder",
-                "code": "us_provider_not_implemented",
-                "message": "US provider not implemented yet."
-            }
-        }), 200
+        payload, status_code = get_us_idf_curves(
+            lat=request.args.get("lat"),
+            lon=request.args.get("lon"),
+            station_id=request.args.get("stationId"),
+            return_periods=request.args.get("returnPeriods"),
+            durations_minutes=request.args.get("durations"),
+        )
+        return jsonify(payload), status_code
 
     return jsonify({
         "error": "Unsupported country. Use CA or US.",

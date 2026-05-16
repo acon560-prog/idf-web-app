@@ -722,6 +722,16 @@ const handleStationInputKeyDown = (event) => {
           return;
         }
 
+        if (
+          payload?.code === "us_provider_not_implemented" ||
+          payload?.provider?.code === "us_provider_not_implemented" ||
+          payload?.provider?.status === "adapter_skeleton" ||
+          payload?.provider?.status === "placeholder"
+        ) {
+          setUsProviderMessage(t("idf.country.usComingSoon"));
+          return;
+        }
+
         if (Array.isArray(payload?.data) && payload.data.length > 0) {
           setUsProviderMessage(t("idf.country.usDataReady"));
         } else {
