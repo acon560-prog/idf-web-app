@@ -157,7 +157,10 @@
           "ca": "Canada",
           "us": "United States"
         },
-        "usComingSoon": "United States IDF provider is coming soon. Please use Canada for now."
+        "checking": "Checking US provider status...",
+        "usComingSoon": "United States IDF provider is coming soon. Please use Canada for now.",
+        "usNoDataYet": "US provider is connected, but no curve data is available yet.",
+        "usDataReady": "US provider returned curve data."
       },
       "authPrompt": {
         "prefix": "Please",

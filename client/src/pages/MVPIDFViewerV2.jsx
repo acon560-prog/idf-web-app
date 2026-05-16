@@ -149,6 +149,7 @@ const MVPIDFViewerV2 = () => {
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [selectedProvince, setSelectedProvince] = useState("ALL");
   const [selectedCountry, setSelectedCountry] = useState("CA");
+  const [usProviderMessage, setUsProviderMessage] = useState("");
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -328,20 +329,19 @@ const handleStationInputKeyDown = (event) => {
   setLoading(true);
 
   try {
-    const idfUrlBase = `${buildApiUrl("/idf/curves")}?stationId=${selectedStation.stationId}`;
     const climateParam = applyClimate2050High
       ? "cc_2050_high"
       : applyQc18
       ? "qc18"
       : "";
 
-    const extraParams = [];
-    if (climateParam) extraParams.push(`climate=${encodeURIComponent(climateParam)}`);
-    if (allowSubhourFallback) extraParams.push("allowSubhourFallback=1");
-
-    const idfUrl = extraParams.length
-      ? `${idfUrlBase}&${extraParams.join("&")}`
-      : idfUrlBase;
+    const idfParams = new URLSearchParams({
+      stationId: String(selectedStation.stationId),
+      country: selectedCountry,
+    });
+    if (climateParam) idfParams.set("climate", climateParam);
+    if (allowSubhourFallback) idfParams.set("allowSubhourFallback", "1");
+    const idfUrl = `${buildApiUrl("/v2/idf/curves")}?${idfParams.toString()}`;
 
     const idfResponse = await (authFetch ? authFetch(idfUrl) : fetch(idfUrl));
 
@@ -501,16 +501,18 @@ const handleStationInputKeyDown = (event) => {
         setIsStationInfoVisible(true);
         console.log("Found nearest station:", nearestStation);
 
-       const idfUrlBase = `${buildApiUrl("/idf/curves")}?stationId=${nearestStation.stationId}`;
        const climateParam = applyClimate2050High
          ? "cc_2050_high"
          : applyQc18
            ? "qc18"
            : "";
-       const extraParams = [];
-       if (climateParam) extraParams.push(`climate=${encodeURIComponent(climateParam)}`);
-       if (allowSubhourFallback) extraParams.push("allowSubhourFallback=1");
-       const idfUrl = extraParams.length ? `${idfUrlBase}&${extraParams.join("&")}` : idfUrlBase;
+       const idfParams = new URLSearchParams({
+         stationId: String(nearestStation.stationId),
+         country: selectedCountry,
+       });
+       if (climateParam) idfParams.set("climate", climateParam);
+       if (allowSubhourFallback) idfParams.set("allowSubhourFallback", "1");
+       const idfUrl = `${buildApiUrl("/v2/idf/curves")}?${idfParams.toString()}`;
 
        const idfResponse = await (authFetch
         ? authFetch(
@@ -686,6 +688,60 @@ const handleStationInputKeyDown = (event) => {
     loadStationsIfNeeded();
   }
   }, [searchMode, loadStationsIfNeeded]);
+
+  useEffect(() => {
+    if (selectedCountry !== "US") {
+      setUsProviderMessage("");
+      setLoading(false);
+      return;
+    }
+
+    let ignore = false;
+    setLoading(true);
+    setError(null);
+    setUsProviderMessage(t("idf.country.checking"));
+
+    const checkUsProvider = async () => {
+      try {
+        const params = new URLSearchParams({ country: "US" });
+        const idfUrl = `${buildApiUrl("/v2/idf/curves")}?${params.toString()}`;
+        const response = await (authFetch ? authFetch(idfUrl) : fetch(idfUrl));
+        const payload = await readJsonResponse(
+          response,
+          t("idf.country.usComingSoon"),
+        );
+
+        if (ignore) return;
+
+        if (!response.ok) {
+          if (payload?.code === "us_provider_not_implemented") {
+            setUsProviderMessage(t("idf.country.usComingSoon"));
+            return;
+          }
+          setUsProviderMessage(payload?.error || t("idf.errors.idfFetchFailed"));
+          return;
+        }
+
+        if (Array.isArray(payload?.data) && payload.data.length > 0) {
+          setUsProviderMessage(t("idf.country.usDataReady"));
+        } else {
+          setUsProviderMessage(t("idf.country.usNoDataYet"));
+        }
+      } catch (err) {
+        if (!ignore) {
+          setUsProviderMessage(err?.message || t("idf.errors.idfFetchFailed"));
+        }
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    };
+
+    checkUsProvider();
+
+    return () => {
+      ignore = true;
+    };
+  }, [selectedCountry, authFetch, t]);
 
   const handleDownload = useCallback(() => {
     if (chartDataRef.current) {
@@ -919,11 +975,13 @@ const handleStationInputKeyDown = (event) => {
                 setSelectedCountry(nextCountry);
                 setIDFData([]);
                 chartDataRef.current = null;
+                setLoading(false);
                 setShowChart(false);
                 setStation(null);
                 setIsStationInfoVisible(false);
                 setClimateInfo(null);
                 setIdfFallbackInfo(null);
+                setUsProviderMessage("");
                 setError(null);
               }}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -1261,7 +1319,7 @@ const handleStationInputKeyDown = (event) => {
           </>
           ) : (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-              {t("idf.country.usComingSoon")}
+              {loading ? t("idf.country.checking") : usProviderMessage || t("idf.country.usComingSoon")}
             </div>
           )}
         </div>
