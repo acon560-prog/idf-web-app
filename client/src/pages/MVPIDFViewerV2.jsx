@@ -150,6 +150,9 @@ const MVPIDFViewerV2 = () => {
   const [selectedProvince, setSelectedProvince] = useState("ALL");
   const [selectedCountry, setSelectedCountry] = useState("CA");
   const [usProviderMessage, setUsProviderMessage] = useState("");
+  const [usLatitude, setUsLatitude] = useState("");
+  const [usLongitude, setUsLongitude] = useState("");
+  const [usLoading, setUsLoading] = useState(false);
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -308,6 +311,32 @@ const handleStationInputKeyDown = (event) => {
     setStationMenuOpen(false);
   }
 };
+
+  const normalizeIdfRows = useCallback((rawRows) => {
+    if (!Array.isArray(rawRows)) return [];
+
+    return rawRows
+      .map((item) => {
+        const durationValue = Number(item?.duration);
+        if (!Number.isFinite(durationValue) || durationValue <= 0) return null;
+
+        const normalized = { duration: durationValue };
+        let hasValues = false;
+
+        allReturnPeriods.forEach((period) => {
+          const value = Number(item?.[period]);
+          if (Number.isFinite(value) && value > 0) {
+            normalized[period] = value;
+            hasValues = true;
+          }
+        });
+
+        return hasValues ? normalized : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.duration - b.duration);
+  }, []);
+
   const handleDirectLoad = useCallback(async () => {
   if (selectedCountry !== "CA") {
     setError(t("idf.country.usComingSoon"));
@@ -643,6 +672,79 @@ const handleStationInputKeyDown = (event) => {
       [authFetch, place, applyClimate2050High, applyQc18, allowSubhourFallback, selectedCountry, t],
     );
 
+  const handleUsLoad = useCallback(async () => {
+    const lat = Number(usLatitude);
+    const lon = Number(usLongitude);
+
+    if (
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lon) ||
+      lat < -90 ||
+      lat > 90 ||
+      lon < -180 ||
+      lon > 180
+    ) {
+      setError(t("idf.country.invalidCoordinates"));
+      setUsProviderMessage(t("idf.country.usNeedsCoordinates"));
+      return;
+    }
+
+    setError(null);
+    setLoading(false);
+    setUsLoading(true);
+    setIDFData([]);
+    chartDataRef.current = null;
+    setShowChart(false);
+    setStation(null);
+    setIsStationInfoVisible(false);
+    setClimateInfo(null);
+    setIdfFallbackInfo(null);
+    setUsProviderMessage(t("idf.country.checking"));
+
+    try {
+      const params = new URLSearchParams({
+        country: "US",
+        lat: String(lat),
+        lon: String(lon),
+        returnPeriods: allReturnPeriods.join(","),
+        durations: "5,10,15,30,60,120,360,720,1440",
+      });
+      const idfUrl = `${buildApiUrl("/v2/idf/curves")}?${params.toString()}`;
+      const response = await (authFetch ? authFetch(idfUrl) : fetch(idfUrl));
+      const payload = await readJsonResponse(response, t("idf.errors.idfFetchFailed"));
+
+      if (!response.ok) {
+        throw new Error(payload?.error || payload?.message || t("idf.errors.idfFetchFailed"));
+      }
+
+      const normalizedRows = normalizeIdfRows(payload?.data);
+      const providerMessage =
+        payload?.provider?.message || payload?.message || t("idf.country.usNoDataYet");
+
+      if (normalizedRows.length > 0) {
+        setIDFData(normalizedRows);
+        chartDataRef.current = normalizedRows;
+        setShowChart(true);
+        setStation({
+          stationId: `US_${lat.toFixed(4)}_${lon.toFixed(4)}`,
+          stationName: `US NOAA (${lat.toFixed(4)}, ${lon.toFixed(4)})`,
+          lat,
+          lon,
+          distance_km: 0,
+        });
+        setUsProviderMessage(providerMessage);
+      } else {
+        setUsProviderMessage(providerMessage);
+      }
+    } catch (err) {
+      const apiHint = API_BASE_URL ? ` (API base: ${API_BASE_URL})` : "";
+      setError(err?.message ? `${err.message}${apiHint}` : `${t("idf.errors.idfFetchFailed")}${apiHint}`);
+      setUsProviderMessage(t("idf.country.usFetchFailed"));
+    } finally {
+      setUsLoading(false);
+    }
+  }, [authFetch, normalizeIdfRows, t, usLatitude, usLongitude]);
+
   const handleCheckboxChange = useCallback((event) => {
     const { value, checked } = event.target;
     setSelectedReturnPeriods((prev) => {
@@ -690,68 +792,16 @@ const handleStationInputKeyDown = (event) => {
   }, [searchMode, loadStationsIfNeeded]);
 
   useEffect(() => {
-    if (selectedCountry !== "US") {
-      setUsProviderMessage("");
+    if (selectedCountry === "US") {
       setLoading(false);
+      setUsLoading(false);
+      setUsProviderMessage(t("idf.country.usNeedsCoordinates"));
       return;
     }
 
-    let ignore = false;
-    setLoading(true);
-    setError(null);
-    setUsProviderMessage(t("idf.country.checking"));
-
-    const checkUsProvider = async () => {
-      try {
-        const params = new URLSearchParams({ country: "US" });
-        const idfUrl = `${buildApiUrl("/v2/idf/curves")}?${params.toString()}`;
-        const response = await (authFetch ? authFetch(idfUrl) : fetch(idfUrl));
-        const payload = await readJsonResponse(
-          response,
-          t("idf.country.usComingSoon"),
-        );
-
-        if (ignore) return;
-
-        if (!response.ok) {
-          if (payload?.code === "us_provider_not_implemented") {
-            setUsProviderMessage(t("idf.country.usComingSoon"));
-            return;
-          }
-          setUsProviderMessage(payload?.error || t("idf.errors.idfFetchFailed"));
-          return;
-        }
-
-        if (
-          payload?.code === "us_provider_not_implemented" ||
-          payload?.provider?.code === "us_provider_not_implemented" ||
-          payload?.provider?.status === "adapter_skeleton" ||
-          payload?.provider?.status === "placeholder"
-        ) {
-          setUsProviderMessage(t("idf.country.usComingSoon"));
-          return;
-        }
-
-        if (Array.isArray(payload?.data) && payload.data.length > 0) {
-          setUsProviderMessage(t("idf.country.usDataReady"));
-        } else {
-          setUsProviderMessage(t("idf.country.usNoDataYet"));
-        }
-      } catch (err) {
-        if (!ignore) {
-          setUsProviderMessage(err?.message || t("idf.errors.idfFetchFailed"));
-        }
-      } finally {
-        if (!ignore) setLoading(false);
-      }
-    };
-
-    checkUsProvider();
-
-    return () => {
-      ignore = true;
-    };
-  }, [selectedCountry, authFetch, t]);
+    setUsProviderMessage("");
+    setUsLoading(false);
+  }, [selectedCountry, t]);
 
   const handleDownload = useCallback(() => {
     if (chartDataRef.current) {
@@ -986,11 +1036,14 @@ const handleStationInputKeyDown = (event) => {
                 setIDFData([]);
                 chartDataRef.current = null;
                 setLoading(false);
+                setUsLoading(false);
                 setShowChart(false);
                 setStation(null);
                 setIsStationInfoVisible(false);
                 setClimateInfo(null);
                 setIdfFallbackInfo(null);
+                setUsLatitude("");
+                setUsLongitude("");
                 setUsProviderMessage("");
                 setError(null);
               }}
@@ -1328,8 +1381,55 @@ const handleStationInputKeyDown = (event) => {
           )}
           </>
           ) : (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-              {loading ? t("idf.country.checking") : usProviderMessage || t("idf.country.usComingSoon")}
+            <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              <p className="text-xs">{t("idf.country.usForm.helper")}</p>
+              <div>
+                <label className="block text-sm font-medium text-amber-900">
+                  {t("idf.country.usForm.latitudeLabel")}
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={usLatitude}
+                  onChange={(e) => setUsLatitude(e.target.value)}
+                  placeholder={t("idf.country.usForm.latitudePlaceholder")}
+                  className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-amber-900">
+                  {t("idf.country.usForm.longitudeLabel")}
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={usLongitude}
+                  onChange={(e) => setUsLongitude(e.target.value)}
+                  placeholder={t("idf.country.usForm.longitudePlaceholder")}
+                  className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleUsLoad}
+                disabled={usLoading}
+                className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {usLoading
+                  ? t("idf.country.usForm.loadingButton")
+                  : t("idf.country.usForm.loadButton")}
+              </button>
+              <div className="rounded-md border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800">
+                {usLoading ? t("idf.country.checking") : usProviderMessage || t("idf.country.usNeedsCoordinates")}
+              </div>
+              {error && (
+                <div
+                  className="bg-red-100 border border-red-300 text-red-700 px-3 py-2 rounded-lg"
+                  role="alert"
+                >
+                  <span className="block sm:inline">{error}</span>
+                </div>
+              )}
             </div>
           )}
         </div>
