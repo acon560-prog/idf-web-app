@@ -177,6 +177,7 @@
           "longitudePlaceholder": "e.g., -81.0000",
           "loadButton": "Load US IDF",
           "loadingButton": "Loading US IDF...",
+          "unitsNote": "US curves are displayed in imperial intensity units (in/h).",
           "locationLabel": "Approximate location",
           "usedCoordinates": "Coordinates used: {{lat}}, {{lon}}"
         }
@@ -246,6 +247,7 @@
         "title": "IDF Curves",
         "durationAxis": "Duration (min)",
         "intensityAxis": "Intensity (mm/h)",
+        "intensityAxisUs": "Intensity (in/h)",
         "tooltipDuration": "Duration: {{value}}",
         "returnPeriod": "{{period}} Year",
         "legend": "{{period}}-Year",
