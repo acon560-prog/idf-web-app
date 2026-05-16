@@ -838,6 +838,14 @@ const handleStationInputKeyDown = (event) => {
     setUsResolvedLocation(null);
   }, [selectedCountry, t]);
 
+  const formatIntensityValue = useCallback(
+    (value) => {
+      if (value == null || !Number.isFinite(Number(value))) return "-";
+      return Number(value).toFixed(selectedCountry === "US" ? 2 : 1);
+    },
+    [selectedCountry],
+  );
+
   const handleDownload = useCallback(() => {
     if (chartDataRef.current) {
       const dataStr = JSON.stringify(chartDataRef.current, null, 2);
@@ -932,9 +940,7 @@ const handleStationInputKeyDown = (event) => {
   ];
   const rows = idfData.map((row) => [
     formatDurationLabel(row.duration),
-    ...allReturnPeriods.map((p) =>
-      row[p] != null && Number.isFinite(row[p]) ? Number(row[p]).toFixed(1) : "-"
-    ),
+    ...allReturnPeriods.map((p) => formatIntensityValue(row[p])),
   ]);
 
   autoTable(doc, {
@@ -946,7 +952,7 @@ const handleStationInputKeyDown = (event) => {
   });
 
   doc.save(`idf_report_${station.stationId}.pdf`);
-}, [idfData, station, t]);
+}, [idfData, station, t, formatIntensityValue]);
   const getLineColor = (period) => {
     const colors = {
        2: "#03a9f4",
@@ -1003,6 +1009,7 @@ const handleStationInputKeyDown = (event) => {
     const upperLimit = Math.max(Math.ceil(maxIntensity / 10) * 10, 1);
     return [1, upperLimit];
   }, [idfData]);
+  const isUsSelected = selectedCountry === "US";
 
   if (!user) {
     return (
@@ -1420,6 +1427,7 @@ const handleStationInputKeyDown = (event) => {
           ) : (
             <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
               <p className="text-xs">{t("idf.country.usForm.helper")}</p>
+              <p className="text-xs font-medium">{t("idf.country.usForm.unitsNote")}</p>
               <div>
                 <label className="block text-sm font-medium text-amber-900">
                   {t("idf.country.usForm.placeLabel")}
@@ -1648,7 +1656,9 @@ const handleStationInputKeyDown = (event) => {
                   />
                   <YAxis
                     label={{
-                      value: t("idf.chart.intensityAxis"),
+                      value: isUsSelected
+                        ? t("idf.chart.intensityAxisUs")
+                        : t("idf.chart.intensityAxis"),
                       angle: -90,
                       position: "insideLeft",
                       offset: 15,
@@ -1698,7 +1708,7 @@ const handleStationInputKeyDown = (event) => {
                       </td>
                       {allReturnPeriods.map((period) => (
                         <td key={period} className="px-4 py-2 border">
-                          {row[period] != null ? row[period].toFixed(1) : "-"}
+                          {formatIntensityValue(row[period])}
                         </td>
                       ))}
                     </tr>

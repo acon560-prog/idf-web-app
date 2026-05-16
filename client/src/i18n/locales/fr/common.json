@@ -177,6 +177,7 @@
       "longitudePlaceholder": "ex. : -81.0000",
       "loadButton": "Charger l'IDF US",
       "loadingButton": "Chargement IDF US...",
+      "unitsNote": "Les courbes US sont affichées en unités impériales d'intensité (po/h).",
       "locationLabel": "Localisation approximative",
       "usedCoordinates": "Coordonnées utilisées : {{lat}}, {{lon}}"
     }
@@ -246,6 +247,7 @@
     "title": "Courbes IDF",
     "durationAxis": "Durée (min)",
     "intensityAxis": "Intensité (mm/h)",
+    "intensityAxisUs": "Intensité (po/h)",
     "tooltipDuration": "Durée : {{value}}",
     "returnPeriod": "{{period}} ans",
     "legend": "{{period}} ans",

@@ -24,6 +24,11 @@ NOAA_PFDS_CGI_URL = os.environ.get("NOAA_PFDS_CGI_URL", "https://hdsc.nws.noaa.g
 NOAA_TIMEOUT_SECONDS = float(os.environ.get("NOAA_PFDS_TIMEOUT_SECONDS", "10"))
 REVERSE_GEOCODE_URL = os.environ.get("US_REVERSE_GEOCODE_URL", "https://nominatim.openstreetmap.org/reverse")
 FORWARD_GEOCODE_URL = os.environ.get("US_FORWARD_GEOCODE_URL", "https://nominatim.openstreetmap.org/search")
+NOAA_UNITS = (os.environ.get("NOAA_PFDS_UNITS") or "english").strip().lower()
+
+
+def _provider_units_label() -> str:
+    return "in/h" if NOAA_UNITS == "english" else "mm/h"
 
 
 def _coerce_float(value: Any, name: str) -> Optional[float]:
@@ -86,7 +91,7 @@ def _build_base_payload(
             "code": "us_provider_not_implemented",
             "message": "NOAA Atlas 14 integration scaffold is wired, but live retrieval is not implemented yet.",
             "dataset": "NOAA Atlas 14 PFDS",
-            "units": "mm/h",
+            "units": _provider_units_label(),
             "endpoint": NOAA_PFDS_CGI_URL,
         },
         "request": {
@@ -123,7 +128,7 @@ def _fetch_noaa_pfds_point(lat: float, lon: float) -> Dict[str, Any]:
             "lon": f"{lon:.6f}",
             "type": "pf",
             "data": "intensity",
-            "units": "metric",
+            "units": NOAA_UNITS if NOAA_UNITS in {"english", "metric"} else "english",
             "series": "ams",
         }
     )
