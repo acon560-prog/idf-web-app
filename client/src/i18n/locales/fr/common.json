@@ -159,19 +159,25 @@
     },
     "checking": "Vérification du fournisseur US...",
     "usComingSoon": "Le fournisseur IDF des États-Unis arrive bientôt. Veuillez utiliser le Canada pour le moment.",
-    "usNeedsCoordinates": "Entrez la latitude et la longitude des États-Unis pour charger les valeurs IDF NOAA Atlas 14.",
+    "usNeedsCoordinates": "Entrez la latitude/longitude des États-Unis ou un nom de lieu américain pour charger les valeurs IDF NOAA Atlas 14.",
+    "usNeedsInput": "Entrez soit un nom de lieu américain, soit une latitude/longitude valide.",
     "invalidCoordinates": "Veuillez entrer des coordonnées américaines valides (latitude -90..90, longitude -180..180).",
     "usFetchFailed": "La requête NOAA a échoué. Veuillez réessayer dans un instant.",
     "usNoDataYet": "Le fournisseur US est connecté, mais aucune donnée de courbe n'est disponible pour le moment.",
     "usDataReady": "Le fournisseur US a renvoyé des données de courbe.",
     "usForm": {
-      "helper": "Utilisez des degrés décimaux pour un point aux États-Unis (exemple : 33.8000, -81.0000).",
+      "helper": "Utilisez un nom de lieu américain ou des coordonnées décimales (exemple : Columbia, SC ou 33.8000, -81.0000).",
+      "placeLabel": "Nom du lieu (optionnel)",
+      "placePlaceholder": "ex. : Columbia, SC ou code postal",
+      "placeHint": "Si fourni, l'application géocode ce lieu et utilise le point résolu.",
       "latitudeLabel": "Latitude",
       "latitudePlaceholder": "ex. : 33.8000",
       "longitudeLabel": "Longitude",
       "longitudePlaceholder": "ex. : -81.0000",
       "loadButton": "Charger l'IDF US",
-      "loadingButton": "Chargement IDF US..."
+      "loadingButton": "Chargement IDF US...",
+      "locationLabel": "Localisation approximative",
+      "usedCoordinates": "Coordonnées utilisées : {{lat}}, {{lon}}"
     }
   },
   "authPrompt": {

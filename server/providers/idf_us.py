@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import os
 import re
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -21,6 +22,8 @@ NOAA_DURATION_MINUTES_BY_INDEX: List[int] = [
 ]
 NOAA_PFDS_CGI_URL = os.environ.get("NOAA_PFDS_CGI_URL", "https://hdsc.nws.noaa.gov/cgi-bin/new/cgi_readH5.py")
 NOAA_TIMEOUT_SECONDS = float(os.environ.get("NOAA_PFDS_TIMEOUT_SECONDS", "10"))
+REVERSE_GEOCODE_URL = os.environ.get("US_REVERSE_GEOCODE_URL", "https://nominatim.openstreetmap.org/reverse")
+FORWARD_GEOCODE_URL = os.environ.get("US_FORWARD_GEOCODE_URL", "https://nominatim.openstreetmap.org/search")
 
 
 def _coerce_float(value: Any, name: str) -> Optional[float]:
@@ -70,6 +73,7 @@ def _build_base_payload(
     station_id: Optional[str],
     return_periods: List[str],
     durations_minutes: List[int],
+    location_query: Optional[str] = None,
 ) -> Dict[str, Any]:
     return {
         "country": "US",
@@ -89,6 +93,7 @@ def _build_base_payload(
             "lat": lat,
             "lon": lon,
             "stationId": station_id,
+            "locationQuery": location_query,
             "returnPeriods": return_periods,
             "durationsMinutes": durations_minutes,
         },
@@ -127,6 +132,16 @@ def _fetch_noaa_pfds_point(lat: float, lon: float) -> Dict[str, Any]:
     with urlopen(request, timeout=NOAA_TIMEOUT_SECONDS) as response:
         body = response.read().decode("utf-8", errors="replace")
 
+    result = _extract_js_assignment(body, "result")
+    if isinstance(result, str) and result.lower() != "values":
+        error_message = (
+            _extract_js_assignment(body, "ErrorMsg")
+            or _extract_js_assignment(body, "errorMsg")
+            or _extract_js_assignment(body, "error")
+            or "NOAA PFDS did not return values for this location."
+        )
+        raise LookupError(str(error_message))
+
     quantiles = _extract_js_assignment(body, "quantiles")
     if not isinstance(quantiles, list):
         raise ValueError("NOAA response did not include quantiles data.")
@@ -137,6 +152,134 @@ def _fetch_noaa_pfds_point(lat: float, lon: float) -> Dict[str, Any]:
         "volume": _extract_js_assignment(body, "volume"),
         "version": _extract_js_assignment(body, "version"),
         "source_file": _extract_js_assignment(body, "file"),
+    }
+
+
+def _normalize_noaa_error_message(message: str) -> str:
+    text = (message or "").strip()
+    if not text:
+        return "NOAA PFDS did not return values for this location."
+    text = text.replace("\n", " ").strip()
+    text = re.sub(r"^Error\s*\d+(\.\d+)?:\s*", "", text, flags=re.IGNORECASE)
+    if "not within a project area" in text.lower():
+        return (
+            "The selected coordinate is outside NOAA PFDS project coverage for this endpoint. "
+            "Try a different U.S. coordinate."
+        )
+    return text
+
+
+def _reverse_geocode_location(lat: float, lon: float) -> Optional[Dict[str, Any]]:
+    query = urlencode(
+        {
+            "format": "jsonv2",
+            "lat": f"{lat:.6f}",
+            "lon": f"{lon:.6f}",
+            "zoom": "10",
+            "addressdetails": "1",
+        }
+    )
+    request = Request(
+        f"{REVERSE_GEOCODE_URL}?{query}",
+        headers={"User-Agent": "civispec-us-idf/1.0"},
+    )
+    try:
+        with urlopen(request, timeout=NOAA_TIMEOUT_SECONDS) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="replace"))
+    except Exception:
+        return None
+
+    if not isinstance(payload, dict):
+        return None
+
+    address = payload.get("address") or {}
+    if not isinstance(address, dict):
+        address = {}
+
+    city = (
+        address.get("city")
+        or address.get("town")
+        or address.get("village")
+        or address.get("municipality")
+        or address.get("county")
+    )
+    state = address.get("state")
+    country_code = (address.get("country_code") or "").upper() or None
+    display_name = payload.get("display_name")
+
+    label_parts = [part for part in [city, state] if part]
+    label = ", ".join(label_parts) if label_parts else (display_name or f"{lat:.4f}, {lon:.4f}")
+
+    return {
+        "label": label,
+        "lat": lat,
+        "lon": lon,
+        "city": city,
+        "state": state,
+        "countryCode": country_code,
+        "displayName": display_name,
+        "source": "nominatim",
+    }
+
+
+def _forward_geocode_location_query(query_text: str) -> Optional[Dict[str, Any]]:
+    query = urlencode(
+        {
+            "format": "jsonv2",
+            "q": query_text,
+            "countrycodes": "us",
+            "limit": "1",
+            "addressdetails": "1",
+        }
+    )
+    request = Request(
+        f"{FORWARD_GEOCODE_URL}?{query}",
+        headers={"User-Agent": "civispec-us-idf/1.0"},
+    )
+    try:
+        with urlopen(request, timeout=NOAA_TIMEOUT_SECONDS) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="replace"))
+    except Exception:
+        return None
+
+    if not isinstance(payload, list) or not payload:
+        return None
+
+    first = payload[0]
+    if not isinstance(first, dict):
+        return None
+
+    lat_value = _to_float(first.get("lat"))
+    lon_value = _to_float(first.get("lon"))
+    if lat_value is None or lon_value is None:
+        return None
+
+    address = first.get("address") or {}
+    if not isinstance(address, dict):
+        address = {}
+
+    city = (
+        address.get("city")
+        or address.get("town")
+        or address.get("village")
+        or address.get("municipality")
+        or address.get("county")
+    )
+    state = address.get("state")
+    country_code = (address.get("country_code") or "").upper() or "US"
+    display_name = first.get("display_name")
+    label_parts = [part for part in [city, state] if part]
+    label = ", ".join(label_parts) if label_parts else (display_name or query_text)
+
+    return {
+        "label": label,
+        "lat": lat_value,
+        "lon": lon_value,
+        "city": city,
+        "state": state,
+        "countryCode": country_code,
+        "displayName": display_name,
+        "source": "nominatim_search",
     }
 
 
@@ -189,6 +332,7 @@ def get_us_idf_curves(
     lat: Any = None,
     lon: Any = None,
     station_id: Any = None,
+    location_query: Any = None,
     return_periods: Any = None,
     durations_minutes: Any = None,
     **_kwargs: Any,
@@ -196,6 +340,9 @@ def get_us_idf_curves(
     rp_values = _parse_return_periods(return_periods)
     duration_values = _parse_durations(durations_minutes)
     station_id_str = str(station_id).strip() if station_id is not None else None
+    location_query_str = str(location_query).strip() if location_query is not None else None
+    if location_query_str == "":
+        location_query_str = None
 
     try:
         lat_value = _coerce_float(lat, "latitude")
@@ -207,6 +354,7 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
         payload["message"] = str(exc)
@@ -223,6 +371,7 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
         payload["message"] = "Latitude out of range. Expected -90..90."
@@ -239,6 +388,7 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
         payload["message"] = "Longitude out of range. Expected -180..180."
@@ -254,14 +404,44 @@ def get_us_idf_curves(
         station_id=station_id_str,
         return_periods=rp_values,
         durations_minutes=duration_values,
+        location_query=location_query_str,
     )
+    payload["location"] = {
+        "label": f"{lat_value:.4f}, {lon_value:.4f}" if lat_value is not None and lon_value is not None else None,
+        "lat": lat_value,
+        "lon": lon_value,
+        "city": None,
+        "state": None,
+        "countryCode": "US",
+        "source": "input",
+    }
 
     # PR6: first live NOAA fetch path by coordinates.
     if lat_value is None or lon_value is None:
-        payload["provider"]["status"] = "awaiting_coordinates"
-        payload["provider"]["message"] = "Provide US latitude/longitude for live NOAA Atlas 14 retrieval."
-        payload["message"] = payload["provider"]["message"]
-        return payload, 200
+        if location_query_str:
+            geocoded = _forward_geocode_location_query(location_query_str)
+            if geocoded:
+                lat_value = geocoded["lat"]
+                lon_value = geocoded["lon"]
+                payload["request"]["lat"] = lat_value
+                payload["request"]["lon"] = lon_value
+                payload["location"] = geocoded
+            else:
+                payload["provider"]["status"] = "geocode_not_found"
+                payload["provider"]["code"] = "us_provider_geocode_not_found"
+                payload["provider"]["message"] = "Could not resolve that U.S. location name. Try a city, town, or ZIP."
+                payload["code"] = "us_provider_geocode_not_found"
+                payload["message"] = payload["provider"]["message"]
+                return payload, 200
+        else:
+            payload["provider"]["status"] = "awaiting_coordinates"
+            payload["provider"]["message"] = "Provide US latitude/longitude or a location name for live NOAA Atlas 14 retrieval."
+            payload["message"] = payload["provider"]["message"]
+            return payload, 200
+
+    resolved_location = _reverse_geocode_location(lat_value, lon_value)
+    if resolved_location:
+        payload["location"] = resolved_location
 
     try:
         noaa_data = _fetch_noaa_pfds_point(lat_value, lon_value)
@@ -291,6 +471,15 @@ def get_us_idf_curves(
             )
             payload["code"] = "us_provider_no_matching_rows"
             payload["message"] = payload["provider"]["message"]
+        return payload, 200
+    except LookupError as exc:
+        friendly_message = _normalize_noaa_error_message(str(exc))
+        payload["provider"]["status"] = "live_no_coverage"
+        payload["provider"]["code"] = "us_provider_no_coverage"
+        payload["provider"]["message"] = friendly_message
+        payload["code"] = "us_provider_no_coverage"
+        payload["message"] = friendly_message
+        payload["error"] = str(exc)
         return payload, 200
     except (HTTPError, URLError, TimeoutError, ValueError) as exc:
         payload["provider"]["status"] = "live_fetch_failed"

@@ -150,9 +150,11 @@ const MVPIDFViewerV2 = () => {
   const [selectedProvince, setSelectedProvince] = useState("ALL");
   const [selectedCountry, setSelectedCountry] = useState("CA");
   const [usProviderMessage, setUsProviderMessage] = useState("");
+  const [usLocationQuery, setUsLocationQuery] = useState("");
   const [usLatitude, setUsLatitude] = useState("");
   const [usLongitude, setUsLongitude] = useState("");
   const [usLoading, setUsLoading] = useState(false);
+  const [usResolvedLocation, setUsResolvedLocation] = useState(null);
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -675,15 +677,22 @@ const handleStationInputKeyDown = (event) => {
   const handleUsLoad = useCallback(async () => {
     const lat = Number(usLatitude);
     const lon = Number(usLongitude);
+    const locationQuery = usLocationQuery.trim();
+    const hasValidCoordinates =
+      Number.isFinite(lat) &&
+      Number.isFinite(lon) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lon >= -180 &&
+      lon <= 180;
 
-    if (
-      !Number.isFinite(lat) ||
-      !Number.isFinite(lon) ||
-      lat < -90 ||
-      lat > 90 ||
-      lon < -180 ||
-      lon > 180
-    ) {
+    if (!hasValidCoordinates && !locationQuery) {
+      setError(t("idf.country.usNeedsInput"));
+      setUsProviderMessage(t("idf.country.usNeedsCoordinates"));
+      return;
+    }
+
+    if ((usLatitude || usLongitude) && !hasValidCoordinates) {
       setError(t("idf.country.invalidCoordinates"));
       setUsProviderMessage(t("idf.country.usNeedsCoordinates"));
       return;
@@ -700,15 +709,17 @@ const handleStationInputKeyDown = (event) => {
     setClimateInfo(null);
     setIdfFallbackInfo(null);
     setUsProviderMessage(t("idf.country.checking"));
+    setUsResolvedLocation(null);
 
     try {
-      const params = new URLSearchParams({
-        country: "US",
-        lat: String(lat),
-        lon: String(lon),
-        returnPeriods: allReturnPeriods.join(","),
-        durations: "5,10,15,30,60,120,360,720,1440",
-      });
+      const params = new URLSearchParams({ country: "US" });
+      if (hasValidCoordinates) {
+        params.set("lat", String(lat));
+        params.set("lon", String(lon));
+      }
+      if (locationQuery) params.set("q", locationQuery);
+      params.set("returnPeriods", allReturnPeriods.join(","));
+      params.set("durations", "5,10,15,30,60,120,360,720,1440");
       const idfUrl = `${buildApiUrl("/v2/idf/curves")}?${params.toString()}`;
       const response = await (authFetch ? authFetch(idfUrl) : fetch(idfUrl));
       const payload = await readJsonResponse(response, t("idf.errors.idfFetchFailed"));
@@ -720,16 +731,34 @@ const handleStationInputKeyDown = (event) => {
       const normalizedRows = normalizeIdfRows(payload?.data);
       const providerMessage =
         payload?.provider?.message || payload?.message || t("idf.country.usNoDataYet");
+      const resolvedLat = Number(payload?.location?.lat);
+      const resolvedLon = Number(payload?.location?.lon);
+      const finalLat = Number.isFinite(resolvedLat) ? resolvedLat : hasValidCoordinates ? lat : null;
+      const finalLon = Number.isFinite(resolvedLon) ? resolvedLon : hasValidCoordinates ? lon : null;
+      const locationLabel =
+        payload?.location?.label ||
+        (finalLat != null && finalLon != null
+          ? `US NOAA (${finalLat.toFixed(4)}, ${finalLon.toFixed(4)})`
+          : `US NOAA (${locationQuery})`);
+
+      setUsResolvedLocation({
+        label: locationLabel,
+        lat: finalLat,
+        lon: finalLon,
+      });
 
       if (normalizedRows.length > 0) {
         setIDFData(normalizedRows);
         chartDataRef.current = normalizedRows;
         setShowChart(true);
         setStation({
-          stationId: `US_${lat.toFixed(4)}_${lon.toFixed(4)}`,
-          stationName: `US NOAA (${lat.toFixed(4)}, ${lon.toFixed(4)})`,
-          lat,
-          lon,
+          stationId:
+            finalLat != null && finalLon != null
+              ? `US_${finalLat.toFixed(4)}_${finalLon.toFixed(4)}`
+              : "US_NOAA_GRID",
+          stationName: locationLabel,
+          lat: finalLat,
+          lon: finalLon,
           distance_km: 0,
         });
         setUsProviderMessage(providerMessage);
@@ -743,7 +772,7 @@ const handleStationInputKeyDown = (event) => {
     } finally {
       setUsLoading(false);
     }
-  }, [authFetch, normalizeIdfRows, t, usLatitude, usLongitude]);
+  }, [authFetch, normalizeIdfRows, t, usLatitude, usLongitude, usLocationQuery]);
 
   const handleCheckboxChange = useCallback((event) => {
     const { value, checked } = event.target;
@@ -801,6 +830,7 @@ const handleStationInputKeyDown = (event) => {
 
     setUsProviderMessage("");
     setUsLoading(false);
+    setUsResolvedLocation(null);
   }, [selectedCountry, t]);
 
   const handleDownload = useCallback(() => {
@@ -1042,9 +1072,11 @@ const handleStationInputKeyDown = (event) => {
                 setIsStationInfoVisible(false);
                 setClimateInfo(null);
                 setIdfFallbackInfo(null);
+                setUsLocationQuery("");
                 setUsLatitude("");
                 setUsLongitude("");
                 setUsProviderMessage("");
+                setUsResolvedLocation(null);
                 setError(null);
               }}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -1385,6 +1417,21 @@ const handleStationInputKeyDown = (event) => {
               <p className="text-xs">{t("idf.country.usForm.helper")}</p>
               <div>
                 <label className="block text-sm font-medium text-amber-900">
+                  {t("idf.country.usForm.placeLabel")}
+                </label>
+                <input
+                  type="text"
+                  value={usLocationQuery}
+                  onChange={(e) => setUsLocationQuery(e.target.value)}
+                  placeholder={t("idf.country.usForm.placePlaceholder")}
+                  className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+                <p className="mt-1 text-xs text-amber-700">
+                  {t("idf.country.usForm.placeHint")}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-amber-900">
                   {t("idf.country.usForm.latitudeLabel")}
                 </label>
                 <input
@@ -1419,6 +1466,22 @@ const handleStationInputKeyDown = (event) => {
                   ? t("idf.country.usForm.loadingButton")
                   : t("idf.country.usForm.loadButton")}
               </button>
+              {usResolvedLocation && (
+                <div className="rounded-md border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800">
+                  <div className="font-medium">
+                    {t("idf.country.usForm.locationLabel")}: {usResolvedLocation.label}
+                  </div>
+                  {Number.isFinite(Number(usResolvedLocation.lat)) &&
+                    Number.isFinite(Number(usResolvedLocation.lon)) && (
+                      <div className="mt-1 text-xs">
+                        {t("idf.country.usForm.usedCoordinates", {
+                          lat: Number(usResolvedLocation.lat).toFixed(4),
+                          lon: Number(usResolvedLocation.lon).toFixed(4),
+                        })}
+                      </div>
+                    )}
+                </div>
+              )}
               <div className="rounded-md border border-amber-300 bg-white px-3 py-2 text-sm text-amber-800">
                 {usLoading ? t("idf.country.checking") : usProviderMessage || t("idf.country.usNeedsCoordinates")}
               </div>
