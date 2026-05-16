@@ -157,7 +157,10 @@
       "ca": "Canada",
       "us": "États-Unis"
     },
-    "usComingSoon": "Le fournisseur IDF des États-Unis arrive bientôt. Veuillez utiliser le Canada pour le moment."
+    "checking": "Vérification du fournisseur US...",
+    "usComingSoon": "Le fournisseur IDF des États-Unis arrive bientôt. Veuillez utiliser le Canada pour le moment.",
+    "usNoDataYet": "Le fournisseur US est connecté, mais aucune donnée de courbe n'est disponible pour le moment.",
+    "usDataReady": "Le fournisseur US a renvoyé des données de courbe."
   },
   "authPrompt": {
     "prefix": "Veuillez",
