@@ -1653,10 +1653,16 @@ def idf_curves_v2():
 
     if country == "US":
         return jsonify({
-            "error": "US provider not implemented yet.",
             "country": "US",
             "code": "us_provider_not_implemented",
-        }), 501
+            "message": "US provider not implemented yet.",
+            "data": [],
+            "provider": {
+                "status": "placeholder",
+                "code": "us_provider_not_implemented",
+                "message": "US provider not implemented yet."
+            }
+        }), 200
 
     return jsonify({
         "error": "Unsupported country. Use CA or US.",
