@@ -675,10 +675,15 @@ const handleStationInputKeyDown = (event) => {
     );
 
   const handleUsLoad = useCallback(async () => {
-    const lat = Number(usLatitude);
-    const lon = Number(usLongitude);
+    const latText = usLatitude.trim();
+    const lonText = usLongitude.trim();
+    const lat = latText !== "" ? Number(latText) : NaN;
+    const lon = lonText !== "" ? Number(lonText) : NaN;
     const locationQuery = usLocationQuery.trim();
+    const hasCoordinateInput = latText !== "" || lonText !== "";
+    const hasBothCoordinates = latText !== "" && lonText !== "";
     const hasValidCoordinates =
+      hasBothCoordinates &&
       Number.isFinite(lat) &&
       Number.isFinite(lon) &&
       lat >= -90 &&
@@ -692,7 +697,7 @@ const handleStationInputKeyDown = (event) => {
       return;
     }
 
-    if ((usLatitude || usLongitude) && !hasValidCoordinates) {
+    if (hasCoordinateInput && !hasValidCoordinates) {
       setError(t("idf.country.invalidCoordinates"));
       setUsProviderMessage(t("idf.country.usNeedsCoordinates"));
       return;
