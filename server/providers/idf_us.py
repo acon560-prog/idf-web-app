@@ -1,18 +1,26 @@
-"""USA IDF provider scaffold (NOAA Atlas 14 adapter skeleton).
-
-This module intentionally avoids live NOAA calls for now. It defines:
-1) input validation and normalization (lat/lon, durations, return periods)
-2) a stable placeholder response contract with provider metadata
-3) a query-plan envelope that future NOAA integration will execute
-"""
+"""USA IDF provider skeleton with first live NOAA Atlas 14 fetch support."""
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+import ast
+import os
+import re
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 
 DEFAULT_RETURN_PERIODS: List[str] = ["2", "5", "10", "25", "50", "100"]
 DEFAULT_DURATION_MINUTES: List[int] = [5, 10, 15, 30, 60, 120, 360, 720, 1440]
+SUPPORTED_RETURN_PERIODS: List[str] = ["2", "5", "10", "25", "50", "100", "200", "500", "1000"]
+AMS_RETURN_PERIOD_COLUMN = {rp: idx for idx, rp in enumerate(SUPPORTED_RETURN_PERIODS)}
+
+NOAA_DURATION_MINUTES_BY_INDEX: List[int] = [
+    5, 10, 15, 30, 60, 120, 180, 360, 720, 1440, 2880, 4320, 5760, 10080, 14400, 28800, 43200, 64800, 86400
+]
+NOAA_PFDS_CGI_URL = os.environ.get("NOAA_PFDS_CGI_URL", "https://hdsc.nws.noaa.gov/cgi-bin/new/cgi_readH5.py")
+NOAA_TIMEOUT_SECONDS = float(os.environ.get("NOAA_PFDS_TIMEOUT_SECONDS", "10"))
 
 
 def _coerce_float(value: Any, name: str) -> Optional[float]:
@@ -33,14 +41,13 @@ def _parse_return_periods(raw: Any) -> List[str]:
         values = [str(item).strip() for item in raw]
     else:
         values = [part.strip() for part in str(raw).split(",")]
-    cleaned = [v for v in values if v]
-    return cleaned or list(DEFAULT_RETURN_PERIODS)
+    filtered = [value for value in values if value in AMS_RETURN_PERIOD_COLUMN]
+    return filtered or list(DEFAULT_RETURN_PERIODS)
 
 
 def _parse_durations(raw: Any) -> List[int]:
     if raw is None or (isinstance(raw, str) and not raw.strip()):
         return list(DEFAULT_DURATION_MINUTES)
-
     if isinstance(raw, (list, tuple, set)):
         values = [str(item).strip() for item in raw]
     else:
@@ -56,7 +63,7 @@ def _parse_durations(raw: Any) -> List[int]:
     return durations or list(DEFAULT_DURATION_MINUTES)
 
 
-def _build_placeholder_payload(
+def _build_base_payload(
     *,
     lat: Optional[float],
     lon: Optional[float],
@@ -76,6 +83,7 @@ def _build_placeholder_payload(
             "message": "NOAA Atlas 14 integration scaffold is wired, but live retrieval is not implemented yet.",
             "dataset": "NOAA Atlas 14 PFDS",
             "units": "mm/h",
+            "endpoint": NOAA_PFDS_CGI_URL,
         },
         "request": {
             "lat": lat,
@@ -92,6 +100,90 @@ def _build_placeholder_payload(
     }
 
 
+def _extract_js_assignment(body: str, name: str) -> Any:
+    match = re.search(rf"\b{name}\s*=\s*(.+?);", body, re.DOTALL)
+    if not match:
+        return None
+    raw = match.group(1).strip()
+    try:
+        return ast.literal_eval(raw)
+    except Exception:
+        return None
+
+
+def _fetch_noaa_pfds_point(lat: float, lon: float) -> Dict[str, Any]:
+    query = urlencode(
+        {
+            "lat": f"{lat:.6f}",
+            "lon": f"{lon:.6f}",
+            "type": "pf",
+            "data": "intensity",
+            "units": "metric",
+            "series": "ams",
+        }
+    )
+    url = f"{NOAA_PFDS_CGI_URL}?{query}"
+    request = Request(url, headers={"User-Agent": "civispec-us-idf/1.0"})
+    with urlopen(request, timeout=NOAA_TIMEOUT_SECONDS) as response:
+        body = response.read().decode("utf-8", errors="replace")
+
+    quantiles = _extract_js_assignment(body, "quantiles")
+    if not isinstance(quantiles, list):
+        raise ValueError("NOAA response did not include quantiles data.")
+
+    return {
+        "quantiles": quantiles,
+        "region": _extract_js_assignment(body, "region"),
+        "volume": _extract_js_assignment(body, "volume"),
+        "version": _extract_js_assignment(body, "version"),
+        "source_file": _extract_js_assignment(body, "file"),
+    }
+
+
+def _to_float(value: Any) -> Optional[float]:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _build_rows_from_quantiles(
+    quantiles: Sequence[Sequence[Any]],
+    *,
+    durations_minutes: Sequence[int],
+    return_periods: Sequence[str],
+) -> List[Dict[str, Any]]:
+    requested_durations = set(durations_minutes)
+    columns = [(rp, AMS_RETURN_PERIOD_COLUMN[rp]) for rp in return_periods if rp in AMS_RETURN_PERIOD_COLUMN]
+    rows: List[Dict[str, Any]] = []
+
+    for idx, row in enumerate(quantiles):
+        if idx >= len(NOAA_DURATION_MINUTES_BY_INDEX):
+            break
+        duration = NOAA_DURATION_MINUTES_BY_INDEX[idx]
+        if duration not in requested_durations:
+            continue
+        if not isinstance(row, (list, tuple)):
+            continue
+
+        record: Dict[str, Any] = {"duration": duration}
+        has_values = False
+        for rp, column_idx in columns:
+            if column_idx >= len(row):
+                continue
+            number = _to_float(row[column_idx])
+            if number is None:
+                continue
+            record[rp] = number
+            has_values = True
+
+        if has_values:
+            rows.append(record)
+
+    rows.sort(key=lambda item: item.get("duration", 0))
+    return rows
+
+
 def get_us_idf_curves(
     *,
     lat: Any = None,
@@ -101,11 +193,6 @@ def get_us_idf_curves(
     durations_minutes: Any = None,
     **_kwargs: Any,
 ) -> Tuple[Dict[str, Any], int]:
-    """Return placeholder US curves contract and normalized query plan.
-
-    Returns:
-      (payload, http_status)
-    """
     rp_values = _parse_return_periods(return_periods)
     duration_values = _parse_durations(durations_minutes)
     station_id_str = str(station_id).strip() if station_id is not None else None
@@ -114,7 +201,7 @@ def get_us_idf_curves(
         lat_value = _coerce_float(lat, "latitude")
         lon_value = _coerce_float(lon, "longitude")
     except ValueError as exc:
-        payload = _build_placeholder_payload(
+        payload = _build_base_payload(
             lat=None,
             lon=None,
             station_id=station_id_str,
@@ -130,7 +217,7 @@ def get_us_idf_curves(
         return payload, 400
 
     if lat_value is not None and not (-90.0 <= lat_value <= 90.0):
-        payload = _build_placeholder_payload(
+        payload = _build_base_payload(
             lat=lat_value,
             lon=lon_value,
             station_id=station_id_str,
@@ -146,7 +233,7 @@ def get_us_idf_curves(
         return payload, 400
 
     if lon_value is not None and not (-180.0 <= lon_value <= 180.0):
-        payload = _build_placeholder_payload(
+        payload = _build_base_payload(
             lat=lat_value,
             lon=lon_value,
             station_id=station_id_str,
@@ -161,11 +248,55 @@ def get_us_idf_curves(
         payload["provider"]["message"] = payload["message"]
         return payload, 400
 
-    payload = _build_placeholder_payload(
+    payload = _build_base_payload(
         lat=lat_value,
         lon=lon_value,
         station_id=station_id_str,
         return_periods=rp_values,
         durations_minutes=duration_values,
     )
-    return payload, 200
+
+    # PR6: first live NOAA fetch path by coordinates.
+    if lat_value is None or lon_value is None:
+        payload["provider"]["status"] = "awaiting_coordinates"
+        payload["provider"]["message"] = "Provide US latitude/longitude for live NOAA Atlas 14 retrieval."
+        payload["message"] = payload["provider"]["message"]
+        return payload, 200
+
+    try:
+        noaa_data = _fetch_noaa_pfds_point(lat_value, lon_value)
+        rows = _build_rows_from_quantiles(
+            noaa_data["quantiles"],
+            durations_minutes=duration_values,
+            return_periods=rp_values,
+        )
+        payload["data"] = rows
+        payload["provider"]["status"] = "live_preview"
+        payload["provider"]["code"] = "us_provider_live_preview"
+        payload["provider"]["message"] = "NOAA Atlas 14 live retrieval succeeded."
+        payload["code"] = "us_provider_live_preview"
+        payload["message"] = "NOAA Atlas 14 live retrieval succeeded."
+        payload["queryPlan"]["ready"] = True
+        payload["source"] = {
+            "region": noaa_data.get("region"),
+            "volume": noaa_data.get("volume"),
+            "version": noaa_data.get("version"),
+            "file": noaa_data.get("source_file"),
+        }
+        if not rows:
+            payload["provider"]["status"] = "live_no_matching_rows"
+            payload["provider"]["code"] = "us_provider_no_matching_rows"
+            payload["provider"]["message"] = (
+                "NOAA response was received, but no rows matched the requested durations/return periods."
+            )
+            payload["code"] = "us_provider_no_matching_rows"
+            payload["message"] = payload["provider"]["message"]
+        return payload, 200
+    except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+        payload["provider"]["status"] = "live_fetch_failed"
+        payload["provider"]["code"] = "us_provider_fetch_failed"
+        payload["provider"]["message"] = f"NOAA fetch failed: {exc}"
+        payload["code"] = "us_provider_fetch_failed"
+        payload["message"] = "US provider temporary fallback: NOAA fetch failed."
+        payload["error"] = str(exc)
+        return payload, 200
