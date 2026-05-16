@@ -171,7 +171,9 @@
       "longitudeLabel": "Longitude",
       "longitudePlaceholder": "ex. : -81.0000",
       "loadButton": "Charger l'IDF US",
-      "loadingButton": "Chargement IDF US..."
+      "loadingButton": "Chargement IDF US...",
+      "locationLabel": "Localisation approximative",
+      "usedCoordinates": "Coordonnées utilisées : {{lat}}, {{lon}}"
     }
   },
   "authPrompt": {

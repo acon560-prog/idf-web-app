@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import os
 import re
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -21,6 +22,7 @@ NOAA_DURATION_MINUTES_BY_INDEX: List[int] = [
 ]
 NOAA_PFDS_CGI_URL = os.environ.get("NOAA_PFDS_CGI_URL", "https://hdsc.nws.noaa.gov/cgi-bin/new/cgi_readH5.py")
 NOAA_TIMEOUT_SECONDS = float(os.environ.get("NOAA_PFDS_TIMEOUT_SECONDS", "10"))
+REVERSE_GEOCODE_URL = os.environ.get("US_REVERSE_GEOCODE_URL", "https://nominatim.openstreetmap.org/reverse")
 
 
 def _coerce_float(value: Any, name: str) -> Optional[float]:
@@ -164,6 +166,57 @@ def _normalize_noaa_error_message(message: str) -> str:
     return text
 
 
+def _reverse_geocode_location(lat: float, lon: float) -> Optional[Dict[str, Any]]:
+    query = urlencode(
+        {
+            "format": "jsonv2",
+            "lat": f"{lat:.6f}",
+            "lon": f"{lon:.6f}",
+            "zoom": "10",
+            "addressdetails": "1",
+        }
+    )
+    request = Request(
+        f"{REVERSE_GEOCODE_URL}?{query}",
+        headers={"User-Agent": "civispec-us-idf/1.0"},
+    )
+    try:
+        with urlopen(request, timeout=NOAA_TIMEOUT_SECONDS) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="replace"))
+    except Exception:
+        return None
+
+    if not isinstance(payload, dict):
+        return None
+
+    address = payload.get("address") or {}
+    if not isinstance(address, dict):
+        address = {}
+
+    city = (
+        address.get("city")
+        or address.get("town")
+        or address.get("village")
+        or address.get("municipality")
+        or address.get("county")
+    )
+    state = address.get("state")
+    country_code = (address.get("country_code") or "").upper() or None
+    display_name = payload.get("display_name")
+
+    label_parts = [part for part in [city, state] if part]
+    label = ", ".join(label_parts) if label_parts else (display_name or f"{lat:.4f}, {lon:.4f}")
+
+    return {
+        "label": label,
+        "city": city,
+        "state": state,
+        "countryCode": country_code,
+        "displayName": display_name,
+        "source": "nominatim",
+    }
+
+
 def _to_float(value: Any) -> Optional[float]:
     try:
         return float(value)
@@ -279,6 +332,13 @@ def get_us_idf_curves(
         return_periods=rp_values,
         durations_minutes=duration_values,
     )
+    payload["location"] = {
+        "label": f"{lat_value:.4f}, {lon_value:.4f}" if lat_value is not None and lon_value is not None else None,
+        "city": None,
+        "state": None,
+        "countryCode": "US",
+        "source": "input",
+    }
 
     # PR6: first live NOAA fetch path by coordinates.
     if lat_value is None or lon_value is None:
@@ -286,6 +346,10 @@ def get_us_idf_curves(
         payload["provider"]["message"] = "Provide US latitude/longitude for live NOAA Atlas 14 retrieval."
         payload["message"] = payload["provider"]["message"]
         return payload, 200
+
+    resolved_location = _reverse_geocode_location(lat_value, lon_value)
+    if resolved_location:
+        payload["location"] = resolved_location
 
     try:
         noaa_data = _fetch_noaa_pfds_point(lat_value, lon_value)

@@ -171,7 +171,9 @@
           "longitudeLabel": "Longitude",
           "longitudePlaceholder": "e.g., -81.0000",
           "loadButton": "Load US IDF",
-          "loadingButton": "Loading US IDF..."
+          "loadingButton": "Loading US IDF...",
+          "locationLabel": "Approximate location",
+          "usedCoordinates": "Coordinates used: {{lat}}, {{lon}}"
         }
       },
       "authPrompt": {
