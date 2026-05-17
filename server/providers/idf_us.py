@@ -17,8 +17,20 @@ from urllib.request import Request, urlopen
 
 DEFAULT_RETURN_PERIODS: List[str] = ["2", "5", "10", "25", "50", "100"]
 DEFAULT_DURATION_MINUTES: List[int] = [5, 10, 15, 30, 60, 120, 360, 720, 1440]
-SUPPORTED_RETURN_PERIODS: List[str] = ["2", "5", "10", "25", "50", "100", "200", "500", "1000"]
-AMS_RETURN_PERIOD_COLUMN = {rp: idx for idx, rp in enumerate(SUPPORTED_RETURN_PERIODS)}
+SUPPORTED_SERIES: Tuple[str, ...] = ("ams", "pds")
+SUPPORTED_DATA_TYPES: Tuple[str, ...] = ("intensity", "depth")
+SUPPORTED_ESTIMATES: Tuple[str, ...] = ("mean", "upper", "lower")
+RETURN_PERIODS_BY_SERIES: Dict[str, List[str]] = {
+    "ams": ["2", "5", "10", "25", "50", "100", "200", "500", "1000"],
+    "pds": ["1", "2", "5", "10", "25", "50", "100", "200", "500", "1000"],
+}
+RETURN_PERIOD_COLUMN_BY_SERIES: Dict[str, Dict[str, int]] = {
+    key: {rp: idx for idx, rp in enumerate(values)}
+    for key, values in RETURN_PERIODS_BY_SERIES.items()
+}
+DEFAULT_SERIES = "ams"
+DEFAULT_DATA_TYPE = "intensity"
+DEFAULT_ESTIMATE = "mean"
 
 NOAA_DURATION_MINUTES_BY_INDEX: List[int] = [
     5, 10, 15, 30, 60, 120, 180, 360, 720, 1440, 2880, 4320, 5760, 10080, 14400, 28800, 43200, 64800, 86400
@@ -33,8 +45,11 @@ US_IDF_CACHE_MAX_ENTRIES = int(os.environ.get("US_IDF_CACHE_MAX_ENTRIES", "256")
 _US_IDF_RESPONSE_CACHE: "OrderedDict[str, Tuple[float, Dict[str, Any], int]]" = OrderedDict()
 
 
-def _provider_units_label() -> str:
-    return "in/h" if NOAA_UNITS == "english" else "mm/h"
+def _provider_units_label(data_type: str = DEFAULT_DATA_TYPE) -> str:
+    is_english = NOAA_UNITS == "english"
+    if data_type == "depth":
+        return "in" if is_english else "mm"
+    return "in/h" if is_english else "mm/h"
 
 
 def _build_cache_key(
@@ -45,6 +60,9 @@ def _build_cache_key(
     location_query: Optional[str],
     return_periods: Sequence[str],
     durations_minutes: Sequence[int],
+    data_type: str,
+    series: str,
+    estimate: str,
 ) -> str:
     key_payload = {
         "lat": round(lat, 6) if lat is not None else None,
@@ -53,6 +71,9 @@ def _build_cache_key(
         "locationQuery": (location_query or "").strip().lower() or None,
         "returnPeriods": list(return_periods),
         "durationsMinutes": [int(v) for v in durations_minutes],
+        "dataType": data_type,
+        "series": series,
+        "estimate": estimate,
         "units": NOAA_UNITS,
     }
     return json.dumps(key_payload, sort_keys=True, separators=(",", ":"))
@@ -104,15 +125,16 @@ def _coerce_float(value: Any, name: str) -> Optional[float]:
         raise ValueError(f"Invalid {name}.") from exc
 
 
-def _parse_return_periods(raw: Any) -> List[str]:
+def _parse_return_periods(raw: Any, *, series: str) -> List[str]:
+    columns = RETURN_PERIOD_COLUMN_BY_SERIES.get(series, RETURN_PERIOD_COLUMN_BY_SERIES[DEFAULT_SERIES])
     if raw is None or (isinstance(raw, str) and not raw.strip()):
-        return list(DEFAULT_RETURN_PERIODS)
+        return [value for value in DEFAULT_RETURN_PERIODS if value in columns]
     if isinstance(raw, (list, tuple, set)):
         values = [str(item).strip() for item in raw]
     else:
         values = [part.strip() for part in str(raw).split(",")]
-    filtered = [value for value in values if value in AMS_RETURN_PERIOD_COLUMN]
-    return filtered or list(DEFAULT_RETURN_PERIODS)
+    filtered = [value for value in values if value in columns]
+    return filtered or [value for value in DEFAULT_RETURN_PERIODS if value in columns]
 
 
 def _parse_durations(raw: Any) -> List[int]:
@@ -133,6 +155,27 @@ def _parse_durations(raw: Any) -> List[int]:
     return durations or list(DEFAULT_DURATION_MINUTES)
 
 
+def _parse_series(raw: Any) -> str:
+    value = str(raw or "").strip().lower()
+    if value in SUPPORTED_SERIES:
+        return value
+    return DEFAULT_SERIES
+
+
+def _parse_data_type(raw: Any) -> str:
+    value = str(raw or "").strip().lower()
+    if value in SUPPORTED_DATA_TYPES:
+        return value
+    return DEFAULT_DATA_TYPE
+
+
+def _parse_estimate(raw: Any) -> str:
+    value = str(raw or "").strip().lower()
+    if value in SUPPORTED_ESTIMATES:
+        return value
+    return DEFAULT_ESTIMATE
+
+
 def _build_base_payload(
     *,
     lat: Optional[float],
@@ -140,6 +183,9 @@ def _build_base_payload(
     station_id: Optional[str],
     return_periods: List[str],
     durations_minutes: List[int],
+    data_type: str = DEFAULT_DATA_TYPE,
+    series: str = DEFAULT_SERIES,
+    estimate: str = DEFAULT_ESTIMATE,
     location_query: Optional[str] = None,
 ) -> Dict[str, Any]:
     return {
@@ -153,7 +199,10 @@ def _build_base_payload(
             "code": "us_provider_not_implemented",
             "message": "NOAA Atlas 14 integration scaffold is wired, but live retrieval is not implemented yet.",
             "dataset": "NOAA Atlas 14 PFDS",
-            "units": _provider_units_label(),
+            "units": _provider_units_label(data_type),
+            "dataType": data_type,
+            "series": series,
+            "estimate": estimate,
             "endpoint": NOAA_PFDS_CGI_URL,
         },
         "request": {
@@ -163,6 +212,9 @@ def _build_base_payload(
             "locationQuery": location_query,
             "returnPeriods": return_periods,
             "durationsMinutes": durations_minutes,
+            "dataType": data_type,
+            "series": series,
+            "estimate": estimate,
         },
         "queryPlan": {
             "source": "NOAA Atlas 14 PFDS",
@@ -183,15 +235,15 @@ def _extract_js_assignment(body: str, name: str) -> Any:
         return None
 
 
-def _fetch_noaa_pfds_point(lat: float, lon: float) -> Dict[str, Any]:
+def _fetch_noaa_pfds_point(lat: float, lon: float, *, data_type: str, series: str) -> Dict[str, Any]:
     query = urlencode(
         {
             "lat": f"{lat:.6f}",
             "lon": f"{lon:.6f}",
             "type": "pf",
-            "data": "intensity",
+            "data": data_type,
             "units": NOAA_UNITS if NOAA_UNITS in {"english", "metric"} else "english",
-            "series": "ams",
+            "series": series,
         }
     )
     url = f"{NOAA_PFDS_CGI_URL}?{query}"
@@ -212,13 +264,24 @@ def _fetch_noaa_pfds_point(lat: float, lon: float) -> Dict[str, Any]:
     quantiles = _extract_js_assignment(body, "quantiles")
     if not isinstance(quantiles, list):
         raise ValueError("NOAA response did not include quantiles data.")
+    upper = _extract_js_assignment(body, "upper")
+    lower = _extract_js_assignment(body, "lower")
+    if not isinstance(upper, list):
+        upper = quantiles
+    if not isinstance(lower, list):
+        lower = quantiles
 
     return {
         "quantiles": quantiles,
+        "upper": upper,
+        "lower": lower,
         "region": _extract_js_assignment(body, "region"),
         "volume": _extract_js_assignment(body, "volume"),
         "version": _extract_js_assignment(body, "version"),
         "source_file": _extract_js_assignment(body, "file"),
+        "series": _extract_js_assignment(body, "ser"),
+        "data_type": _extract_js_assignment(body, "datatype"),
+        "units": _extract_js_assignment(body, "unit"),
     }
 
 
@@ -357,17 +420,19 @@ def _to_float(value: Any) -> Optional[float]:
         return None
 
 
-def _build_rows_from_quantiles(
-    quantiles: Sequence[Sequence[Any]],
+def _build_rows_from_noaa_values(
+    values_matrix: Sequence[Sequence[Any]],
     *,
     durations_minutes: Sequence[int],
     return_periods: Sequence[str],
+    series: str,
 ) -> List[Dict[str, Any]]:
     requested_durations = set(durations_minutes)
-    columns = [(rp, AMS_RETURN_PERIOD_COLUMN[rp]) for rp in return_periods if rp in AMS_RETURN_PERIOD_COLUMN]
+    columns_by_period = RETURN_PERIOD_COLUMN_BY_SERIES.get(series, RETURN_PERIOD_COLUMN_BY_SERIES[DEFAULT_SERIES])
+    columns = [(rp, columns_by_period[rp]) for rp in return_periods if rp in columns_by_period]
     rows: List[Dict[str, Any]] = []
 
-    for idx, row in enumerate(quantiles):
+    for idx, row in enumerate(values_matrix):
         if idx >= len(NOAA_DURATION_MINUTES_BY_INDEX):
             break
         duration = NOAA_DURATION_MINUTES_BY_INDEX[idx]
@@ -402,9 +467,15 @@ def get_us_idf_curves(
     location_query: Any = None,
     return_periods: Any = None,
     durations_minutes: Any = None,
+    data_type: Any = None,
+    series: Any = None,
+    estimate: Any = None,
     **_kwargs: Any,
 ) -> Tuple[Dict[str, Any], int]:
-    rp_values = _parse_return_periods(return_periods)
+    selected_series = _parse_series(series)
+    selected_data_type = _parse_data_type(data_type)
+    selected_estimate = _parse_estimate(estimate)
+    rp_values = _parse_return_periods(return_periods, series=selected_series)
     duration_values = _parse_durations(durations_minutes)
     station_id_str = str(station_id).strip() if station_id is not None else None
     location_query_str = str(location_query).strip() if location_query is not None else None
@@ -421,6 +492,9 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            data_type=selected_data_type,
+            series=selected_series,
+            estimate=selected_estimate,
             location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
@@ -438,6 +512,9 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            data_type=selected_data_type,
+            series=selected_series,
+            estimate=selected_estimate,
             location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
@@ -455,6 +532,9 @@ def get_us_idf_curves(
             station_id=station_id_str,
             return_periods=rp_values,
             durations_minutes=duration_values,
+            data_type=selected_data_type,
+            series=selected_series,
+            estimate=selected_estimate,
             location_query=location_query_str,
         )
         payload["code"] = "invalid_coordinates"
@@ -471,6 +551,9 @@ def get_us_idf_curves(
         station_id=station_id_str,
         return_periods=rp_values,
         durations_minutes=duration_values,
+        data_type=selected_data_type,
+        series=selected_series,
+        estimate=selected_estimate,
         location_query=location_query_str,
     )
     cache_key = _build_cache_key(
@@ -480,6 +563,9 @@ def get_us_idf_curves(
         location_query=location_query_str,
         return_periods=rp_values,
         durations_minutes=duration_values,
+        data_type=selected_data_type,
+        series=selected_series,
+        estimate=selected_estimate,
     )
     cached_response = _cache_get(cache_key)
     if cached_response:
@@ -522,30 +608,52 @@ def get_us_idf_curves(
         payload["location"] = resolved_location
 
     try:
-        noaa_data = _fetch_noaa_pfds_point(lat_value, lon_value)
-        rows = _build_rows_from_quantiles(
-            noaa_data["quantiles"],
+        noaa_data = _fetch_noaa_pfds_point(
+            lat_value,
+            lon_value,
+            data_type=selected_data_type,
+            series=selected_series,
+        )
+        values_key = {
+            "mean": "quantiles",
+            "upper": "upper",
+            "lower": "lower",
+        }.get(selected_estimate, "quantiles")
+        rows = _build_rows_from_noaa_values(
+            noaa_data.get(values_key) or noaa_data["quantiles"],
             durations_minutes=duration_values,
             return_periods=rp_values,
+            series=selected_series,
         )
         payload["data"] = rows
         payload["provider"]["status"] = "live_preview"
         payload["provider"]["code"] = "us_provider_live_preview"
-        payload["provider"]["message"] = "NOAA Atlas 14 live retrieval succeeded."
+        payload["provider"]["dataType"] = selected_data_type
+        payload["provider"]["series"] = selected_series
+        payload["provider"]["estimate"] = selected_estimate
+        payload["provider"]["units"] = _provider_units_label(selected_data_type)
+        payload["provider"]["message"] = (
+            "NOAA Atlas 14 live retrieval succeeded "
+            f"({selected_data_type}, {selected_series.upper()}, {selected_estimate})."
+        )
         payload["code"] = "us_provider_live_preview"
-        payload["message"] = "NOAA Atlas 14 live retrieval succeeded."
+        payload["message"] = payload["provider"]["message"]
         payload["queryPlan"]["ready"] = True
         payload["source"] = {
             "region": noaa_data.get("region"),
             "volume": noaa_data.get("volume"),
             "version": noaa_data.get("version"),
             "file": noaa_data.get("source_file"),
+            "units": noaa_data.get("units"),
+            "series": noaa_data.get("series"),
+            "dataType": noaa_data.get("data_type"),
         }
         if not rows:
             payload["provider"]["status"] = "live_no_matching_rows"
             payload["provider"]["code"] = "us_provider_no_matching_rows"
             payload["provider"]["message"] = (
-                "NOAA response was received, but no rows matched the requested durations/return periods."
+                "NOAA response was received, but no rows matched the requested durations/return periods "
+                f"for {selected_data_type}, {selected_series.upper()}, {selected_estimate}."
             )
             payload["code"] = "us_provider_no_matching_rows"
             payload["message"] = payload["provider"]["message"]
