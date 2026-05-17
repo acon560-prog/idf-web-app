@@ -1664,6 +1664,9 @@ def idf_curves_v2():
             location_query=request.args.get("q"),
             return_periods=request.args.get("returnPeriods"),
             durations_minutes=request.args.get("durations"),
+            data_type=request.args.get("dataType"),
+            series=request.args.get("series"),
+            estimate=request.args.get("estimate"),
         )
         return jsonify(payload), status_code
 

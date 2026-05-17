@@ -155,6 +155,14 @@ const MVPIDFViewerV2 = () => {
   const [usLongitude, setUsLongitude] = useState("");
   const [usLoading, setUsLoading] = useState(false);
   const [usResolvedLocation, setUsResolvedLocation] = useState(null);
+  const [usDataType, setUsDataType] = useState("intensity");
+  const [usSeries, setUsSeries] = useState("ams");
+  const [usEstimate, setUsEstimate] = useState("mean");
+  const [usCurveMeta, setUsCurveMeta] = useState({
+    dataType: "intensity",
+    series: "ams",
+    estimate: "mean",
+  });
   // Cloud Run bugfix: the location input sometimes becomes disabled, which stops typing.
   // Force-keep it enabled.
   useEffect(() => {
@@ -725,6 +733,9 @@ const handleStationInputKeyDown = (event) => {
       if (locationQuery) params.set("q", locationQuery);
       params.set("returnPeriods", allReturnPeriods.join(","));
       params.set("durations", "5,10,15,30,60,120,360,720,1440");
+      params.set("dataType", usDataType);
+      params.set("series", usSeries);
+      params.set("estimate", usEstimate);
       const idfUrl = `${buildApiUrl("/v2/idf/curves")}?${params.toString()}`;
       const response = await (authFetch ? authFetch(idfUrl) : fetch(idfUrl));
       const payload = await readJsonResponse(response, t("idf.errors.idfFetchFailed"));
@@ -736,6 +747,9 @@ const handleStationInputKeyDown = (event) => {
       const normalizedRows = normalizeIdfRows(payload?.data);
       const providerMessage =
         payload?.provider?.message || payload?.message || t("idf.country.usNoDataYet");
+      const resolvedDataType = payload?.provider?.dataType || usDataType;
+      const resolvedSeries = payload?.provider?.series || usSeries;
+      const resolvedEstimate = payload?.provider?.estimate || usEstimate;
       const resolvedLat = Number(payload?.location?.lat);
       const resolvedLon = Number(payload?.location?.lon);
       const finalLat = Number.isFinite(resolvedLat) ? resolvedLat : hasValidCoordinates ? lat : null;
@@ -750,6 +764,11 @@ const handleStationInputKeyDown = (event) => {
         label: locationLabel,
         lat: finalLat,
         lon: finalLon,
+      });
+      setUsCurveMeta({
+        dataType: resolvedDataType,
+        series: resolvedSeries,
+        estimate: resolvedEstimate,
       });
 
       if (normalizedRows.length > 0) {
@@ -777,7 +796,17 @@ const handleStationInputKeyDown = (event) => {
     } finally {
       setUsLoading(false);
     }
-  }, [authFetch, normalizeIdfRows, t, usLatitude, usLongitude, usLocationQuery]);
+  }, [
+    authFetch,
+    normalizeIdfRows,
+    t,
+    usLatitude,
+    usLongitude,
+    usLocationQuery,
+    usDataType,
+    usSeries,
+    usEstimate,
+  ]);
 
   const handleCheckboxChange = useCallback((event) => {
     const { value, checked } = event.target;
@@ -836,6 +865,11 @@ const handleStationInputKeyDown = (event) => {
     setUsProviderMessage("");
     setUsLoading(false);
     setUsResolvedLocation(null);
+    setUsCurveMeta({
+      dataType: "intensity",
+      series: "ams",
+      estimate: "mean",
+    });
   }, [selectedCountry, t]);
 
   const formatIntensityValue = useCallback(
@@ -989,37 +1023,65 @@ const handleStationInputKeyDown = (event) => {
   const formatTooltipLabel = (value) => {
   return t("idf.chart.tooltipDuration", { value: formatDurationLabel(value) });
   };
-  const buildNoaaVerifyUrl = useCallback((lat, lon) => {
+  const isUsSelected = selectedCountry === "US";
+  const effectiveUsDataType = usCurveMeta?.dataType || usDataType;
+  const effectiveUsSeries = usCurveMeta?.series || usSeries;
+  const effectiveUsEstimate = usCurveMeta?.estimate || usEstimate;
+  const effectiveUsUnits =
+    effectiveUsDataType === "depth"
+      ? t("idf.country.usForm.units.depth")
+      : t("idf.country.usForm.units.intensity");
+  const yAxisLabel = isUsSelected
+    ? effectiveUsDataType === "depth"
+      ? t("idf.chart.depthAxisUs")
+      : t("idf.chart.intensityAxisUs")
+    : t("idf.chart.intensityAxis");
+
+  const buildNoaaVerifyUrl = useCallback((lat, lon, dataType, series) => {
     const params = new URLSearchParams({
       lat: Number(lat).toFixed(6),
       lon: Number(lon).toFixed(6),
-      data: "intensity",
+      data: dataType === "depth" ? "depth" : "intensity",
       units: "english",
-      series: "ams",
+      series: series === "pds" ? "pds" : "ams",
     });
     return `https://hdsc.nws.noaa.gov/pfds/pfds_printpage.html?${params.toString()}`;
   }, []);
   
   const yAxisDomain = useMemo(() => {
     if (!idfData || idfData.length === 0) {
-       return [1, "auto"];
+       return [0.1, "auto"];
     }
-    let maxIntensity = 0;
-     idfData.forEach((item) => {
+    let maxValue = 0;
+    let minPositive = Number.POSITIVE_INFINITY;
+    idfData.forEach((item) => {
       allReturnPeriods.forEach((period) => {
-        if (
-          item[period] &&
-          !isNaN(item[period]) &&
-          item[period] > maxIntensity
-        ) {
-          maxIntensity = item[period];
+        const curveValue = Number(item[period]);
+        if (!Number.isFinite(curveValue) || curveValue <= 0) return;
+        if (curveValue > maxValue) {
+          maxValue = curveValue;
+        }
+        if (curveValue < minPositive) {
+          minPositive = curveValue;
         }
       });
     });
-    const upperLimit = Math.max(Math.ceil(maxIntensity / 10) * 10, 1);
-    return [1, upperLimit];
+    if (!Number.isFinite(minPositive) || maxValue <= 0) {
+      return [0.1, "auto"];
+    }
+    const lowerLimit = minPositive < 1 ? Math.max(minPositive * 0.8, 0.01) : 1;
+    const upperLimit = Math.max(maxValue * 1.2, lowerLimit * 10);
+    return [lowerLimit, upperLimit];
   }, [idfData]);
-  const isUsSelected = selectedCountry === "US";
+  const formatTooltipValue = useCallback(
+    (value) => {
+      if (value == null || !Number.isFinite(Number(value))) return "-";
+      return `${Number(value).toFixed(isUsSelected ? 2 : 1)} ${
+        isUsSelected ? effectiveUsUnits : "mm/h"
+      }`;
+    },
+    [effectiveUsUnits, isUsSelected],
+  );
 
   if (!user) {
     return (
@@ -1099,6 +1161,14 @@ const handleStationInputKeyDown = (event) => {
                 setUsLongitude("");
                 setUsProviderMessage("");
                 setUsResolvedLocation(null);
+                setUsDataType("intensity");
+                setUsSeries("ams");
+                setUsEstimate("mean");
+                setUsCurveMeta({
+                  dataType: "intensity",
+                  series: "ams",
+                  estimate: "mean",
+                });
                 setError(null);
               }}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
@@ -1437,7 +1507,56 @@ const handleStationInputKeyDown = (event) => {
           ) : (
             <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
               <p className="text-xs">{t("idf.country.usForm.helper")}</p>
-              <p className="text-xs font-medium">{t("idf.country.usForm.unitsNote")}</p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-semibold text-amber-900">
+                    {t("idf.country.usForm.dataTypeLabel")}
+                  </label>
+                  <select
+                    value={usDataType}
+                    onChange={(e) => setUsDataType(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  >
+                    <option value="intensity">{t("idf.country.usForm.dataType.intensity")}</option>
+                    <option value="depth">{t("idf.country.usForm.dataType.depth")}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-amber-900">
+                    {t("idf.country.usForm.seriesLabel")}
+                  </label>
+                  <select
+                    value={usSeries}
+                    onChange={(e) => setUsSeries(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  >
+                    <option value="ams">{t("idf.country.usForm.series.ams")}</option>
+                    <option value="pds">{t("idf.country.usForm.series.pds")}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-amber-900">
+                    {t("idf.country.usForm.estimateLabel")}
+                  </label>
+                  <select
+                    value={usEstimate}
+                    onChange={(e) => setUsEstimate(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-amber-300 bg-white text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  >
+                    <option value="mean">{t("idf.country.usForm.estimate.mean")}</option>
+                    <option value="upper">{t("idf.country.usForm.estimate.upper")}</option>
+                    <option value="lower">{t("idf.country.usForm.estimate.lower")}</option>
+                  </select>
+                </div>
+              </div>
+              <p className="text-xs font-medium">
+                {t("idf.country.usForm.unitsNote", {
+                  units:
+                    usDataType === "depth"
+                      ? t("idf.country.usForm.units.depth")
+                      : t("idf.country.usForm.units.intensity"),
+                })}
+              </p>
               <div>
                 <label className="block text-sm font-medium text-amber-900">
                   {t("idf.country.usForm.placeLabel")}
@@ -1544,13 +1663,26 @@ const handleStationInputKeyDown = (event) => {
                           })}
                         </div>
                         <a
-                          href={buildNoaaVerifyUrl(usResolvedLocation.lat, usResolvedLocation.lon)}
+                          href={buildNoaaVerifyUrl(
+                            usResolvedLocation.lat,
+                            usResolvedLocation.lon,
+                            effectiveUsDataType,
+                            effectiveUsSeries,
+                          )}
                           target="_blank"
                           rel="noreferrer"
                           className="mt-1 inline-block text-xs text-indigo-700 underline hover:text-indigo-900"
                         >
                           {t("idf.country.usForm.verifyLink")}
                         </a>
+                        <div className="mt-1 text-xs text-amber-700">
+                          {t("idf.country.usForm.modeSummary", {
+                            dataType: t(`idf.country.usForm.dataType.${effectiveUsDataType}`),
+                            series: t(`idf.country.usForm.series.${effectiveUsSeries}`),
+                            estimate: t(`idf.country.usForm.estimate.${effectiveUsEstimate}`),
+                            units: effectiveUsUnits,
+                          })}
+                        </div>
                       </>
                     )}
                 </div>
@@ -1574,7 +1706,19 @@ const handleStationInputKeyDown = (event) => {
         {showChart && (
           <div className="w-full md:w-2/3 space-y-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-800">{t("idf.chart.title")}</h2>
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">{t("idf.chart.title")}</h2>
+                {isUsSelected && (
+                  <p className="text-xs text-gray-500">
+                    {t("idf.country.usForm.modeSummary", {
+                      dataType: t(`idf.country.usForm.dataType.${effectiveUsDataType}`),
+                      series: t(`idf.country.usForm.series.${effectiveUsSeries}`),
+                      estimate: t(`idf.country.usForm.estimate.${effectiveUsEstimate}`),
+                      units: effectiveUsUnits,
+                    })}
+                  </p>
+                )}
+              </div>
               <div className="relative" ref={exportMenuRef}>
                 <button
                   type="button"
@@ -1676,9 +1820,7 @@ const handleStationInputKeyDown = (event) => {
                   />
                   <YAxis
                     label={{
-                      value: isUsSelected
-                        ? t("idf.chart.intensityAxisUs")
-                        : t("idf.chart.intensityAxis"),
+                      value: yAxisLabel,
                       angle: -90,
                       position: "insideLeft",
                       offset: 15,
@@ -1687,7 +1829,7 @@ const handleStationInputKeyDown = (event) => {
                     scale="log"
                     domain={yAxisDomain}
                   />
-                  <Tooltip labelFormatter={formatTooltipLabel} />
+                  <Tooltip labelFormatter={formatTooltipLabel} formatter={formatTooltipValue} />
                   <Legend verticalAlign="bottom" height={36} />
                   {allReturnPeriods.map(
                     (period) =>

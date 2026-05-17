@@ -167,6 +167,22 @@
     "usDataReady": "Le fournisseur US a renvoyé des données de courbe.",
     "usForm": {
       "helper": "Utilisez un nom de lieu américain ou des coordonnées décimales (exemple : Columbia, SC ou 33.8000, -81.0000).",
+      "dataTypeLabel": "Type de courbe",
+      "dataType": {
+        "intensity": "Intensité",
+        "depth": "Hauteur"
+      },
+      "seriesLabel": "Série de fréquence",
+      "series": {
+        "ams": "AMS",
+        "pds": "PDS"
+      },
+      "estimateLabel": "Estimation de confiance",
+      "estimate": {
+        "mean": "Moyenne",
+        "upper": "Supérieure",
+        "lower": "Inférieure"
+      },
       "placeLabel": "Nom du lieu (optionnel)",
       "placePlaceholder": "ex. : Columbia, SC ou code postal",
       "placeHint": "Saisissez puis choisissez dans la liste pour remplir automatiquement les coordonnées, ou continuez à saisir et nous géocoderons au chargement.",
@@ -177,10 +193,15 @@
       "longitudePlaceholder": "ex. : -81.0000",
       "loadButton": "Charger l'IDF US",
       "loadingButton": "Chargement IDF US...",
-      "unitsNote": "Les courbes US sont affichées en unités impériales d'intensité (po/h).",
+      "units": {
+        "intensity": "po/h",
+        "depth": "po"
+      },
+      "unitsNote": "Les courbes US sont affichées en unités impériales ({{units}}).",
       "locationLabel": "Localisation approximative",
       "usedCoordinates": "Coordonnées utilisées : {{lat}}, {{lon}}",
-      "verifyLink": "Vérifier avec NOAA"
+      "verifyLink": "Vérifier avec NOAA",
+      "modeSummary": "{{dataType}} • {{series}} • {{estimate}} ({{units}})"
     }
   },
   "authPrompt": {
@@ -249,6 +270,7 @@
     "durationAxis": "Durée (min)",
     "intensityAxis": "Intensité (mm/h)",
     "intensityAxisUs": "Intensité (po/h)",
+    "depthAxisUs": "Hauteur (po)",
     "tooltipDuration": "Durée : {{value}}",
     "returnPeriod": "{{period}} ans",
     "legend": "{{period}} ans",

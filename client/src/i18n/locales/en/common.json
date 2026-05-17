@@ -167,6 +167,22 @@
         "usDataReady": "US provider returned curve data.",
         "usForm": {
           "helper": "Use a U.S. place name or decimal coordinates (example: Columbia, SC or 33.8000, -81.0000).",
+          "dataTypeLabel": "Curve type",
+          "dataType": {
+            "intensity": "Intensity",
+            "depth": "Depth"
+          },
+          "seriesLabel": "Frequency series",
+          "series": {
+            "ams": "AMS",
+            "pds": "PDS"
+          },
+          "estimateLabel": "Confidence estimate",
+          "estimate": {
+            "mean": "Mean",
+            "upper": "Upper",
+            "lower": "Lower"
+          },
           "placeLabel": "Location name (optional)",
           "placePlaceholder": "e.g., Columbia, SC or ZIP code",
           "placeHint": "Type and pick from the dropdown to auto-fill coordinates, or keep typing and we will geocode on load.",
@@ -177,10 +193,15 @@
           "longitudePlaceholder": "e.g., -81.0000",
           "loadButton": "Load US IDF",
           "loadingButton": "Loading US IDF...",
-          "unitsNote": "US curves are displayed in imperial intensity units (in/h).",
+          "units": {
+            "intensity": "in/h",
+            "depth": "in"
+          },
+          "unitsNote": "US curves are displayed in imperial units ({{units}}).",
           "locationLabel": "Approximate location",
           "usedCoordinates": "Coordinates used: {{lat}}, {{lon}}",
-          "verifyLink": "Verify with NOAA"
+          "verifyLink": "Verify with NOAA",
+          "modeSummary": "{{dataType}} • {{series}} • {{estimate}} ({{units}})"
         }
       },
       "authPrompt": {
@@ -249,6 +270,7 @@
         "durationAxis": "Duration (min)",
         "intensityAxis": "Intensity (mm/h)",
         "intensityAxisUs": "Intensity (in/h)",
+        "depthAxisUs": "Depth (in)",
         "tooltipDuration": "Duration: {{value}}",
         "returnPeriod": "{{period}} Year",
         "legend": "{{period}}-Year",
