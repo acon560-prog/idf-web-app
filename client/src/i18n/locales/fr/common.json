@@ -179,7 +179,8 @@
       "loadingButton": "Chargement IDF US...",
       "unitsNote": "Les courbes US sont affichées en unités impériales d'intensité (po/h).",
       "locationLabel": "Localisation approximative",
-      "usedCoordinates": "Coordonnées utilisées : {{lat}}, {{lon}}"
+      "usedCoordinates": "Coordonnées utilisées : {{lat}}, {{lon}}",
+      "verifyLink": "Vérifier avec NOAA"
     }
   },
   "authPrompt": {
