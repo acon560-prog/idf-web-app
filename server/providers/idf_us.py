@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import ast
+import copy
 import json
 import os
 import re
+import time
+from collections import OrderedDict
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -25,10 +28,69 @@ NOAA_TIMEOUT_SECONDS = float(os.environ.get("NOAA_PFDS_TIMEOUT_SECONDS", "10"))
 REVERSE_GEOCODE_URL = os.environ.get("US_REVERSE_GEOCODE_URL", "https://nominatim.openstreetmap.org/reverse")
 FORWARD_GEOCODE_URL = os.environ.get("US_FORWARD_GEOCODE_URL", "https://nominatim.openstreetmap.org/search")
 NOAA_UNITS = (os.environ.get("NOAA_PFDS_UNITS") or "english").strip().lower()
+US_IDF_CACHE_TTL_SECONDS = float(os.environ.get("US_IDF_CACHE_TTL_SECONDS", "900"))
+US_IDF_CACHE_MAX_ENTRIES = int(os.environ.get("US_IDF_CACHE_MAX_ENTRIES", "256"))
+_US_IDF_RESPONSE_CACHE: "OrderedDict[str, Tuple[float, Dict[str, Any], int]]" = OrderedDict()
 
 
 def _provider_units_label() -> str:
     return "in/h" if NOAA_UNITS == "english" else "mm/h"
+
+
+def _build_cache_key(
+    *,
+    lat: Optional[float],
+    lon: Optional[float],
+    station_id: Optional[str],
+    location_query: Optional[str],
+    return_periods: Sequence[str],
+    durations_minutes: Sequence[int],
+) -> str:
+    key_payload = {
+        "lat": round(lat, 6) if lat is not None else None,
+        "lon": round(lon, 6) if lon is not None else None,
+        "stationId": station_id or None,
+        "locationQuery": (location_query or "").strip().lower() or None,
+        "returnPeriods": list(return_periods),
+        "durationsMinutes": [int(v) for v in durations_minutes],
+        "units": NOAA_UNITS,
+    }
+    return json.dumps(key_payload, sort_keys=True, separators=(",", ":"))
+
+
+def _cache_get(cache_key: str) -> Optional[Tuple[Dict[str, Any], int]]:
+    if not cache_key or US_IDF_CACHE_TTL_SECONDS <= 0:
+        return None
+    now = time.monotonic()
+    entry = _US_IDF_RESPONSE_CACHE.get(cache_key)
+    if not entry:
+        return None
+    cached_at, payload, status_code = entry
+    if now - cached_at > US_IDF_CACHE_TTL_SECONDS:
+        _US_IDF_RESPONSE_CACHE.pop(cache_key, None)
+        return None
+    _US_IDF_RESPONSE_CACHE.move_to_end(cache_key)
+    cached_payload = copy.deepcopy(payload)
+    provider = cached_payload.setdefault("provider", {})
+    provider["cache"] = "hit"
+    return cached_payload, status_code
+
+
+def _cache_set(cache_key: str, payload: Dict[str, Any], status_code: int) -> None:
+    if not cache_key or US_IDF_CACHE_TTL_SECONDS <= 0 or status_code != 200:
+        return
+    _US_IDF_RESPONSE_CACHE[cache_key] = (time.monotonic(), copy.deepcopy(payload), status_code)
+    _US_IDF_RESPONSE_CACHE.move_to_end(cache_key)
+    while len(_US_IDF_RESPONSE_CACHE) > max(1, US_IDF_CACHE_MAX_ENTRIES):
+        _US_IDF_RESPONSE_CACHE.popitem(last=False)
+
+
+def _finalize_response(payload: Dict[str, Any], status_code: int, cache_key: Optional[str]) -> Tuple[Dict[str, Any], int]:
+    provider = payload.setdefault("provider", {})
+    provider.setdefault("cache", "miss")
+    if cache_key:
+        _cache_set(cache_key, payload, status_code)
+    return payload, status_code
 
 
 def _coerce_float(value: Any, name: str) -> Optional[float]:
@@ -411,6 +473,17 @@ def get_us_idf_curves(
         durations_minutes=duration_values,
         location_query=location_query_str,
     )
+    cache_key = _build_cache_key(
+        lat=lat_value,
+        lon=lon_value,
+        station_id=station_id_str,
+        location_query=location_query_str,
+        return_periods=rp_values,
+        durations_minutes=duration_values,
+    )
+    cached_response = _cache_get(cache_key)
+    if cached_response:
+        return cached_response
     payload["location"] = {
         "label": f"{lat_value:.4f}, {lon_value:.4f}" if lat_value is not None and lon_value is not None else None,
         "lat": lat_value,
@@ -437,12 +510,12 @@ def get_us_idf_curves(
                 payload["provider"]["message"] = "Could not resolve that U.S. location name. Try a city, town, or ZIP."
                 payload["code"] = "us_provider_geocode_not_found"
                 payload["message"] = payload["provider"]["message"]
-                return payload, 200
+                return _finalize_response(payload, 200, cache_key)
         else:
             payload["provider"]["status"] = "awaiting_coordinates"
             payload["provider"]["message"] = "Provide US latitude/longitude or a location name for live NOAA Atlas 14 retrieval."
             payload["message"] = payload["provider"]["message"]
-            return payload, 200
+            return _finalize_response(payload, 200, cache_key)
 
     resolved_location = _reverse_geocode_location(lat_value, lon_value)
     if resolved_location:
@@ -476,7 +549,7 @@ def get_us_idf_curves(
             )
             payload["code"] = "us_provider_no_matching_rows"
             payload["message"] = payload["provider"]["message"]
-        return payload, 200
+        return _finalize_response(payload, 200, cache_key)
     except LookupError as exc:
         friendly_message = _normalize_noaa_error_message(str(exc))
         payload["provider"]["status"] = "live_no_coverage"
@@ -485,7 +558,7 @@ def get_us_idf_curves(
         payload["code"] = "us_provider_no_coverage"
         payload["message"] = friendly_message
         payload["error"] = str(exc)
-        return payload, 200
+        return _finalize_response(payload, 200, cache_key)
     except (HTTPError, URLError, TimeoutError, ValueError) as exc:
         payload["provider"]["status"] = "live_fetch_failed"
         payload["provider"]["code"] = "us_provider_fetch_failed"
@@ -493,4 +566,4 @@ def get_us_idf_curves(
         payload["code"] = "us_provider_fetch_failed"
         payload["message"] = "US provider temporary fallback: NOAA fetch failed."
         payload["error"] = str(exc)
-        return payload, 200
+        return _finalize_response(payload, 200, cache_key)
