@@ -989,6 +989,16 @@ const handleStationInputKeyDown = (event) => {
   const formatTooltipLabel = (value) => {
   return t("idf.chart.tooltipDuration", { value: formatDurationLabel(value) });
   };
+  const buildNoaaVerifyUrl = useCallback((lat, lon) => {
+    const params = new URLSearchParams({
+      lat: Number(lat).toFixed(6),
+      lon: Number(lon).toFixed(6),
+      data: "intensity",
+      units: "english",
+      series: "ams",
+    });
+    return `https://hdsc.nws.noaa.gov/pfds/pfds_printpage.html?${params.toString()}`;
+  }, []);
   
   const yAxisDomain = useMemo(() => {
     if (!idfData || idfData.length === 0) {
@@ -1526,12 +1536,22 @@ const handleStationInputKeyDown = (event) => {
                   </div>
                   {Number.isFinite(Number(usResolvedLocation.lat)) &&
                     Number.isFinite(Number(usResolvedLocation.lon)) && (
-                      <div className="mt-1 text-xs">
-                        {t("idf.country.usForm.usedCoordinates", {
-                          lat: Number(usResolvedLocation.lat).toFixed(4),
-                          lon: Number(usResolvedLocation.lon).toFixed(4),
-                        })}
-                      </div>
+                      <>
+                        <div className="mt-1 text-xs">
+                          {t("idf.country.usForm.usedCoordinates", {
+                            lat: Number(usResolvedLocation.lat).toFixed(4),
+                            lon: Number(usResolvedLocation.lon).toFixed(4),
+                          })}
+                        </div>
+                        <a
+                          href={buildNoaaVerifyUrl(usResolvedLocation.lat, usResolvedLocation.lon)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-1 inline-block text-xs text-indigo-700 underline hover:text-indigo-900"
+                        >
+                          {t("idf.country.usForm.verifyLink")}
+                        </a>
+                      </>
                     )}
                 </div>
               )}

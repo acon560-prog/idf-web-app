@@ -179,7 +179,8 @@
           "loadingButton": "Loading US IDF...",
           "unitsNote": "US curves are displayed in imperial intensity units (in/h).",
           "locationLabel": "Approximate location",
-          "usedCoordinates": "Coordinates used: {{lat}}, {{lon}}"
+          "usedCoordinates": "Coordinates used: {{lat}}, {{lon}}",
+          "verifyLink": "Verify with NOAA"
         }
       },
       "authPrompt": {
