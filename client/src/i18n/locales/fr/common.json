@@ -65,8 +65,8 @@
         "terms": "Conditions",
         "createAccount": "Créer un compte",
         "subscribe": "S'abonner",
-        "verifyTrial": "Démarrer l'essai de 7 jours",
-        "openingVerification": "Ouverture du paiement d'essai…",
+        "verifyTrial": "Vérifier la carte et démarrer l'essai de 7 jours",
+        "openingVerification": "Ouverture de la vérification…",
         "openingCheckout": "Ouverture du paiement…",
         "close": "Fermer"
     },
@@ -76,11 +76,12 @@
     "cards": {
         "trial": {
             "name": "Essai de 7 jours",
-            "cadence": "puis 30 $/mois",
-            "description": "Démarrez un essai gratuit de 7 jours. Après l'essai, l'abonnement se renouvelle automatiquement à 30 $/mois sauf annulation avant le renouvellement.",
+            "cadence": "vérification remboursable",
+            "description": "Vérifiez votre carte avec un débit remboursable de 1 $, puis démarrez un essai de 7 jours. Après l'essai, l'abonnement se renouvelle automatiquement à 30 $/mois sauf annulation avant le renouvellement.",
             "termsTitle": "Conditions de l'essai",
             "perks": {
             "cardRequired": "Carte requise",
+            "refundAfterVerification": "Débit de vérification remboursé",
             "autoRenew": "Renouvellement automatique à 30 $/mois après l'essai sauf annulation",
             "oneTrialPerEmail": "Un essai par courriel"
             }
@@ -110,7 +111,7 @@
         "terms": {
             "trial": {
                 "title": "Conditions de l'essai",
-                "body": "Une carte de crédit/débit valide est requise pour démarrer l'essai de 7 jours.\n\nEn démarrant l'essai, vous autorisez le renouvellement automatique vers le forfait Consultant mensuel à 30 $/mois lorsque l'essai se termine, sauf annulation avant le renouvellement.\n\nL'accès d'essai est limité à un par courriel/compte. Nous pouvons refuser ou révoquer l'accès en cas d'abus ou de fraude suspectés."
+                "body": "Une carte de crédit/débit valide est requise pour démarrer l'essai de 7 jours. Un débit temporaire de 1 $ est appliqué puis remboursé après vérification réussie.\n\nEn démarrant l'essai, vous autorisez le renouvellement automatique vers le forfait Consultant mensuel à 30 $/mois lorsque l'essai se termine, sauf annulation avant le renouvellement.\n\nL'accès d'essai est limité à un par courriel/compte. Nous pouvons refuser ou révoquer l'accès en cas d'abus ou de fraude suspectés."
             },
             "lifetime": {
                 "title": "Conditions à vie",

@@ -886,9 +886,9 @@ def create_checkout_session():
 @jwt_required()
 def create_trial_verification_session():
     """
-    Creates a Stripe Checkout subscription session with a 7-day trial
-    that auto-renews on the consultant monthly plan unless canceled.
-    Explicit consent is required.
+    Creates a Stripe Checkout payment session for a refundable $1 card verification.
+    On successful verification, we create a 7-day subscription trial that auto-renews
+    on the consultant monthly plan unless canceled. Explicit consent is required.
     """
     if not STRIPE_SECRET_KEY:
         return jsonify({'error': 'Stripe is not configured.'}), 500
@@ -916,11 +916,11 @@ def create_trial_verification_session():
     customer_id = user_doc.get("stripeCustomerId")
 
     session_kwargs = {
-        "mode": "subscription",
+        "mode": "payment",
         "client_reference_id": str(user_doc["_id"]),
-        "line_items": [{"price": STRIPE_PRICE_CONSULTANT_MONTHLY, "quantity": 1}],
-        "subscription_data": {
-            "trial_period_days": 7,
+        "payment_intent_data": {
+            # Save payment method for creating the trial subscription after verification.
+            "setup_future_usage": "off_session",
             "metadata": {
                 "userId": str(user_doc["_id"]),
                 "purpose": "trial_autorenew_optin",
@@ -928,8 +928,16 @@ def create_trial_verification_session():
                 "trialAutoRenewConsent": "true",
             },
         },
-        "payment_method_collection": "always",
-        "allow_promotion_codes": True,
+        "line_items": [
+            {
+                "price_data": {
+                    "currency": STRIPE_CURRENCY,
+                    "unit_amount": STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS,
+                    "product_data": {"name": "Trial verification (refunded)"},
+                },
+                "quantity": 1,
+            }
+        ],
         "metadata": {
             "userId": str(user_doc["_id"]),
             "purpose": "trial_autorenew_optin",
@@ -943,6 +951,7 @@ def create_trial_verification_session():
     if customer_id:
         session_kwargs["customer"] = customer_id
     else:
+        session_kwargs["customer_creation"] = "always"
         session_kwargs["customer_email"] = email
 
     session = stripe.checkout.Session.create(**session_kwargs)
@@ -1026,23 +1035,65 @@ def stripe_webhook():
                 customer_id = session.get("customer")
                 email = session.get("customer_details", {}).get("email") or session.get("customer_email")
                 user_id = session.get("client_reference_id") or metadata.get("userId")
-                subscription_id = session.get("subscription")
+                payment_intent_id = session.get("payment_intent")
 
+                if not STRIPE_PRICE_CONSULTANT_MONTHLY:
+                    print("Missing Stripe monthly price ID for trial auto-renew subscription setup.")
+                    return jsonify({'received': True})
+
+                # Refund the $1 verification charge (idempotent by event id).
+                if payment_intent_id:
+                    try:
+                        stripe.Refund.create(
+                            payment_intent=payment_intent_id,
+                            idempotency_key=f"{event.get('id')}:trial-refund",
+                        )
+                    except Exception as refund_exc:
+                        print(f"Failed to refund trial verification payment: {refund_exc}")
+
+                subscription_id = None
                 trial_start = now
                 trial_end = now + timedelta(days=7)
                 subscription_status = "trialing"
                 plan_key = "consultant_monthly"
+                payment_method_id = None
 
-                if subscription_id:
-                    sub = stripe.Subscription.retrieve(subscription_id)
-                    subscription_status = sub.get("status") or "trialing"
-                    plan_key = (sub.get("metadata") or {}).get("plan") or plan_key
-                    trial_start_unix = sub.get("trial_start")
-                    trial_end_unix = sub.get("trial_end")
-                    if trial_start_unix:
-                        trial_start = datetime.utcfromtimestamp(trial_start_unix)
-                    if trial_end_unix:
-                        trial_end = datetime.utcfromtimestamp(trial_end_unix)
+                if payment_intent_id:
+                    try:
+                        payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+                        payment_method_id = payment_intent.get("payment_method")
+                    except Exception as payment_intent_exc:
+                        print(f"Failed to retrieve verification payment intent: {payment_intent_exc}")
+
+                if customer_id:
+                    try:
+                        sub_kwargs = {
+                            "customer": customer_id,
+                            "items": [{"price": STRIPE_PRICE_CONSULTANT_MONTHLY}],
+                            "trial_period_days": 7,
+                            "metadata": {
+                                "userId": str(user_id) if user_id else "",
+                                "plan": plan_key,
+                                "purpose": "trial_autorenew_optin",
+                            },
+                            "idempotency_key": event.get("id"),
+                        }
+                        if payment_method_id:
+                            sub_kwargs["default_payment_method"] = payment_method_id
+                        sub = stripe.Subscription.create(**sub_kwargs)
+                        subscription_id = sub.get("id")
+                        subscription_status = sub.get("status") or "trialing"
+                        plan_key = (sub.get("metadata") or {}).get("plan") or plan_key
+                        trial_start_unix = sub.get("trial_start")
+                        trial_end_unix = sub.get("trial_end")
+                        if trial_start_unix:
+                            trial_start = datetime.utcfromtimestamp(trial_start_unix)
+                        if trial_end_unix:
+                            trial_end = datetime.utcfromtimestamp(trial_end_unix)
+                    except Exception as sub_exc:
+                        print(f"Failed to create trial auto-renew subscription: {sub_exc}")
+                else:
+                    print("Missing customer for trial auto-renew subscription setup.")
 
                 updates = {
                     "stripeCustomerId": customer_id,

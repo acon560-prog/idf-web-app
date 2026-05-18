@@ -65,8 +65,8 @@
             "terms": "Terms",
             "createAccount": "Create account",
             "subscribe": "Subscribe",
-            "verifyTrial": "Start 7-day trial",
-            "openingVerification": "Opening trial checkout…",
+            "verifyTrial": "Verify card & start 7-day trial",
+            "openingVerification": "Opening verification…",
             "openingCheckout": "Opening checkout…",
             "close": "Close"
         },
@@ -76,11 +76,12 @@
         "cards": {
             "trial": {
             "name": "7-day trial",
-            "cadence": "then $30/month",
-            "description": "Start a 7-day free trial. After trial, membership auto-renews at $30/month unless canceled before renewal.",
+            "cadence": "refundable verification",
+            "description": "Verify your card with a refundable $1 charge, then start a 7-day trial. After trial, membership auto-renews at $30/month unless canceled before renewal.",
             "termsTitle": "Trial terms",
             "perks": {
             "cardRequired": "Card required",
+            "refundAfterVerification": "Verification charge refunded",
             "autoRenew": "Auto-renews at $30/month after trial unless canceled",
             "oneTrialPerEmail": "One trial per email"
             }
@@ -110,7 +111,7 @@
         "terms": {
             "trial": {
                 "title": "Trial terms",
-                "body": "A valid credit/debit card is required to start the 7-day trial.\n\nBy starting the trial, you authorize automatic renewal to the Consultant Monthly plan at $30/month when the trial ends, unless canceled before renewal.\n\nTrial access is limited to one per email/account. We may decline or revoke trial access for suspected abuse or fraud."
+                "body": "A valid credit/debit card is required to start the 7-day trial. A temporary $1 verification charge is applied and refunded after successful verification.\n\nBy starting the trial, you authorize automatic renewal to the Consultant Monthly plan at $30/month when the trial ends, unless canceled before renewal.\n\nTrial access is limited to one per email/account. We may decline or revoke trial access for suspected abuse or fraud."
             },
             "lifetime": {
                 "title": "Lifetime terms",
