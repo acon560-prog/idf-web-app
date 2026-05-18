@@ -165,7 +165,7 @@
       "us": "États-Unis"
     },
     "checking": "Vérification du fournisseur US...",
-    "usComingSoon": "Le fournisseur IDF des États-Unis arrive bientôt. Veuillez utiliser le Canada pour le moment.",
+    "usComingSoon": "Le fournisseur NOAA Atlas 14 des États-Unis est disponible.",
     "usNeedsCoordinates": "Entrez la latitude/longitude des États-Unis ou un nom de lieu américain pour charger les valeurs IDF NOAA Atlas 14.",
     "usNeedsInput": "Entrez soit un nom de lieu américain, soit une latitude/longitude valide.",
     "invalidCoordinates": "Veuillez entrer des coordonnées américaines valides (latitude -90..90, longitude -180..180).",
@@ -382,11 +382,11 @@
     "sections": {
       "purpose": {
         "title": "Objet de l'outil",
-        "body": "Cette application aide à consulter des données de pluie et des courbes IDF au Canada pour la planification et le pré-dimensionnement. Elle ne remplace pas le jugement professionnel d'un ingénieur."
+        "body": "Cette application aide à consulter des données de pluie et des courbes IDF au Canada et aux États-Unis pour la planification et le pré-dimensionnement. Elle ne remplace pas le jugement professionnel d'un ingénieur."
       },
       "sources": {
         "title": "Sources de données",
-        "body": "Les données proviennent de publications publiques officielles (y compris Environnement et Changement climatique Canada) et peuvent aussi dépendre de services tiers, comme la géolocalisation ou la cartographie."
+        "body": "Les données proviennent de publications publiques officielles (y compris Environnement et Changement climatique Canada et NOAA Atlas 14 aux États-Unis) et peuvent aussi dépendre de services tiers, comme la géolocalisation ou la cartographie."
       },
       "processing": {
         "title": "Production des résultats",
