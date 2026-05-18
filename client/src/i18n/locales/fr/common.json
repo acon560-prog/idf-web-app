@@ -11,9 +11,9 @@
   },
   "home": {
     "hero": {
-      "badge": "Recherche de données pluviométriques • Canada",
-      "title": "Des données pluviométriques puissantes pour les ingénieurs et planificateurs canadiens",
-      "subtitle": "Recherchez des milliers de stations d'Environnement Canada, accédez aux courbes IDF et partagez des rapports avec votre équipe en quelques secondes. Conçu pour les ingénieurs civils, hydrologues et services municipaux de planification.",
+      "badge": "Recherche de données pluviométriques • Canada et États-Unis",
+      "title": "Des données pluviométriques puissantes pour les ingénieurs et planificateurs nord-américains",
+      "subtitle": "Recherchez des stations d'Environnement Canada et des points NOAA Atlas 14 aux États-Unis, accédez aux courbes IDF et partagez des rapports avec votre équipe en quelques secondes. Conçu pour les ingénieurs civils, hydrologues et services municipaux de planification.",
       "cta": {
         "dashboard": "Aller au tableau de bord",
         "login": "Se connecter",
@@ -30,7 +30,7 @@
       "preview": {
         "label": "Aperçu en direct",
         "title": "Mission, B.-C. — intensité de pointe pour une période de retour de 100 ans",
-        "subtitle": "Obtenez des courbes IDF précises pour n'importe quel emplacement au Canada — en un seul clic.",
+        "subtitle": "Obtenez des courbes IDF précises partout au Canada et aux États-Unis en un seul clic.",
         "imageAlt": "Aperçu du graphique de pluie"
       }
     },
@@ -40,7 +40,7 @@
       "items": {
         "smartLookup": {
           "title": "Recherche intelligente de stations",
-          "description": "Recherchez des milliers de stations d'Environnement Canada par municipalité, code postal ou coordonnées GPS."
+          "description": "Recherchez des stations canadiennes et des emplacements aux États-Unis par municipalité, code postal ou coordonnées GPS."
         },
         "instantCurves": {
           "title": "Courbes IDF instantanées",
@@ -54,7 +54,7 @@
     },
     "cta": {
         "title": "Fournissez des données pluviométriques avec confiance, à chaque fois",
-        "subtitle": "Rainfall Data Finder regroupe les jeux de données d'Environnement Canada, les nettoie et offre à votre équipe d'ingénierie un point unique pour obtenir des courbes IDF à jour, les métadonnées des stations pluviométriques et des rapports prêts à partager.",
+        "subtitle": "Rainfall Data Finder regroupe des jeux de données pluviométriques fiables du Canada et des États-Unis et offre à votre équipe d'ingénierie un point unique pour obtenir des courbes IDF à jour, les métadonnées des stations et des rapports prêts à partager.",
         "launchViewer": "Lancer le visualiseur",
         "bookWalkthrough": "Réserver une démonstration"
     },

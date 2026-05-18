@@ -11,9 +11,9 @@
   },
   "home": {
     "hero": {
-      "badge": "Rainfall Data Finder • Canada",
-      "title": "Powerful rainfall insights for Canadian engineers and planners",
-      "subtitle": "Search thousands of Environment Canada stations, access IDF curves, and share reports with your team in seconds. Built for civil engineers, hydrologists, and municipal planning departments.",
+      "badge": "Rainfall Data Finder • Canada & U.S.",
+      "title": "Powerful rainfall insights for North American engineers and planners",
+      "subtitle": "Search Environment Canada stations and U.S. NOAA Atlas 14 points, access IDF curves, and share reports with your team in seconds. Built for civil engineers, hydrologists, and municipal planning departments.",
       "cta": {
         "dashboard": "Go to dashboard",
         "login": "Log in",
@@ -30,7 +30,7 @@
       "preview": {
         "label": "Live preview",
         "title": "Mission, BC — 100 year return period peak intensity",
-        "subtitle": "Retrieve accurate IDF curves for any location in Canada—in just one click.",
+        "subtitle": "Retrieve accurate IDF curves across Canada and the U.S. in just one click.",
         "imageAlt": "Rainfall chart preview"
       }
     },
@@ -40,7 +40,7 @@
       "items": {
         "smartLookup": {
           "title": "Smart Station Lookup",
-          "description": "Search thousands of Environment Canada stations by municipality, postal code, or GPS coordinates."
+          "description": "Search Canadian stations and U.S. locations by municipality, postal code, or GPS coordinates."
         },
         "instantCurves": {
           "title": "Instant IDF Curves",
@@ -54,7 +54,7 @@
     },
     "cta": {
     "title": "Deliver rainfall data with confidence every time",
-    "subtitle": "Rainfall Data Finder aggregates Environment Canada datasets, cleans them, and gives your engineering team a single place to retrieve up-to-date IDF curves, rainfall station metadata, and ready-to-share reports.",
+    "subtitle": "Rainfall Data Finder aggregates trusted Canadian and U.S. rainfall datasets and gives your engineering team a single place to retrieve up-to-date IDF curves, station metadata, and ready-to-share reports.",
     "launchViewer": "Launch the viewer",
     "bookWalkthrough": "Book a walkthrough"
     },
