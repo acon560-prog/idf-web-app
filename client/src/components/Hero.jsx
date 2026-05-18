@@ -13,9 +13,18 @@ const Hero = () => {
     ? t("home.hero.cta.dashboard")
     : t("home.hero.cta.login");
   const handleExploreFeatures = () => {
-    const featuresSection = document.getElementById("features");
-    if (!featuresSection) return;
-    featuresSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    const featuresSection =
+      document.getElementById("features") ||
+      document.querySelector("[data-home-features='true']");
+    if (!featuresSection) {
+      window.location.assign("/#features");
+      return;
+    }
+    const top = Math.max(
+      0,
+      featuresSection.getBoundingClientRect().top + window.scrollY - 88,
+    );
+    window.scrollTo({ top, behavior: "smooth" });
   };
 
   return (
