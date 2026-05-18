@@ -36,12 +36,12 @@ const Hero = () => {
             >
               {primaryLabel}
             </Link>
-            <Link
-              to="/features"
+            <a
+              href="#features"
               className="inline-flex items-center justify-center rounded-full border border-slate-300 px-8 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
             >
               {t("home.hero.cta.exploreFeatures")}
-            </Link>
+            </a>
           </div>
 
           <dl className="mt-12 grid grid-cols-2 gap-6 text-sm text-slate-500 sm:grid-cols-3">
