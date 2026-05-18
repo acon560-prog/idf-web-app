@@ -371,6 +371,16 @@ def isoformat_or_none(value):
     return None
 
 
+def to_bool(value) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    if isinstance(value, (int, float)):
+        return value != 0
+    return False
+
+
 def serialize_user(user_doc):
     if not user_doc:
         return None
@@ -385,6 +395,8 @@ def serialize_user(user_doc):
         'trialEndsAt': isoformat_or_none(user_doc.get('trialEndsAt')),
         'stripeCustomerId': user_doc.get('stripeCustomerId'),
         'trialUsed': bool(user_doc.get('trialUsed')),
+        'trialAutoRenewConsent': bool(user_doc.get('trialAutoRenewConsent')),
+        'trialAutoRenewPlan': user_doc.get('trialAutoRenewPlan'),
         'role': role,
     }
 
@@ -743,6 +755,9 @@ def register():
         'trialUsed': False,
         'trialStartsAt': None,
         'trialEndsAt': None,
+        'trialAutoRenewConsent': False,
+        'trialAutoRenewConsentAt': None,
+        'trialAutoRenewPlan': None,
         'createdAt': now,
         'updatedAt': now,
         'role': role,
@@ -776,7 +791,7 @@ def _price_id_for_plan(plan: str):
 def create_checkout_session():
     """
     Creates a Stripe Checkout session for a paid subscription (no trial).
-    Trial access is started separately via the $1 refundable card verification flow.
+    Trial access is started separately via explicit trial auto-renew consent flow.
     """
     if not STRIPE_SECRET_KEY:
         return jsonify({'error': 'Stripe is not configured.'}), 500
@@ -871,8 +886,9 @@ def create_checkout_session():
 @jwt_required()
 def create_trial_verification_session():
     """
-    Creates a Stripe Checkout session to verify a card with a $1 refundable payment.
-    After successful payment, we refund the $1 and start a 7-day trial.
+    Creates a Stripe Checkout subscription session with a 7-day trial
+    that auto-renews on the consultant monthly plan unless canceled.
+    Explicit consent is required.
     """
     if not STRIPE_SECRET_KEY:
         return jsonify({'error': 'Stripe is not configured.'}), 500
@@ -887,40 +903,49 @@ def create_trial_verification_session():
     email = normalize_email(user_doc.get('email'))
     if not email:
         return jsonify({'error': 'A valid email is required for billing.'}), 400
+    if not STRIPE_PRICE_CONSULTANT_MONTHLY:
+        return jsonify({'error': 'Missing Stripe monthly plan configuration.'}), 500
+
+    payload = request.get_json() or {}
+    auto_renew_consent = to_bool(payload.get('autoRenewConsent'))
+    if not auto_renew_consent:
+        return jsonify({'error': 'Please accept trial auto-renew terms to continue.'}), 400
 
     success_url = f"{FRONTEND_URL}/start?trial=success"
     cancel_url = f"{FRONTEND_URL}/?trial=cancel"
+    customer_id = user_doc.get("stripeCustomerId")
 
-    session = stripe.checkout.Session.create(
-        mode="payment",
-        customer_creation="always",
-        customer_email=email,
-        client_reference_id=str(user_doc["_id"]),
-        payment_intent_data={
-            # Save payment method for later subscription checkout.
-            "setup_future_usage": "off_session",
+    session_kwargs = {
+        "mode": "subscription",
+        "client_reference_id": str(user_doc["_id"]),
+        "line_items": [{"price": STRIPE_PRICE_CONSULTANT_MONTHLY, "quantity": 1}],
+        "subscription_data": {
+            "trial_period_days": 7,
             "metadata": {
                 "userId": str(user_doc["_id"]),
-                "purpose": "trial_verification",
+                "purpose": "trial_autorenew_optin",
+                "plan": "consultant_monthly",
+                "trialAutoRenewConsent": "true",
             },
         },
-        metadata={
+        "payment_method_collection": "always",
+        "allow_promotion_codes": True,
+        "metadata": {
             "userId": str(user_doc["_id"]),
-            "purpose": "trial_verification",
+            "purpose": "trial_autorenew_optin",
+            "plan": "consultant_monthly",
+            "trialAutoRenewConsent": "true",
         },
-        line_items=[
-            {
-                "price_data": {
-                    "currency": STRIPE_CURRENCY,
-                    "unit_amount": STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS,
-                    "product_data": {"name": "Trial verification (refunded)"},
-                },
-                "quantity": 1,
-            }
-        ],
-        success_url=success_url,
-        cancel_url=cancel_url,
-    )
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+    }
+
+    if customer_id:
+        session_kwargs["customer"] = customer_id
+    else:
+        session_kwargs["customer_email"] = email
+
+    session = stripe.checkout.Session.create(**session_kwargs)
 
     return jsonify({"url": session.url})
 
@@ -965,7 +990,7 @@ def stripe_webhook():
             metadata = session.get("metadata") or {}
             purpose = (metadata.get("purpose") or "").strip().lower()
 
-            # Trial verification checkout (mode=payment)
+            # Legacy trial verification checkout (mode=payment with refundable $1)
             if purpose == "trial_verification":
                 customer_id = session.get("customer")
                 email = session.get("customer_details", {}).get("email") or session.get("customer_email")
@@ -992,6 +1017,44 @@ def stripe_webhook():
                     "trialEndsAt": trial_end,
                     "trialUsed": True,
                     "updatedAt": now,
+                }
+                _update_user_by_email_or_id(user_id, email, updates)
+                return jsonify({'received': True})
+
+            # New trial checkout: 7-day Stripe subscription trial with auto-renew opt-in.
+            if purpose == "trial_autorenew_optin":
+                customer_id = session.get("customer")
+                email = session.get("customer_details", {}).get("email") or session.get("customer_email")
+                user_id = session.get("client_reference_id") or metadata.get("userId")
+                subscription_id = session.get("subscription")
+
+                trial_start = now
+                trial_end = now + timedelta(days=7)
+                subscription_status = "trialing"
+                plan_key = "consultant_monthly"
+
+                if subscription_id:
+                    sub = stripe.Subscription.retrieve(subscription_id)
+                    subscription_status = sub.get("status") or "trialing"
+                    plan_key = (sub.get("metadata") or {}).get("plan") or plan_key
+                    trial_start_unix = sub.get("trial_start")
+                    trial_end_unix = sub.get("trial_end")
+                    if trial_start_unix:
+                        trial_start = datetime.utcfromtimestamp(trial_start_unix)
+                    if trial_end_unix:
+                        trial_end = datetime.utcfromtimestamp(trial_end_unix)
+
+                updates = {
+                    "stripeCustomerId": customer_id,
+                    "stripeSubscriptionId": subscription_id,
+                    "plan": plan_key,
+                    "subscriptionStatus": subscription_status,
+                    "trialStartsAt": trial_start,
+                    "trialEndsAt": trial_end,
+                    "trialUsed": True,
+                    "trialAutoRenewConsent": True,
+                    "trialAutoRenewConsentAt": now,
+                    "trialAutoRenewPlan": plan_key,
                 }
                 _update_user_by_email_or_id(user_id, email, updates)
                 return jsonify({'received': True})

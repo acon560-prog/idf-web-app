@@ -15,6 +15,7 @@ const Pricing = () => {
   const [checkoutError, setCheckoutError] = useState("");
   const [trialLoading, setTrialLoading] = useState(false);
   const [trialError, setTrialError] = useState("");
+  const [trialAutoRenewAccepted, setTrialAutoRenewAccepted] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [termsTitle, setTermsTitle] = useState("");
   const [termsBody, setTermsBody] = useState("");
@@ -22,8 +23,11 @@ const Pricing = () => {
   const localizeServerError = (msg, fallbackKey) => {
   const map = {
     "Trial already used for this account.": t("home.pricing.errors.trialAlreadyUsed"),
+    "Unable to start trial checkout.": t("home.pricing.errors.trialStart"),
     "Unable to start trial verification.": t("home.pricing.errors.trialStart"),
-    "Unable to start checkout.": t("home.pricing.errors.checkoutStart")
+    "Unable to start checkout.": t("home.pricing.errors.checkoutStart"),
+    "Please accept trial auto-renew terms to continue.": t("home.pricing.errors.trialConsentRequired"),
+    "Missing Stripe monthly plan configuration.": t("home.pricing.errors.trialConfig")
   };
   return map[msg] || msg || t(fallbackKey);
 };
@@ -34,14 +38,14 @@ const Pricing = () => {
   const trialLabel = t("home.pricing.buttons.verifyTrial");
   const trialOption = {
   name: t("home.pricing.cards.trial.name"),
-  price: "$1",
+  price: "$0",
   cadence: t("home.pricing.cards.trial.cadence"),
   description: t("home.pricing.cards.trial.description"),
   termsTitle: t("home.pricing.cards.trial.termsTitle"),
   termsBody: t("home.pricing.terms.trial.body"),
   perks: [
     t("home.pricing.cards.trial.perks.cardRequired"),
-    t("home.pricing.cards.trial.perks.refundAfterVerification"),
+    t("home.pricing.cards.trial.perks.autoRenew"),
     t("home.pricing.cards.trial.perks.oneTrialPerEmail")
   ],
   highlight: false
@@ -154,6 +158,10 @@ const startCheckout = async (planKey) => {
     window.location.assign("/login");
     return;
   }
+  if (!trialAutoRenewAccepted) {
+    setTrialError(t("home.pricing.errors.trialConsentRequired"));
+    return;
+  }
 
   try {
     setTrialError("");
@@ -165,7 +173,9 @@ const startCheckout = async (planKey) => {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify({
+        autoRenewConsent: trialAutoRenewAccepted,
+      }),
     });
 
     const data = await readJsonResponse(res, t("home.pricing.errors.trialStart"));
@@ -223,12 +233,26 @@ const startCheckout = async (planKey) => {
                 </li>
               ))}
             </ul>
+            {user && (
+              <label className="mt-5 flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={trialAutoRenewAccepted}
+                  onChange={(e) => {
+                    setTrialAutoRenewAccepted(e.target.checked);
+                    setTrialError("");
+                  }}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                />
+                <span>{t("home.pricing.trialConsent.label")}</span>
+              </label>
+            )}
 
             {user ? (
               <button
                 type="button"
                 onClick={startTrialVerification}
-                disabled={trialLoading}
+                disabled={trialLoading || !trialAutoRenewAccepted}
                 className="mt-8 inline-flex w-full items-center justify-center rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {trialLoading ? t("home.pricing.buttons.openingVerification") : trialLabel}
