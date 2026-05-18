@@ -12,6 +12,11 @@ const Hero = () => {
   const primaryLabel = user
     ? t("home.hero.cta.dashboard")
     : t("home.hero.cta.login");
+  const handleExploreFeatures = () => {
+    const featuresSection = document.getElementById("features");
+    if (!featuresSection) return;
+    featuresSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-sky-50 via-white to-white">
@@ -36,12 +41,13 @@ const Hero = () => {
             >
               {primaryLabel}
             </Link>
-            <a
-              href="#features"
+            <button
+              type="button"
+              onClick={handleExploreFeatures}
               className="inline-flex items-center justify-center rounded-full border border-slate-300 px-8 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
             >
               {t("home.hero.cta.exploreFeatures")}
-            </a>
+            </button>
           </div>
 
           <dl className="mt-12 grid grid-cols-2 gap-6 text-sm text-slate-500 sm:grid-cols-3">

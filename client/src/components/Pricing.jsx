@@ -38,13 +38,14 @@ const Pricing = () => {
   const trialLabel = t("home.pricing.buttons.verifyTrial");
   const trialOption = {
   name: t("home.pricing.cards.trial.name"),
-  price: "$0",
+  price: "$1",
   cadence: t("home.pricing.cards.trial.cadence"),
   description: t("home.pricing.cards.trial.description"),
   termsTitle: t("home.pricing.cards.trial.termsTitle"),
   termsBody: t("home.pricing.terms.trial.body"),
   perks: [
     t("home.pricing.cards.trial.perks.cardRequired"),
+    t("home.pricing.cards.trial.perks.refundAfterVerification"),
     t("home.pricing.cards.trial.perks.autoRenew"),
     t("home.pricing.cards.trial.perks.oneTrialPerEmail")
   ],
