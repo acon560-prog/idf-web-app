@@ -25,7 +25,11 @@ const Features = () => {
   ];
 
   return (
-    <section id="features" className="scroll-mt-24 bg-white py-24">
+    <section
+      id="features"
+      data-home-features="true"
+      className="scroll-mt-24 bg-white py-24"
+    >
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
