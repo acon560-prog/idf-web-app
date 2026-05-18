@@ -65,8 +65,8 @@
         "terms": "Conditions",
         "createAccount": "Créer un compte",
         "subscribe": "S'abonner",
-        "verifyTrial": "Vérifier la carte et démarrer l'essai de 7 jours",
-        "openingVerification": "Ouverture de la vérification…",
+        "verifyTrial": "Démarrer l'essai de 7 jours",
+        "openingVerification": "Ouverture du paiement d'essai…",
         "openingCheckout": "Ouverture du paiement…",
         "close": "Fermer"
     },
@@ -76,12 +76,12 @@
     "cards": {
         "trial": {
             "name": "Essai de 7 jours",
-            "cadence": "vérification remboursable",
-            "description": "Démarrez un essai de 7 jours après vérification de votre carte. Le 1 $ est remboursé après vérification.",
+            "cadence": "puis 30 $/mois",
+            "description": "Démarrez un essai gratuit de 7 jours. Après l'essai, l'abonnement se renouvelle automatiquement à 30 $/mois sauf annulation avant le renouvellement.",
             "termsTitle": "Conditions de l'essai",
             "perks": {
             "cardRequired": "Carte requise",
-            "refundAfterVerification": "Remboursé après vérification",
+            "autoRenew": "Renouvellement automatique à 30 $/mois après l'essai sauf annulation",
             "oneTrialPerEmail": "Un essai par courriel"
             }
         },
@@ -110,7 +110,7 @@
         "terms": {
             "trial": {
                 "title": "Conditions de l'essai",
-                "body": "Une carte de crédit/débit valide est requise pour démarrer l'essai de 7 jours. Un débit temporaire de 1 $ sera effectué puis remboursé après vérification réussie.\n\nL'accès d'essai est limité à un par courriel/compte. Nous pouvons refuser ou révoquer l'accès en cas d'abus ou de fraude suspectés.\n\nVotre essai se termine après 7 jours, sauf si vous achetez un forfait payant."
+                "body": "Une carte de crédit/débit valide est requise pour démarrer l'essai de 7 jours.\n\nEn démarrant l'essai, vous autorisez le renouvellement automatique vers le forfait Consultant mensuel à 30 $/mois lorsque l'essai se termine, sauf annulation avant le renouvellement.\n\nL'accès d'essai est limité à un par courriel/compte. Nous pouvons refuser ou révoquer l'accès en cas d'abus ou de fraude suspectés."
             },
             "lifetime": {
                 "title": "Conditions à vie",
@@ -119,8 +119,14 @@
             },
             "errors": {
             "checkoutStart": "Impossible de démarrer le paiement.",
-            "trialStart": "Impossible de démarrer la vérification de l'essai.",
-            "trialAlreadyUsed": "L’essai a déjà été utilisé pour ce compte."
+            "trialStart": "Impossible de démarrer le paiement d'essai.",
+            "trialAlreadyUsed": "L’essai a déjà été utilisé pour ce compte.",
+            "trialConsentRequired": "Veuillez accepter les conditions de renouvellement automatique de l'essai avant de continuer.",
+            "trialConfig": "La configuration de l'essai est temporairement indisponible. Veuillez contacter le support."
+          }
+        ,
+          "trialConsent": {
+            "label": "Je comprends que cet essai de 7 jours se renouvellera automatiquement à 30 $/mois sauf annulation avant le renouvellement."
           }
         }
     },

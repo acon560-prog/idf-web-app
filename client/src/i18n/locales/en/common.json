@@ -65,8 +65,8 @@
             "terms": "Terms",
             "createAccount": "Create account",
             "subscribe": "Subscribe",
-            "verifyTrial": "Verify card & start 7-day trial",
-            "openingVerification": "Opening verification…",
+            "verifyTrial": "Start 7-day trial",
+            "openingVerification": "Opening trial checkout…",
             "openingCheckout": "Opening checkout…",
             "close": "Close"
         },
@@ -76,12 +76,12 @@
         "cards": {
             "trial": {
             "name": "7-day trial",
-            "cadence": "refundable verification",
-            "description": "Start a 7-day trial after verifying your card. We refund the $1 after verification.",
+            "cadence": "then $30/month",
+            "description": "Start a 7-day free trial. After trial, membership auto-renews at $30/month unless canceled before renewal.",
             "termsTitle": "Trial terms",
             "perks": {
             "cardRequired": "Card required",
-            "refundAfterVerification": "Refunded after verification",
+            "autoRenew": "Auto-renews at $30/month after trial unless canceled",
             "oneTrialPerEmail": "One trial per email"
             }
         },
@@ -110,7 +110,7 @@
         "terms": {
             "trial": {
                 "title": "Trial terms",
-                "body": "A valid credit/debit card is required to start the 7-day trial. A temporary $1 verification charge will be placed and refunded after successful verification.\n\nTrial access is limited to one per email/account. We may decline or revoke trial access for suspected abuse or fraud.\n\nYour trial ends after 7 days unless you purchase a paid plan."
+                "body": "A valid credit/debit card is required to start the 7-day trial.\n\nBy starting the trial, you authorize automatic renewal to the Consultant Monthly plan at $30/month when the trial ends, unless canceled before renewal.\n\nTrial access is limited to one per email/account. We may decline or revoke trial access for suspected abuse or fraud."
             },
             "lifetime": {
                 "title": "Lifetime terms",
@@ -119,9 +119,15 @@
             },
          "errors": {
             "checkoutStart": "Unable to start checkout.",
-            "trialStart": "Unable to start trial verification.",
-            "trialAlreadyUsed": "Trial already used for this account."
+            "trialStart": "Unable to start trial checkout.",
+            "trialAlreadyUsed": "Trial already used for this account.",
+            "trialConsentRequired": "Please accept the trial auto-renew terms before continuing.",
+            "trialConfig": "Trial setup is temporarily unavailable. Please contact support."
          }
+    ,
+        "trialConsent": {
+            "label": "I understand this 7-day trial will automatically renew at $30/month unless I cancel before renewal."
+        }
     }
     },
     "idf": {
