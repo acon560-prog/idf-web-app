@@ -112,7 +112,7 @@ function Login() {
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-gray-600">
-          {t("login.links.needAccount")}
+          {t("login.links.needAccount")}{" "}
           <Link to="/signup" className="text-indigo-600 hover:text-indigo-700">
             {t("login.links.signUp")}
           </Link>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { buildApiUrl } from "../utils/apiConfig";
+import { buildApiUrl, readJsonResponse } from "../utils/apiConfig";
 import { useAuth } from "../context/AuthContext.jsx";
 
 function Signup() {
@@ -32,14 +32,24 @@ function Signup() {
         }),
       });
 
-      const data = await response.json();
+      const data = await readJsonResponse(
+        response,
+        "Unable to sign up.",
+      );
 
-      if (!response.ok) throw new Error(data.error || "Sign up failed.");
+      if (!response.ok) {
+        throw new Error(data?.error || "Sign up failed.");
+      }
+
+      if (!data?.user || !data?.accessToken || !data?.refreshToken) {
+        throw new Error("Unexpected sign-up response from server.");
+      }
 
       login(data.user, data.accessToken, data.refreshToken);
       navigate("/start", { replace: true });
     } catch (err) {
-      setError(err.message);
+      const message = String(err?.message || "").trim();
+      setError(message || "Unexpected error. Please try again.");
     } finally {
       setLoading(false);
     }
