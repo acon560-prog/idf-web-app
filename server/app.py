@@ -24,6 +24,7 @@ from flask_jwt_extended import (
 )
 from flask_pymongo import PyMongo
 from flask import send_from_directory
+from pymongo.errors import DuplicateKeyError
 try:
     from providers.idf_us import get_us_idf_curves
 except ModuleNotFoundError:
@@ -349,6 +350,30 @@ def _idf_cc_ensemble_median(table_list):
 
 def normalize_email(email: str) -> str:
     return email.strip().lower() if isinstance(email, str) else ''
+
+
+def normalize_username(username: str) -> str:
+    if not isinstance(username, str):
+        return ""
+    cleaned = username.strip().lower()
+    cleaned = re.sub(r"\s+", "_", cleaned)
+    cleaned = re.sub(r"[^a-z0-9._-]", "", cleaned)
+    return cleaned[:40]
+
+
+def generate_available_username(base: str = "") -> str:
+    seed = normalize_username(base) or "user"
+    seed = seed[:24]
+    candidate = seed
+    attempts = 0
+    while attempts < 40:
+        if not users_collection.find_one({"username": candidate}):
+            return candidate
+        suffix = os.urandom(2).hex()
+        prefix_max = max(1, 24 - len(suffix) - 1)
+        candidate = f"{seed[:prefix_max]}_{suffix}"
+        attempts += 1
+    return f"user_{os.urandom(3).hex()}"
 
 
 def determine_role(user_doc) -> str:
@@ -735,7 +760,7 @@ def find_nearest_station_with_idf_cc(station_id: str):
 def register():
     payload = request.get_json() or {}
     email = normalize_email(payload.get('email'))
-    username = payload.get('username')
+    username = normalize_username(payload.get('username'))
     password = payload.get('password')
     name = payload.get('name', '')
 
@@ -752,13 +777,16 @@ def register():
     if not email and not username:
         return jsonify({'error': 'An email or username is required.'}), 400
 
+    if not username:
+        username = generate_available_username(email.split('@', 1)[0] if email else "user")
+
     password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     now = datetime.utcnow()
     role = 'admin' if email and email == ADMIN_EMAIL else 'user'
 
     user_doc = {
         'email': email if email else None,
-        'username': username if username else None,
+        'username': username,
         'name': name,
         'passwordHash': password_hash,
         # Trial is started only after card collection via Stripe Checkout.
@@ -776,7 +804,15 @@ def register():
         'role': role,
     }
 
-    result = users_collection.insert_one(user_doc)
+    try:
+        result = users_collection.insert_one(user_doc)
+    except DuplicateKeyError as exc:
+        message = str(exc).lower()
+        if "email" in message:
+            return jsonify({'error': 'An account with this email already exists.'}), 409
+        if "username" in message:
+            return jsonify({'error': 'An account with this username already exists.'}), 409
+        return jsonify({'error': 'An account with these credentials already exists.'}), 409
     user_doc['_id'] = result.inserted_id
     user_doc['role'] = role
 
