@@ -953,7 +953,7 @@ def create_trial_verification_session():
     if not email:
         return jsonify({'error': 'A valid email is required for billing.'}), 400
     if not STRIPE_PRICE_CONSULTANT_MONTHLY:
-        return jsonify({'error': 'Missing Stripe monthly plan configuration.'}), 500
+        return jsonify({'error': 'Missing Stripe monthly plan configuration (STRIPE_PRICE_CONSULTANT_MONTHLY).'}), 500
 
     payload = request.get_json() or {}
     auto_renew_consent = to_bool(payload.get('autoRenewConsent'))
@@ -1087,7 +1087,7 @@ def stripe_webhook():
                 payment_intent_id = session.get("payment_intent")
 
                 if not STRIPE_PRICE_CONSULTANT_MONTHLY:
-                    print("Missing Stripe monthly price ID for trial auto-renew subscription setup.")
+                    print("Missing Stripe monthly price ID for trial auto-renew subscription setup (STRIPE_PRICE_CONSULTANT_MONTHLY).")
                     return jsonify({'received': True})
 
                 # Refund the $1 verification charge (idempotent by event id).
