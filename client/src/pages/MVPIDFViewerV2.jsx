@@ -155,6 +155,7 @@ const MVPIDFViewerV2 = () => {
   const [usLongitude, setUsLongitude] = useState("");
   const [usLoading, setUsLoading] = useState(false);
   const [usResolvedLocation, setUsResolvedLocation] = useState(null);
+  const [trialVerificationLoading, setTrialVerificationLoading] = useState(false);
   const [usDataType, setUsDataType] = useState("intensity");
   const [usSeries, setUsSeries] = useState("ams");
   const [usEstimate, setUsEstimate] = useState("mean");
@@ -1097,6 +1098,47 @@ const handleStationInputKeyDown = (event) => {
     },
     [effectiveUsUnits, isUsSelected],
   );
+  const isTrialPending = (user?.subscriptionStatus || "").toLowerCase() === "trial_pending";
+  const bannerMessage = trialExpired
+    ? t("idf.trial.expired")
+    : trialMessage || (isTrialPending ? t("idf.trial.pendingVerification") : "");
+  const handleStartTrialVerification = useCallback(async () => {
+    if (!user) {
+      window.location.assign("/login");
+      return;
+    }
+    if (!authFetch) {
+      setError(t("idf.trial.startFailed"));
+      return;
+    }
+
+    const confirmed = window.confirm(t("idf.trial.pendingConsentConfirm"));
+    if (!confirmed) return;
+
+    try {
+      setTrialVerificationLoading(true);
+      setError(null);
+      const res = await authFetch(buildApiUrl("/billing/create-trial-verification-session"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ autoRenewConsent: true }),
+      });
+      const data = await readJsonResponse(res, t("idf.trial.startFailed"));
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || t("idf.trial.startFailed"));
+      }
+      if (!data?.url) {
+        throw new Error(t("idf.trial.startFailed"));
+      }
+      window.location.assign(data.url);
+    } catch (err) {
+      setError(err?.message || t("idf.trial.startFailed"));
+    } finally {
+      setTrialVerificationLoading(false);
+    }
+  }, [authFetch, setError, t, user]);
 
   if (!user) {
     return (
@@ -1116,11 +1158,11 @@ const handleStationInputKeyDown = (event) => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
-        {(trialMessage || trialExpired) && (
+        {(bannerMessage || trialExpired || isTrialPending) && (
           <div className="w-full max-w-5xl mb-4">
             <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm space-y-3">
             <p>
-              {trialExpired ? t("idf.trial.expired") : trialMessage}
+              {bannerMessage}
             </p>
               {trialExpired && (
                 <div className="flex flex-wrap gap-3">
@@ -1136,6 +1178,24 @@ const handleStationInputKeyDown = (event) => {
                   >
                     {t("idf.trial.emailSupport")}
                   </a>
+                </div>
+              )}
+              {isTrialPending && (
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={handleStartTrialVerification}
+                    disabled={trialVerificationLoading}
+                    className="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {trialVerificationLoading ? t("idf.trial.verifying") : t("idf.trial.verifyNow")}
+                  </button>
+                  <Link
+                    to="/#pricing"
+                    className="inline-flex items-center justify-center rounded-md border border-indigo-600 px-4 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition"
+                  >
+                    {t("idf.trial.viewPricing")}
+                  </Link>
                 </div>
               )}
             </div>

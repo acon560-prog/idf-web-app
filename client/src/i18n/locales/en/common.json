@@ -222,6 +222,11 @@
         "expired": "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
         "active": "Your free trial is active.",
         "pendingVerification": "Verify your card to start your 7-day trial and access IDF curves.",
+        "verifyNow": "Verify card now",
+        "verifying": "Opening verification...",
+        "viewPricing": "Go to pricing",
+        "pendingConsentConfirm": "By continuing, you authorize a refundable $1 card verification and automatic renewal at $30/month after the 7-day trial unless canceled before renewal. Continue?",
+        "startFailed": "Unable to start trial verification. Please try again.",
         "unverified": "Your subscription status could not be verified.",
         "contactUpgrade": "Contact us to upgrade",
         "emailSupport": "Email support"
