@@ -221,6 +221,7 @@
         "endsIn_other": "Your free trial ends in {{count}} days.",
         "expired": "Your free trial has expired. Please upgrade to continue accessing IDF curves.",
         "active": "Your free trial is active.",
+        "pendingVerification": "Verify your card to start your 7-day trial and access IDF curves.",
         "unverified": "Your subscription status could not be verified.",
         "contactUpgrade": "Contact us to upgrade",
         "emailSupport": "Email support"
