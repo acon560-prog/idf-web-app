@@ -494,6 +494,19 @@ def trial_already_used(user_doc) -> bool:
         return True
     return False
 
+
+def idf_access_denied_response(user_doc):
+    status = (user_doc or {}).get('subscriptionStatus')
+    if str(status or "").strip().lower() == "trial_pending":
+        return jsonify({
+            'error': 'Please verify your card to start your 7-day trial and access IDF data.',
+            'code': 'trial_pending',
+        }), 402
+    return jsonify({
+        'error': 'Your free trial has expired. Please subscribe to continue accessing IDF data.',
+        'code': 'trial_expired',
+    }), 402
+
 def ensure_user_indexes():
     try:
         users_collection.create_index('email', unique=True, sparse=True)
@@ -1527,10 +1540,7 @@ def idf_curves():
         return jsonify({'error': 'Authentication required.'}), 401
 
     if not user_has_active_access(user_doc):
-        return jsonify({
-            'error': 'Your free trial has expired. Please subscribe to continue accessing IDF data.',
-            'code': 'trial_expired',
-        }), 402
+        return idf_access_denied_response(user_doc)
 
     try:
         stationId = request.args.get('stationId')
@@ -1771,6 +1781,11 @@ def idf_curves_v2():
         return idf_curves()
 
     if country == "US":
+        user_doc = get_current_user()
+        if not user_doc:
+            return jsonify({'error': 'Authentication required.'}), 401
+        if not user_has_active_access(user_doc):
+            return idf_access_denied_response(user_doc)
         payload, status_code = get_us_idf_curves(
             lat=request.args.get("lat"),
             lon=request.args.get("lon"),

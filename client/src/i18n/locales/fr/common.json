@@ -221,6 +221,7 @@
     "endsIn_other": "Votre essai gratuit se termine dans {{count}} jours.",
     "expired": "Votre essai gratuit a expiré. Veuillez passer à une offre payante pour continuer à accéder aux courbes IDF.",
     "active": "Votre essai gratuit est actif.",
+    "pendingVerification": "Vérifiez votre carte pour démarrer l’essai de 7 jours et accéder aux courbes IDF.",
     "unverified": "Le statut de votre abonnement n'a pas pu être vérifié.",
     "contactUpgrade": "Contactez-nous pour passer à une offre payante",
     "emailSupport": "Contacter le support"

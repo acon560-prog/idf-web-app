@@ -225,6 +225,11 @@ const MVPIDFViewerV2 = () => {
     return;
   }
 
+  if (user.subscriptionStatus === "trial_pending") {
+    setTrialMessage(t("idf.trial.pendingVerification"));
+    return;
+  }
+
   if (user.trialEndsAt) {
     const endsAt = new Date(user.trialEndsAt);
     const now = new Date();
@@ -395,6 +400,11 @@ const handleStationInputKeyDown = (event) => {
         idfJson?.code === "trial_expired"
       ) {
         setTrialMessage("Your free trial has expired. Please upgrade to continue accessing IDF curves.");
+      } else if (
+        (idfResponse.status === 402 || idfResponse.status === 403) &&
+        idfJson?.code === "trial_pending"
+      ) {
+        setTrialMessage(t("idf.trial.pendingVerification"));
       }
       throw new Error(idfJson?.error || "Failed to fetch IDF data.");
     }
@@ -571,6 +581,11 @@ const handleStationInputKeyDown = (event) => {
             idfJson?.code === "trial_expired"
           ) {
            setTrialMessage(t("idf.trial.expired"));
+          } else if (
+            (idfResponse.status === 402 || idfResponse.status === 403) &&
+            idfJson?.code === "trial_pending"
+          ) {
+            setTrialMessage(t("idf.trial.pendingVerification"));
           }
           throw new Error(idfJson?.error || t("idf.errors.idfFetchFailed"));
         }
