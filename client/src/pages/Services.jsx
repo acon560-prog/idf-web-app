@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import permitImg from '../assets/permit-drawings.jpg';
 import gradingImg from '../assets/grading-drainage.jpg';
 import { useTranslation } from "react-i18next";
@@ -109,6 +110,25 @@ function Services() {
         <p className="mt-2 text-sm text-slate-600">
           {t("services.sitePlanning.description")}
         </p>
+      </div>
+
+      <div className="mt-10 rounded-2xl border border-sky-200 bg-sky-50 p-6 md:p-8">
+        <h3 className="text-xl font-semibold text-slate-900">{t("services.cta.title")}</h3>
+        <p className="mt-2 text-sm text-slate-700">{t("services.cta.description")}</p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link
+            to="/contact"
+            className="inline-flex items-center justify-center rounded-md bg-sky-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+          >
+            {t("services.cta.primary")}
+          </Link>
+          <a
+            href="mailto:support@civispec.com"
+            className="inline-flex items-center justify-center rounded-md border border-sky-600 px-5 py-2.5 text-sm font-medium text-sky-700 transition hover:bg-sky-100 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+          >
+            {t("services.cta.secondary")}
+          </a>
+        </div>
       </div>
     </motion.div>
   );

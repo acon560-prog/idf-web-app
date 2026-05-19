@@ -341,6 +341,12 @@
     "sitePlanning": {
       "title": "Site planning & analysis",
       "description": "Early feasibility input to reduce redesign: layout constraints, drainage paths, grading implications, and practical construction sequencing considerations."
+  },
+  "cta": {
+    "title": "Have a project in mind?",
+    "description": "Tell us your project scope, location, and timeline. We can review your needs and suggest the right service package.",
+    "primary": "Contact us",
+    "secondary": "Email support"
     }
   },
     "contact": {

@@ -341,6 +341,12 @@
   "sitePlanning": {
     "title": "Planification et analyse de site",
     "description": "Apport en faisabilité dès les premières étapes pour réduire les reprises : contraintes d’implantation, chemins de drainage, impacts de nivellement et considérations pratiques de séquencement de construction."
+  },
+  "cta": {
+    "title": "Vous avez un projet en tête ?",
+    "description": "Partagez la portée de votre projet, l’emplacement et l’échéancier. Nous pouvons analyser vos besoins et proposer la meilleure offre de services.",
+    "primary": "Contactez-nous",
+    "secondary": "Contacter le support"
   }
 },
   "contact": {
