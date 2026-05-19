@@ -222,6 +222,11 @@
     "expired": "Votre essai gratuit a expiré. Veuillez passer à une offre payante pour continuer à accéder aux courbes IDF.",
     "active": "Votre essai gratuit est actif.",
     "pendingVerification": "Vérifiez votre carte pour démarrer l’essai de 7 jours et accéder aux courbes IDF.",
+    "verifyNow": "Vérifier la carte maintenant",
+    "verifying": "Ouverture de la vérification...",
+    "viewPricing": "Voir les forfaits",
+    "pendingConsentConfirm": "En continuant, vous autorisez un débit de vérification remboursable de 1 $ et un renouvellement automatique à 30 $/mois après l’essai de 7 jours sauf annulation avant le renouvellement. Continuer ?",
+    "startFailed": "Impossible de démarrer la vérification d’essai. Veuillez réessayer.",
     "unverified": "Le statut de votre abonnement n'a pas pu être vérifié.",
     "contactUpgrade": "Contactez-nous pour passer à une offre payante",
     "emailSupport": "Contacter le support"
