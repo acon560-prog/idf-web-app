@@ -57,22 +57,18 @@ jobs:
       - name: Deploy to Cloud Run
         env:
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          STRIPE_PRICE_CONSULTANT_MONTHLY: ${{ secrets.STRIPE_PRICE_CONSULTANT_MONTHLY }}
-          STRIPE_PRICE_MUNICIPAL_ANNUAL: ${{ secrets.STRIPE_PRICE_MUNICIPAL_ANNUAL }}
-          STRIPE_PRICE_LIFETIME: ${{ secrets.STRIPE_PRICE_LIFETIME }}
-          STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS: ${{ secrets.STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS }}
         run: |
-          if [ -z "$STRIPE_SECRET_KEY" ] || [ -z "$STRIPE_WEBHOOK_SECRET" ] || [ -z "$STRIPE_PRICE_CONSULTANT_MONTHLY" ]; then
-            echo "Missing required Stripe deploy secret(s)."
-            echo "Required: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_CONSULTANT_MONTHLY"
-            exit 1
+          # Use Google Secret Manager-backed env vars on Cloud Run.
+          # This avoids type conflicts when variables are configured as "secret refs".
+          DEPLOY_ARGS=(
+            "$SERVICE"
+            --source server
+            --project "$PROJECT_ID"
+            --region "$REGION"
+            --allow-unauthenticated
+            --update-secrets "STRIPE_SECRET_KEY=stripe_secret_key:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,STRIPE_PRICE_CONSULTANT_MONTHLY=STRIPE_PRICE_MONTHLY:latest"
+          )
+          if [ -n "$FRONTEND_URL" ]; then
+            DEPLOY_ARGS+=(--update-env-vars "FRONTEND_URL=${FRONTEND_URL}")
           fi
-          gcloud run deploy "$SERVICE" \
-            --source server \
-            --project "$PROJECT_ID" \
-            --region "$REGION" \
-            --allow-unauthenticated \
-            --update-env-vars "FRONTEND_URL=${FRONTEND_URL},STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY},STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET},STRIPE_PRICE_CONSULTANT_MONTHLY=${STRIPE_PRICE_CONSULTANT_MONTHLY},STRIPE_PRICE_MUNICIPAL_ANNUAL=${STRIPE_PRICE_MUNICIPAL_ANNUAL},STRIPE_PRICE_LIFETIME=${STRIPE_PRICE_LIFETIME},STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS=${STRIPE_TRIAL_VERIFICATION_AMOUNT_CENTS}" \
-            --quiet
+          gcloud run deploy "${DEPLOY_ARGS[@]}" --quiet
