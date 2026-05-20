@@ -1003,7 +1003,15 @@ def create_trial_verification_session():
         session_kwargs["customer_creation"] = "always"
         session_kwargs["customer_email"] = email
 
-    session = stripe.checkout.Session.create(**session_kwargs)
+    try:
+        session = stripe.checkout.Session.create(**session_kwargs)
+    except stripe.error.StripeError as exc:
+        # Return a structured JSON error so the frontend can show a useful message.
+        user_message = getattr(exc, "user_message", None) or str(exc)
+        return jsonify({'error': f'Unable to start trial verification. {user_message}'}), 502
+    except Exception as exc:
+        print(f"Unexpected trial checkout error: {exc}")
+        return jsonify({'error': 'Unable to start trial verification. Please try again.'}), 500
 
     return jsonify({"url": session.url})
 
