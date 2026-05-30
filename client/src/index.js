@@ -6,8 +6,9 @@ import reportWebVitals from './reportWebVitals.js';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import "./i18n/index.js";
-
+import { initAnalytics } from "./analytics.js";
 const root = ReactDOM.createRoot(document.getElementById('root'));
+initAnalytics();
 root.render(
   <React.StrictMode>
     <BrowserRouter>
