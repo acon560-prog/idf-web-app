@@ -1,0 +1,27 @@
+{
+  "source_dataset": "CDEM Canada DEM COG",
+  "source_url": "https://datacube-prod-data-public.s3.ca-central-1.amazonaws.com/store/elevation/cdem-cdsm/cdem/cdem-canada-dem.tif",
+  "source_crs": "EPSG:3979",
+  "resolution_m": 16,
+  "area_of_interest_points_wgs84": [
+    {
+      "name": "Ruisseau Charron point 1",
+      "lon": -73.827685,
+      "lat": 45.6526999
+    },
+    {
+      "name": "Ruisseau Charron point 2",
+      "lon": -73.819876,
+      "lat": 45.6478866
+    }
+  ],
+  "buffer_m": 1200,
+  "output_file": "/workspace/engineering/hec-ras-data/DEM_Ruisseau_Charron_Ste_Therese_CDEM16m.tif",
+  "output_bounds_epsg3979": {
+    "left": 1642000.0,
+    "bottom": -100192.0,
+    "right": 1645168.0,
+    "top": -97488.0
+  },
+  "notes": "DEM clipped for preliminary HEC-RAS setup around Ruisseau Charron, Sainte-Therese. Verify exact project extents and add LiDAR DEM if required by authority."
+}
