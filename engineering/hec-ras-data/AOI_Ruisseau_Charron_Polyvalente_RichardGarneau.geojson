@@ -1,0 +1,82 @@
+{
+  "type": "FeatureCollection",
+  "name": "AOI_Ruisseau_Charron_Polyvalente_RichardGarneau",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Study AOI - Ruisseau Charron stretch",
+        "purpose": "existing and future condition modeling"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -73.8305,
+              45.6445
+            ],
+            [
+              -73.8185,
+              45.6445
+            ],
+            [
+              -73.8185,
+              45.654
+            ],
+            [
+              -73.8305,
+              45.654
+            ],
+            [
+              -73.8305,
+              45.6445
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Stade_Richard_Garneau",
+        "type": "landmark"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8242786,
+          45.6495451
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Polyvalente_Sainte_Therese",
+        "type": "landmark"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8259185,
+          45.6493703
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Bd_du_Domaine_crossing_approx",
+        "type": "landmark"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -73.8248,
+          45.648
+        ]
+      }
+    }
+  ]
+}

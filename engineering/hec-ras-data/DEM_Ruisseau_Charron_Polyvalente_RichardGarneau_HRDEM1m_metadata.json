@@ -1,0 +1,61 @@
+{
+  "title": "HRDEM 1m DTM - Ruisseau Charron near Polyvalente Sainte-Therese / Stade Richard-Garneau",
+  "why_replaced_previous": "Previous file DEM_Ruisseau_Charron_Ste_Therese_CDEM16m.tif was a coarse ~16 m CDEM extract and not suitable for creek/channel modeling. This product is LiDAR-based HRDEM 1 m DTM clipped to the stadium/polyvalente reach shown by the user.",
+  "source_product": "NRCan High Resolution Digital Elevation Model (HRDEM) Mosaic 1m - DTM",
+  "source_stac_collection": "hrdem-mosaic-1m",
+  "source_stac_item": "9_2-mosaic-1m",
+  "source_cog_url": "https://canelevation-dem.s3.ca-central-1.amazonaws.com/hrdem-mosaic-1m/9_2-mosaic-1m-dtm.tif",
+  "vertical_datum": "CGVD2013",
+  "horizontal_crs_native": "EPSG:3979 (Canada Atlas Lambert)",
+  "resolution_m": 1.0,
+  "landmarks_wgs84": {
+    "Stade_Richard_Garneau": {
+      "lon": -73.8242786,
+      "lat": 45.6495451
+    },
+    "Polyvalente_Sainte_Therese": {
+      "lon": -73.8259185,
+      "lat": 45.6493703
+    },
+    "Bd_du_Domaine_crossing_approx": {
+      "lon": -73.8248,
+      "lat": 45.648
+    }
+  },
+  "requested_aoi_wgs84": {
+    "min_lon": -73.8305,
+    "min_lat": 45.6445,
+    "max_lon": -73.8185,
+    "max_lat": 45.654
+  },
+  "output_bounds_epsg3979": {
+    "left": 1643300.0,
+    "bottom": -99634.0,
+    "right": 1643847.0,
+    "top": -98312.0
+  },
+  "output_bounds_wgs84": {
+    "min_lon": -73.83049829557392,
+    "min_lat": 45.64291756162367,
+    "max_lon": -73.81849620294653,
+    "max_lat": 45.655585588199855
+  },
+  "elevation_stats_m": {
+    "min": 31.891357421875,
+    "max": 64.09344482421875,
+    "mean": 44.47309112548828,
+    "valid_pixels": 723134
+  },
+  "outputs": {
+    "dtm_epsg3979": "DEM_Ruisseau_Charron_Polyvalente_RichardGarneau_HRDEM1m_DTM.tif",
+    "dtm_utm18_epsg2959": "DEM_Ruisseau_Charron_Polyvalente_RichardGarneau_HRDEM1m_DTM_UTM18.tif",
+    "aoi_geojson": "AOI_Ruisseau_Charron_Polyvalente_RichardGarneau.geojson",
+    "preview_png": "DEM_Ruisseau_Charron_Polyvalente_RichardGarneau_preview.png"
+  },
+  "recommended_use": "Use the UTM18 (EPSG:2959) GeoTIFF in HEC-RAS / CAD / GIS for existing-condition terrain. The AOI covers the Ruisseau Charron corridor between Polyvalente Sainte-Therese and Stade Richard-Garneau, extending south beyond Boulevard du Domaine for existing/future modeling.",
+  "notes": [
+    "DTM = bare-earth terrain (preferred for hydraulic modeling).",
+    "Buildings/vegetation are removed in DTM; use DSM asset if canopy/structure surface is needed.",
+    "Verify channel invert with survey; LiDAR may not resolve submerged bed accurately."
+  ]
+}

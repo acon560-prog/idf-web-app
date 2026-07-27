@@ -23,5 +23,11 @@
     "right": 1645168.0,
     "top": -97488.0
   },
-  "notes": "DEM clipped for preliminary HEC-RAS setup around Ruisseau Charron, Sainte-Therese. Verify exact project extents and add LiDAR DEM if required by authority."
+  "notes": "DEM clipped for preliminary HEC-RAS setup around Ruisseau Charron, Sainte-Therese. Verify exact project extents and add LiDAR DEM if required by authority.",
+  "status": "SUPERSEDED",
+  "superseded_by": [
+    "DEM_Ruisseau_Charron_Polyvalente_RichardGarneau_HRDEM1m_DTM.tif",
+    "DEM_Ruisseau_Charron_Polyvalente_RichardGarneau_HRDEM1m_DTM_UTM18.tif"
+  ],
+  "supersession_reason": "Coarse 16 m CDEM clip; replaced by NRCan HRDEM 1 m LiDAR DTM clipped to the Polyvalente Sainte-Therese / Stade Richard-Garneau reach of Ruisseau Charron."
 }
