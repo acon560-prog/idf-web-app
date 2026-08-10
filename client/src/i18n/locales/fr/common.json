@@ -436,6 +436,27 @@
     "exportFooter": "Généré par CiviSpec à titre informatif seulement. Vérifiez auprès des publications officielles et des exigences locales avant utilisation."
   },
     "nav": {
-    "disclaimer": "Avertissement"
+    "disclaimer": "Avertissement",
+    "normalDepth": "Profondeur normale"
+  },
+  "normalDepth": {
+    "eyebrow": "Outils drainage · aperçu",
+    "title": "Profondeur normale — niveau d’eau rapide",
+    "subtitle": "Estimation préliminaire de Manning pour un fossé ou un canal trapézoïdal.",
+    "disclaimer": "Estimation en écoulement uniforme 1D. Outil de pré-dimensionnement seulement — ne remplace pas une étude hydraulique complète.",
+    "inputsTitle": "Saisies",
+    "yellowHint": "Jaune = modifiable",
+    "manningN": "Manning",
+    "section": "Section",
+    "trapezoid": "Trapèze",
+    "bottomWidth": "largeur de fond",
+    "sideSlope": "talus",
+    "calculate": "Calculer",
+    "results": "Résultats",
+    "invalid": "Entrez des valeurs positives pour Q, S₀ et n (b et z ≥ 0).",
+    "sketchTitle": "Croquis en direct",
+    "sketchAria": "Section trapézoïdale avec profondeur normale",
+    "resultLabel": "résultat",
+    "methodNote": "Résout l’équation de Manning pour yn (SI). Le croquis suit b et z; yn se met à jour au calcul."
   }
 }

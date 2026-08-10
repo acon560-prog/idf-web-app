@@ -15,6 +15,7 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
 import Disclaimer from "./pages/Disclaimer.jsx";
+import NormalDepth from "./pages/NormalDepth.jsx";
 function App() {
   const location = useLocation();
   const lastTrackedPath = useRef("");
@@ -46,6 +47,8 @@ function App() {
             }
           />
           <Route path="/idf-viewer" element={<MVPIDFViewerV2 />} />
+          {/* Preview tool — separate from IDF; remove this route (+ page) to revert */}
+          <Route path="/tools/normal-depth" element={<NormalDepth />} />
           <Route path="/test-autocomplete" element={<TestAutocomplete />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
