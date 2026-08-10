@@ -8,9 +8,14 @@ const DEFAULTS = {
   Q: "3.598",
   S0: "0.0173",
   n: "0.030",
-  b: "0.50",
-  z: "2",
+  b: "0.5",
+  z: "2.0",
 };
+
+/** b: 0.1, 0.2, … 3.0 m */
+const B_OPTIONS = Array.from({ length: 30 }, (_, i) => ((i + 1) / 10).toFixed(1));
+/** z: 0.5, 0.6, … 4.0 (H:V) */
+const Z_OPTIONS = Array.from({ length: 36 }, (_, i) => ((i + 5) / 10).toFixed(1));
 
 function parsePositive(value, { allowZero = false } = {}) {
   const n = Number(value);
@@ -127,27 +132,58 @@ function TrapezoidSketch({ b, z, yn, Q, n, S0, labels }) {
   );
 }
 
-function YellowInput({ id, label, unit, value, onChange, accent }) {
+const yellowFieldClass =
+  "w-full rounded-md border border-amber-300 bg-[#FFF59D] px-3 py-2 font-mono text-sm text-slate-900 shadow-inner outline-none ring-amber-400/40 focus:ring-2";
+
+function FieldLabel({ id, label, unit, accent }) {
   return (
-    <label htmlFor={id} className="block">
-      <span className="mb-1 flex items-baseline gap-2 text-sm font-semibold text-slate-800">
-        <span
-          className="inline-block h-2.5 w-2.5 rounded-sm"
-          style={{ backgroundColor: accent }}
-          aria-hidden
-        />
-        {label}
-        {unit ? <span className="font-normal text-slate-500">{unit}</span> : null}
-      </span>
+    <span className="mb-1 flex items-baseline gap-2 text-sm font-semibold text-slate-800">
+      <span
+        className="inline-block h-2.5 w-2.5 rounded-sm"
+        style={{ backgroundColor: accent }}
+        aria-hidden
+      />
+      <label htmlFor={id}>{label}</label>
+      {unit ? <span className="font-normal text-slate-500">{unit}</span> : null}
+    </span>
+  );
+}
+
+function YellowInput({ id, label, unit, value, onChange, accent, step = "any", min, max }) {
+  return (
+    <div className="block">
+      <FieldLabel id={id} label={label} unit={unit} accent={accent} />
       <input
         id={id}
         type="number"
-        step="any"
+        step={step}
+        min={min}
+        max={max}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-amber-300 bg-[#FFF59D] px-3 py-2 font-mono text-sm text-slate-900 shadow-inner outline-none ring-amber-400/40 focus:ring-2"
+        className={yellowFieldClass}
       />
-    </label>
+    </div>
+  );
+}
+
+function YellowSelect({ id, label, unit, value, onChange, accent, options }) {
+  return (
+    <div className="block">
+      <FieldLabel id={id} label={label} unit={unit} accent={accent} />
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={yellowFieldClass}
+      >
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
 
@@ -273,21 +309,23 @@ export default function NormalDepth() {
                 <span className="font-normal text-slate-500">({t("normalDepth.trapezoid")})</span>
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
-                <YellowInput
+                <YellowSelect
                   id="nd-b"
                   label="b"
-                  unit={`m — ${t("normalDepth.bottomWidth")}`}
+                  unit={`m — ${t("normalDepth.bottomWidth")} (0.1)`}
                   value={inputs.b}
                   onChange={setField("b")}
                   accent="var(--nd-b)"
+                  options={B_OPTIONS}
                 />
-                <YellowInput
+                <YellowSelect
                   id="nd-z"
                   label="z"
-                  unit={`H:V — ${t("normalDepth.sideSlope")}`}
+                  unit={`H:V — ${t("normalDepth.sideSlope")} (0.1)`}
                   value={inputs.z}
                   onChange={setField("z")}
                   accent="var(--nd-z)"
+                  options={Z_OPTIONS}
                 />
               </div>
             </div>
