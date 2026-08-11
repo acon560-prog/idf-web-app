@@ -7,7 +7,7 @@ import { solveNormalDepth } from "../utils/normalDepth.js";
 const DEFAULTS = {
   shape: "trapezoid",
   Q: "3.598",
-  S0: "0.0173",
+  S0: "0.017",
   n: "0.030",
   b: "0.5",
   z: "2.0",
@@ -20,6 +20,10 @@ const B_OPTIONS = Array.from({ length: 30 }, (_, i) => ((i + 1) / 10).toFixed(1)
 const Z_OPTIONS = Array.from({ length: 36 }, (_, i) => ((i + 5) / 10).toFixed(1));
 /** D (pipe diameter): 0.2 … 2.0 m by 0.1 */
 const D_OPTIONS = Array.from({ length: 19 }, (_, i) => ((i + 2) / 10).toFixed(1));
+/** Manning n: 0.010 … 0.050 by 0.001 */
+const N_OPTIONS = Array.from({ length: 41 }, (_, i) => ((10 + i) / 1000).toFixed(3));
+/** Longitudinal slope S0: 0.001 … 0.100 by 0.001 */
+const S0_OPTIONS = Array.from({ length: 100 }, (_, i) => ((i + 1) / 1000).toFixed(3));
 
 const SHAPES = ["trapezoid", "rectangular", "circular"];
 
@@ -404,15 +408,33 @@ export default function NormalDepth() {
             </div>
 
             <fieldset className="space-y-3">
-              <YellowInput id="nd-Q" label="Q" unit="m³/s" value={inputs.Q} onChange={setField("Q")} accent="var(--nd-flow)" />
-              <YellowInput id="nd-S0" label="S₀" unit="m/m" value={inputs.S0} onChange={setField("S0")} accent="var(--nd-flow)" />
               <YellowInput
+                id="nd-Q"
+                label="Q"
+                unit="m³/s"
+                value={inputs.Q}
+                onChange={setField("Q")}
+                accent="var(--nd-flow)"
+                step="0.001"
+                min="0.001"
+              />
+              <YellowSelect
+                id="nd-S0"
+                label="S₀"
+                unit={`m/m — ${t("normalDepth.slope")} (0.001)`}
+                value={inputs.S0}
+                onChange={setField("S0")}
+                accent="var(--nd-flow)"
+                options={S0_OPTIONS}
+              />
+              <YellowSelect
                 id="nd-n"
                 label="n"
-                unit={t("normalDepth.manningN")}
+                unit={`${t("normalDepth.manningN")} (0.001)`}
                 value={inputs.n}
                 onChange={setField("n")}
                 accent="var(--nd-flow)"
+                options={N_OPTIONS}
               />
             </fieldset>
 

@@ -447,6 +447,7 @@
     "inputsTitle": "Inputs",
     "yellowHint": "Yellow = editable",
     "manningN": "Manning",
+    "slope": "slope",
     "section": "Section",
     "trapezoid": "Trapezoid",
     "shapes": {
