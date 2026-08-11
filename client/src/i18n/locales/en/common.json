@@ -442,21 +442,28 @@
   "normalDepth": {
     "eyebrow": "Drainage tools · preview",
     "title": "Normal depth — quick water level",
-    "subtitle": "Preliminary Manning estimate for a trapezoidal ditch or channel.",
+    "subtitle": "Preliminary Manning estimate for trapezoidal, rectangular, or circular sections.",
     "disclaimer": "Uniform-flow 1D estimate only. For preliminary sizing — not a substitute for a full hydraulic study.",
     "inputsTitle": "Inputs",
     "yellowHint": "Yellow = editable",
     "manningN": "Manning",
     "section": "Section",
     "trapezoid": "Trapezoid",
+    "shapes": {
+      "trapezoid": "Trapezoid",
+      "rectangular": "Rectangular",
+      "circular": "Circular"
+    },
     "bottomWidth": "bottom width",
     "sideSlope": "side slope",
+    "diameter": "diameter",
     "calculate": "Calculate",
     "results": "Results",
-    "invalid": "Enter positive values for Q, S₀, and n (b and z ≥ 0).",
+    "invalid": "Enter positive values for Q, S₀, and n (and section dimensions).",
+    "exceedsCapacity": "Q exceeds the approximate open-channel capacity of this pipe (partially full).",
     "sketchTitle": "Live sketch",
-    "sketchAria": "Trapezoidal channel cross-section with normal depth",
+    "sketchAria": "Channel cross-section with normal depth",
     "resultLabel": "result",
-    "methodNote": "Solves Manning’s equation for normal depth yn (SI). Sketch proportions update with b and z; yn updates when you calculate."
+    "methodNote": "Solves Manning’s equation for normal depth yn (SI). Choose section type; sketch updates with geometry. Circular = partially full free-surface flow."
   }
 }
