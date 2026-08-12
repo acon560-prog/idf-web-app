@@ -437,7 +437,8 @@
   },
     "nav": {
     "disclaimer": "Avertissement",
-    "normalDepth": "Profondeur normale"
+    "normalDepth": "Outils",
+    "tools": "Outils"
   },
   "normalDepth": {
     "eyebrow": "Outils drainage · aperçu",

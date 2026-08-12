@@ -437,7 +437,8 @@
   },
     "nav": {
     "disclaimer": "Disclaimer",
-    "normalDepth": "Normal depth"
+    "normalDepth": "Tools",
+    "tools": "Tools"
   },
   "normalDepth": {
     "eyebrow": "Drainage tools · preview",

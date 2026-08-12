@@ -20,7 +20,7 @@ function Navbar() {
           <li><Link to="/disclaimer" className="hover:underline">{t("nav.disclaimer")}</Link></li>
           <li>
             <Link to="/tools/normal-depth" className="hover:underline text-sky-300">
-              {t("nav.normalDepth")}
+              {t("nav.tools")}
             </Link>
           </li>
           {isAdmin && <li><Link to="/admin" className="hover:underline">Admin</Link></li>}
@@ -52,7 +52,7 @@ function Navbar() {
           <li><Link to="/disclaimer" onClick={() => setMenuOpen(false)}>{t("nav.disclaimer")}</Link></li>
           <li>
             <Link to="/tools/normal-depth" onClick={() => setMenuOpen(false)} className="text-sky-300">
-              {t("nav.normalDepth")}
+              {t("nav.tools")}
             </Link>
           </li>
           {isAdmin && (
