@@ -436,6 +436,36 @@
     "exportFooter": "Généré par CiviSpec à titre informatif seulement. Vérifiez auprès des publications officielles et des exigences locales avant utilisation."
   },
     "nav": {
-    "disclaimer": "Avertissement"
+    "disclaimer": "Avertissement",
+    "normalDepth": "Outils",
+    "tools": "Outils"
+  },
+  "normalDepth": {
+    "eyebrow": "Outils drainage · aperçu",
+    "title": "Profondeur normale — niveau d’eau rapide",
+    "subtitle": "Estimation préliminaire de Manning pour sections trapézoïdale, rectangulaire ou circulaire.",
+    "disclaimer": "Estimation en écoulement uniforme 1D. Outil de pré-dimensionnement seulement — ne remplace pas une étude hydraulique complète.",
+    "inputsTitle": "Saisies",
+    "yellowHint": "Jaune = modifiable",
+    "manningN": "Manning",
+    "slope": "pente",
+    "section": "Section",
+    "trapezoid": "Trapèze",
+    "shapes": {
+      "trapezoid": "Trapèze",
+      "rectangular": "Rectangulaire",
+      "circular": "Circulaire"
+    },
+    "bottomWidth": "largeur de fond",
+    "sideSlope": "talus",
+    "diameter": "diamètre",
+    "calculate": "Calculer",
+    "results": "Résultats",
+    "invalid": "Entrez des valeurs positives pour Q, S₀ et n (et les dimensions de section).",
+    "exceedsCapacity": "Q dépasse la capacité approximative à surface libre de cette conduite (partiellement pleine).",
+    "sketchTitle": "Croquis en direct",
+    "sketchAria": "Section avec profondeur normale",
+    "resultLabel": "résultat",
+    "methodNote": "Résout l’équation de Manning pour yn (SI). Choisissez le type de section; le croquis suit la géométrie. Circulaire = écoulement à surface libre (partiellement plein)."
   }
 }
