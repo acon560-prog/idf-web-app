@@ -467,5 +467,59 @@
     "sketchAria": "Channel cross-section with normal depth",
     "resultLabel": "result",
     "methodNote": "Solves Manning’s equation for normal depth yn (SI). Choose section type; sketch updates with geometry. Circular = partially full free-surface flow."
+  },
+  "tools": {
+    "hubNav": "Drainage tools",
+    "quickSizeTab": "Drainage Quick Size",
+    "normalDepthTab": "Normal depth"
+  },
+  "quickSize": {
+    "eyebrow": "Drainage tools",
+    "title": "Drainage Quick Size",
+    "subtitle": "Rational peak flow, pipe diameter suggestion, and ditch depth table — preliminary SI sizing.",
+    "disclaimer": "Preliminary 1D estimates only. Not a substitute for a full hydraulic study or municipal standards.",
+    "modesLabel": "Quick Size modes",
+    "modes": {
+      "rational": "Rational Q",
+      "pipe": "Pipe",
+      "ditch": "Ditch"
+    },
+    "inputsTitle": "Inputs",
+    "outputsTitle": "Outputs",
+    "yellowHint": "Yellow = editable",
+    "cSource": "Runoff coefficient C",
+    "cDirect": "Enter C",
+    "cCover": "Roof / pave / grass %",
+    "roof": "Roof",
+    "pave": "Pave",
+    "grass": "Grass",
+    "rationalNote": "Q = C · i · A(ha) / 360. Intensity is manual for now (IDF link later).",
+    "useInPipe": "Use Q in Pipe mode",
+    "useSharedQ": "Load last Rational Q",
+    "exportSummary": "Export CSV",
+    "exportTable": "Export table",
+    "exportTableFigure": "Export table",
+    "slopeUnit": "Slope unit",
+    "material": "Material preset",
+    "manningN": "Manning n",
+    "materials": {
+      "pvc": "PVC (n≈0.011)",
+      "concrete": "Concrete (n≈0.013)",
+      "hdpe": "HDPE smooth (n≈0.012)",
+      "cmp": "CMP (n≈0.024)",
+      "custom": "Custom n"
+    },
+    "minD": "Min diameter",
+    "status": "Check",
+    "ok": "OK",
+    "increaseD": "Increase D",
+    "invalid": "Enter valid positive inputs.",
+    "pipeNote": "Full-flow Manning capacity on commercial diameters. Velocity uses design Q / full area.",
+    "sideSlope": "side slope",
+    "bottomWidth": "bottom width (0 = V-ditch)",
+    "depthList": "Target depths y",
+    "sketchDepth": "Figure depth y",
+    "sketchAria": "Ditch cross-section sketch",
+    "ditchNote": "x = horizontal run of one bank (z·y). OK when capacity at depth ≥ design Q."
   }
 }
