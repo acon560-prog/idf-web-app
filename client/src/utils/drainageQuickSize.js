@@ -3,11 +3,19 @@
  * Preliminary sizing only; no IDF coupling in v1.
  */
 
-/** Typical runoff coefficients for land-cover mix */
+/**
+ * Typical runoff coefficients C for land-cover mix (weighted average).
+ * Enter % of total drainage area for each surface; C_w = Σ(C_i · %_i) / Σ%.
+ * Values are common textbook defaults — confirm against local municipal tables.
+ */
 export const LAND_COVER_C = {
-  roof: 0.9,
-  pave: 0.9,
-  grass: 0.2,
+  // Impervious
+  roof: 0.95,
+  pave: 0.95,
+  gravel: 0.4, // gravel roads / lots — often 0.35–0.60 locally
+  // Pervious
+  grass: 0.25,
+  woods: 0.15,
 };
 
 /** Manning n presets (circular pipes) */
@@ -39,14 +47,26 @@ export function rationalDischarge({ C, i_mm_h, A, areaUnit = "ha" }) {
 }
 
 /**
- * Composite C from land-cover percentages (must sum ≈ 100).
+ * Area-weighted composite C from land-cover percentages of the catchment.
+ * Percentages are relative weights (ideally sum to 100); any positive mix is scaled by Σ%.
  */
-export function compositeCFromCover({ roofPct = 0, pavePct = 0, grassPct = 0 }) {
-  const sum = roofPct + pavePct + grassPct;
-  if (!(sum > 0)) return { C: null, error: "invalid_cover" };
-  const C =
-    (LAND_COVER_C.roof * roofPct + LAND_COVER_C.pave * pavePct + LAND_COVER_C.grass * grassPct) /
-    sum;
+export function compositeCFromCover({
+  roofPct = 0,
+  pavePct = 0,
+  gravelPct = 0,
+  grassPct = 0,
+  woodsPct = 0,
+} = {}) {
+  const parts = [
+    { pct: roofPct, c: LAND_COVER_C.roof },
+    { pct: pavePct, c: LAND_COVER_C.pave },
+    { pct: gravelPct, c: LAND_COVER_C.gravel },
+    { pct: grassPct, c: LAND_COVER_C.grass },
+    { pct: woodsPct, c: LAND_COVER_C.woods },
+  ];
+  const sum = parts.reduce((acc, p) => acc + (Number(p.pct) || 0), 0);
+  if (!(sum > 0)) return { C: null, sum: 0, error: "invalid_cover" };
+  const C = parts.reduce((acc, p) => acc + (Number(p.pct) || 0) * p.c, 0) / sum;
   return { C, sum, error: null };
 }
 

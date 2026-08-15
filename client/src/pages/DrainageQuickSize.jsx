@@ -7,6 +7,7 @@ import {
   PIPE_MATERIAL_PRESETS,
   COMMERCIAL_DIAMETERS_M,
   rationalDischarge,
+  LAND_COVER_C,
   compositeCFromCover,
   suggestPipeDiameter,
   ditchDepthTable,
@@ -157,9 +158,11 @@ export default function DrainageQuickSize() {
   const [area, setArea] = useState("0.5");
   const [cMode, setCMode] = useState("direct"); // direct | cover
   const [C, setC] = useState("0.6");
-  const [roofPct, setRoofPct] = useState("30");
+  const [roofPct, setRoofPct] = useState("20");
   const [pavePct, setPavePct] = useState("40");
-  const [grassPct, setGrassPct] = useState("30");
+  const [gravelPct, setGravelPct] = useState("0");
+  const [grassPct, setGrassPct] = useState("40");
+  const [woodsPct, setWoodsPct] = useState("0");
   const [intensity, setIntensity] = useState("80");
 
   // Pipe
@@ -184,13 +187,15 @@ export default function DrainageQuickSize() {
       const cover = compositeCFromCover({
         roofPct: parsePositive(roofPct, { allowZero: true }) ?? 0,
         pavePct: parsePositive(pavePct, { allowZero: true }) ?? 0,
+        gravelPct: parsePositive(gravelPct, { allowZero: true }) ?? 0,
         grassPct: parsePositive(grassPct, { allowZero: true }) ?? 0,
+        woodsPct: parsePositive(woodsPct, { allowZero: true }) ?? 0,
       });
       return cover;
     }
     const cVal = parsePositive(C);
-    return { C: cVal, error: cVal == null ? "invalid_input" : null };
-  }, [cMode, C, roofPct, pavePct, grassPct]);
+    return { C: cVal, sum: null, error: cVal == null ? "invalid_input" : null };
+  }, [cMode, C, roofPct, pavePct, gravelPct, grassPct, woodsPct]);
 
   const rational = useMemo(() => {
     const A = parsePositive(area);
@@ -408,10 +413,76 @@ export default function DrainageQuickSize() {
                 {cMode === "direct" ? (
                   <YellowInput id="qs-C" label="C" unit="—" value={C} onChange={setC} step="0.01" min="0" max="1" />
                 ) : (
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <YellowInput id="qs-roof" label={t("quickSize.roof")} unit="%" value={roofPct} onChange={setRoofPct} step="1" min="0" />
-                    <YellowInput id="qs-pave" label={t("quickSize.pave")} unit="%" value={pavePct} onChange={setPavePct} step="1" min="0" />
-                    <YellowInput id="qs-grass" label={t("quickSize.grass")} unit="%" value={grassPct} onChange={setGrassPct} step="1" min="0" />
+                  <div className="space-y-4">
+                    <p className="text-xs leading-relaxed text-slate-600">{t("quickSize.weightedCHelp")}</p>
+                    <div>
+                      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-700">
+                        {t("quickSize.imperviousGroup")}
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        <YellowInput
+                          id="qs-roof"
+                          label={`${t("quickSize.roof")} (C=${LAND_COVER_C.roof})`}
+                          unit="%"
+                          value={roofPct}
+                          onChange={setRoofPct}
+                          step="1"
+                          min="0"
+                        />
+                        <YellowInput
+                          id="qs-pave"
+                          label={`${t("quickSize.pave")} (C=${LAND_COVER_C.pave})`}
+                          unit="%"
+                          value={pavePct}
+                          onChange={setPavePct}
+                          step="1"
+                          min="0"
+                        />
+                        <YellowInput
+                          id="qs-gravel"
+                          label={`${t("quickSize.gravel")} (C≈${LAND_COVER_C.gravel})`}
+                          unit="%"
+                          value={gravelPct}
+                          onChange={setGravelPct}
+                          step="1"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-700">
+                        {t("quickSize.perviousGroup")}
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <YellowInput
+                          id="qs-grass"
+                          label={`${t("quickSize.grass")} (C=${LAND_COVER_C.grass})`}
+                          unit="%"
+                          value={grassPct}
+                          onChange={setGrassPct}
+                          step="1"
+                          min="0"
+                        />
+                        <YellowInput
+                          id="qs-woods"
+                          label={`${t("quickSize.woods")} (C=${LAND_COVER_C.woods})`}
+                          unit="%"
+                          value={woodsPct}
+                          onChange={setWoodsPct}
+                          step="1"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      {t("quickSize.coverSum")}:{" "}
+                      <span className="font-mono font-semibold text-slate-800">
+                        {formatNum(effectiveC.sum, 0)}%
+                      </span>
+                      {effectiveC.sum != null && Math.abs(effectiveC.sum - 100) > 0.5 ? (
+                        <span className="ml-1 text-amber-700">({t("quickSize.coverSumHint")})</span>
+                      ) : null}
+                    </p>
                   </div>
                 )}
               </div>
@@ -421,7 +492,9 @@ export default function DrainageQuickSize() {
               <h2 className="text-lg font-semibold text-slate-900">{t("quickSize.outputsTitle")}</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div>
-                  <dt className="text-slate-500">C</dt>
+                  <dt className="text-slate-500">
+                    {cMode === "cover" ? t("quickSize.weightedCLabel") : "C"}
+                  </dt>
                   <dd className="font-mono text-xl font-bold text-slate-900">{formatNum(effectiveC.C, 3)}</dd>
                 </div>
                 <div>
