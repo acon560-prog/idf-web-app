@@ -19,7 +19,7 @@ function Navbar() {
           <li><Link to="/contact" className="hover:underline">Contact</Link></li>
           <li><Link to="/disclaimer" className="hover:underline">{t("nav.disclaimer")}</Link></li>
           <li>
-            <Link to="/tools/normal-depth" className="hover:underline text-sky-300">
+            <Link to="/tools" className="hover:underline text-sky-300">
               {t("nav.tools")}
             </Link>
           </li>
@@ -51,7 +51,7 @@ function Navbar() {
           <li><Link to="/contact" onClick={() => setMenuOpen(false)}>Contact</Link></li>
           <li><Link to="/disclaimer" onClick={() => setMenuOpen(false)}>{t("nav.disclaimer")}</Link></li>
           <li>
-            <Link to="/tools/normal-depth" onClick={() => setMenuOpen(false)} className="text-sky-300">
+            <Link to="/tools" onClick={() => setMenuOpen(false)} className="text-sky-300">
               {t("nav.tools")}
             </Link>
           </li>

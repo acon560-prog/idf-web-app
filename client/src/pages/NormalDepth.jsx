@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import ToolsShell from "../components/ToolsShell.jsx";
 import { solveNormalDepth } from "../utils/normalDepth.js";
 
 const DEFAULTS = {
@@ -363,7 +364,8 @@ export default function NormalDepth() {
   const shapeLabel = t(`normalDepth.shapes.${live.shape}`);
 
   return (
-    <div className="nd-page min-h-[calc(100vh-8rem)] bg-gradient-to-b from-slate-100 via-sky-50/40 to-slate-100">
+    <ToolsShell>
+    <div className="nd-page">
       <style>{`
         .nd-page {
           --nd-ink: #0f172a;
@@ -375,7 +377,7 @@ export default function NormalDepth() {
         }
       `}</style>
 
-      <div className="mx-auto max-w-6xl px-4 py-10 md:px-8">
+      <div className="mx-auto max-w-6xl px-4 pb-10 md:px-8">
         <motion.header
           className="mb-8 max-w-3xl"
           initial={{ opacity: 0, y: 12 }}
@@ -629,6 +631,10 @@ export default function NormalDepth() {
         </div>
 
         <p className="mt-8 text-center text-sm text-slate-500">
+          <Link to="/tools" className="underline hover:text-slate-800">
+            {lang === "fr" ? "Dimensionnement rapide" : "Drainage Quick Size"}
+          </Link>
+          <span className="mx-2">·</span>
           <Link to="/" className="underline hover:text-slate-800">
             {lang === "fr" ? "Retour à l’accueil" : "Back to home"}
           </Link>
@@ -637,5 +643,6 @@ export default function NormalDepth() {
         </p>
       </div>
     </div>
+    </ToolsShell>
   );
 }

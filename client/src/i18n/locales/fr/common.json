@@ -467,5 +467,59 @@
     "sketchAria": "Section avec profondeur normale",
     "resultLabel": "résultat",
     "methodNote": "Résout l’équation de Manning pour yn (SI). Choisissez le type de section; le croquis suit la géométrie. Circulaire = écoulement à surface libre (partiellement plein)."
+  },
+  "tools": {
+    "hubNav": "Outils drainage",
+    "quickSizeTab": "Dimensionnement rapide",
+    "normalDepthTab": "Profondeur normale"
+  },
+  "quickSize": {
+    "eyebrow": "Outils drainage",
+    "title": "Dimensionnement rapide",
+    "subtitle": "Débit de pointe rationnel, suggestion de diamètre de conduite et tableau de fossé — pré-dimensionnement SI.",
+    "disclaimer": "Estimations 1D préliminaires seulement. Ne remplace pas une étude hydraulique complète ni les normes municipales.",
+    "modesLabel": "Modes Dimensionnement rapide",
+    "modes": {
+      "rational": "Q rationnel",
+      "pipe": "Conduite",
+      "ditch": "Fossé"
+    },
+    "inputsTitle": "Saisies",
+    "outputsTitle": "Résultats",
+    "yellowHint": "Jaune = modifiable",
+    "cSource": "Coefficient de ruissellement C",
+    "cDirect": "Saisir C",
+    "cCover": "% toit / pave / gazon",
+    "roof": "Toit",
+    "pave": "Pave",
+    "grass": "Gazon",
+    "rationalNote": "Q = C · i · A(ha) / 360. Intensité manuelle pour l’instant (lien IDF plus tard).",
+    "useInPipe": "Utiliser Q en mode Conduite",
+    "useSharedQ": "Charger le dernier Q rationnel",
+    "exportSummary": "Exporter CSV",
+    "exportTable": "Exporter le tableau",
+    "exportTableFigure": "Exporter le tableau",
+    "slopeUnit": "Unité de pente",
+    "material": "Matériau (préréglage)",
+    "manningN": "n de Manning",
+    "materials": {
+      "pvc": "PVC (n≈0,011)",
+      "concrete": "Béton (n≈0,013)",
+      "hdpe": "PEHD lisse (n≈0,012)",
+      "cmp": "Tôle ondulée (n≈0,024)",
+      "custom": "n personnalisé"
+    },
+    "minD": "Diamètre min.",
+    "status": "Vérif.",
+    "ok": "OK",
+    "increaseD": "Augmenter D",
+    "invalid": "Entrez des saisies valides et positives.",
+    "pipeNote": "Capacité Manning à pleine section sur diamètres commerciaux. Vitesse = Q de calcul / aire pleine.",
+    "sideSlope": "talus",
+    "bottomWidth": "largeur de fond (0 = en V)",
+    "depthList": "Profondeurs cibles y",
+    "sketchDepth": "Profondeur figure y",
+    "sketchAria": "Croquis de section de fossé",
+    "ditchNote": "x = projection horizontale d’un talus (z·y). OK si capacité à cette profondeur ≥ Q de calcul."
   }
 }
