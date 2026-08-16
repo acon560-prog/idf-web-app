@@ -470,9 +470,27 @@ def get_current_user():
     return get_user_by_id(identity)
 
 
+def open_access_mode_enabled() -> bool:
+    """
+    Feedback period: when true, any authenticated user can use IDF APIs
+    without an active trial/subscription. Stripe/billing code stays intact.
+    Set env OPEN_ACCESS_MODE=false (or unset) to restore paywall enforcement.
+    """
+    return os.environ.get("OPEN_ACCESS_MODE", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
+
+
 def user_has_active_access(user_doc):
     if not user_doc:
         return False
+
+    # Temporary feedback open-access (no payment required)
+    if open_access_mode_enabled():
+        return True
 
     # Admin always has access
     if determine_role(user_doc) == 'admin':
