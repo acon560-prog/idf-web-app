@@ -63,15 +63,20 @@ def autosize(ws, min_w=12, max_w=42) -> None:
         ws.column_dimensions[letter].width = width
 
 
-def excel_interp(rhs: str, value_col: str, rating_end: int, ind_col: str = "I") -> str:
-    """Local linear interpolation on Courbe_de_tarage: value vs Ind column."""
-    ind = f"Courbe_de_tarage!${ind_col}$4:${ind_col}${rating_end}"
+def excel_interp(
+    x: str,
+    value_col: str,
+    rating_end: int,
+    x_col: str = "I",
+) -> str:
+    """Local linear interpolation on Courbe_de_tarage: value vs x_col (Ind or Q or HW)."""
+    xs = f"Courbe_de_tarage!${x_col}$4:${x_col}${rating_end}"
     val = f"Courbe_de_tarage!${value_col}$4:${value_col}${rating_end}"
-    m = f"MATCH({rhs},{ind},1)"
+    m = f"MATCH({x},{xs},1)"
     forecast = (
-        f"FORECAST({rhs},"
+        f"FORECAST({x},"
         f"INDEX({val},{m}):INDEX({val},{m}+1),"
-        f"INDEX({ind},{m}):INDEX({ind},{m}+1))"
+        f"INDEX({xs},{m}):INDEX({xs},{m}+1))"
     )
     return (
         f"IFERROR({forecast},"
@@ -128,7 +133,7 @@ def main() -> None:
         ("Débordement", "d50 remblai", p.d50, "m (si mode porous)"),
         ("Débordement", "Porosité", p.n_porosity, "-"),
         ("Débordement", "Cd_rock", p.Cd_rock, "calage poreux"),
-        ("Débit", "Q design (permanent)", Q_design, "m³/s — pour Resultat_Q9 seulement"),
+        ("Débit", "Q design (permanent)", "=Resultat_Q9!B4", "m³/s — lié à Resultat_Q9 (éditer là-bas)"),
     ]
     for i, row in enumerate(rows, start=4):
         for j, val in enumerate(row, start=1):
@@ -136,7 +141,8 @@ def main() -> None:
             cell.border = THIN
             if i == 4:
                 continue
-            if j == 3 and i > 4:
+            # Yellow = editable inputs; skip formula-linked Q design (last row)
+            if j == 3 and i > 4 and not (isinstance(val, str) and val.startswith("=")):
                 cell.fill = YELLOW
     style_header(ws, 4, 4)
     ws["A26"] = (
@@ -185,8 +191,25 @@ def main() -> None:
         ("Pourquoi pas orifice Bernoulli", "Au-dessus de la clé: long fossé rugueux, pas un orifice court. Q=Cd*A*sqrt(2gH) ignore L, n, pente → surestime"),
         ("Résumé", "Pipe = HDS-5 + énergie. Overflow fossé = Manning canal ouvert."),
         ("", ""),
-        ("6. Régime permanent (Resultat_Q9)", ""),
-        ("Méthode", "Cherche HW tel que Q_pipe+Q_overflow = Q_design (Python). Pas live si vous changez Q design."),
+        ("6. Régime permanent (Resultat_Q9) — FORMULES LIVE", ""),
+        ("Q design", "Cellule jaune B4: changez 9→12. Les lignes suivantes lisent la Courbe_de_tarage."),
+        ("Méthode", "On cherche HW tel que Q_total(HW) ≈ Q_design (interpolation sur col. E de la courbe)"),
+        ("HW / WSE / Q_pipe / Q_débord", "Formules Excel = interpolation inverse Q→HW, puis lecture des colonnes"),
+        ("", ""),
+        ("6b. Colonne Routing « 2S/dt−Q » — à quoi ça sert?", ""),
+        ("Nom exact", "2*S/dt_sec − Q_out   (PAS « 2S+dt−Q »)"),
+        ("Rôle", "Terme de report de la méthode Puls. Il mémorise l'état du pas actuel pour calculer le suivant."),
+        ("Formule du pas suivant", "RHS_suivant = (2S/dt − Q)_actuel + Q_in_actuel + Q_in_suivant"),
+        ("Puis", "On cherche sur Courbe_de_tarage la ligne où Ind (= 2S/dt+Q) ≈ RHS → nouveau Q_out, HW, S"),
+        ("Sans cette colonne", "Le routing ne pourrait pas enchaîner les pas de temps correctement"),
+        ("", ""),
+        ("6c. Feuille Comparaison_modes — à quoi ça sert?", ""),
+        ("But", "Comparer 3 façons de modéliser le débordement AU-DESSUS de la clé, pour le MÊME Q permanent"),
+        ("porous", "Seulement écoulement dans les vides du remblai (Wilkins) — débit trop faible pour ~9 m³/s"),
+        ("surface (défaut)", "Manning fossé rugueux / macropores — c'est le mode utilisé partout ailleurs dans le classeur"),
+        ("both", "Poreux jusqu'au sommet du remblai + surface libre au-dessus"),
+        ("Lecture", "Regardez WSE et « Sous 37.4? ». porous échoue; surface et both passent sous 37.4 m"),
+        ("Pas live", "Table calculée à la construction (Python). Pour un autre Q: changez B3 puis python build_excel.py — ou ignorez cette feuille au quotidien"),
         ("", ""),
         ("7. Hydrogramme d'entrée — FORMULES EXCEL LIVE", ""),
         ("Où éditer", "Feuille Hydrogramme_entree: B4=Pond A ; B5=Q pointe ; B6=Montée (min) ; B7=Descente (min) ; B8=dt (min)"),
@@ -223,37 +246,84 @@ def main() -> None:
             wsF.cell(i, 1).font = Font(bold=True, color="0F5C5C")
         wsF.row_dimensions[i].height = 35 if len(b) > 80 else 18
 
-    # --- Sheet: Resultat Q=9 ---
+    # --- Sheet: Resultat Q (LIVE via rating-curve lookup) ---
     ws2 = wb.create_sheet("Resultat_Q9")
-    ws2["A1"] = "Résultat pour Q permanent = 9 m³/s (Python — pas live)"
+    ws2["A1"] = "Résultat régime permanent — FORMULES EXCEL LIVE (changez Q design en B4)"
     ws2["A1"].font = Font(bold=True, size=14)
-    data = [
-        ("Grandeur", "Valeur", "Unité", "Comment obtenu"),
-        ("Q design", Q_design, "m³/s", "Entrée utilisateur (débit de pointe permanent)"),
-        ("HW (profondeur amont)", round(result.HW, 3), "m", "Résolu pour Q_pipe+Q_overflow = 9"),
-        ("WSE amont", round(result.WSE, 3), "m", "WSE = 35.36 + HW"),
-        ("Q_ponceau", round(result.Q_pipe, 3), "m³/s", "min(contrôle entrée HDS-5, contrôle sortie Manning)"),
-        ("Q_débordement (fossé/rocher)", round(result.Q_ditch, 3), "m³/s", "Manning trapèze au-dessus de la clé (mode surface)"),
-        ("Q_total", round(result.Q_total, 3), "m³/s", "Q_pipe + Q_débordement"),
-        ("Contrôle", result.control, "-", "Quel mécanisme limite le débit"),
-        ("Capacité ponceau à la clé", round(summary["pipe_capacity_at_crown_m3s"], 3), "m³/s", "Q_pipe quand HW = D = 1.05 m"),
-        ("Débordement actif?", "Oui" if summary["overflow_active"] else "Non", "-", "Oui si HW > clé"),
-        ("Dépasse elev_max 37.4?", "Oui" if summary["exceeds_max_stage"] else "Non", "-", "Capacité insuffisante sous 37.4 si Oui"),
-    ]
-    for i, row in enumerate(data, start=3):
-        for j, val in enumerate(row, start=1):
-            cell = ws2.cell(i, j, val)
-            cell.border = THIN
-    style_header(ws2, 3, 4)
-    for r in range(4, 14):
-        ws2.cell(r, 2).fill = OK if not summary["exceeds_max_stage"] else WARN
-    ws2["A16"] = (
-        "Interprétation: le ponceau seul est insuffisant pour 9 m³/s. "
-        "L'excédent passe dans le fossé au-dessus de la clé. "
-        "Pour un événement dans le temps (et pour changer 9→12): Hydrogramme_entree + Routing_stockage."
+    ws2["A2"] = (
+        "Éditez B4 (jaune). HW / WSE / débits sont lus sur Courbe_de_tarage "
+        "(Q_total ≈ Q design). Ce n'est PAS l'hydrogramme: c'est un débit constant."
     )
-    ws2["A16"].alignment = Alignment(wrap_text=True)
-    ws2.merge_cells("A16:D18")
+    ws2["A2"].font = Font(italic=True, color="64748B")
+    ws2.merge_cells("A2:D2")
+
+    # Headers
+    for j, h in enumerate(("Grandeur", "Valeur", "Unité", "Comment obtenu"), start=1):
+        ws2.cell(3, j, h)
+    style_header(ws2, 3, 4)
+
+    q_cell = "$B$4"
+    # Row 4: Q design editable
+    ws2["A4"] = "Q design"
+    ws2["B4"] = Q_design
+    ws2["B4"].fill = YELLOW
+    ws2["B4"].border = THIN
+    ws2["C4"] = "m³/s"
+    ws2["D4"] = "ÉDITER ICI (ex. 9 → 12). Jaune = entrée."
+
+    # Live lookups: interpolate rating where Q_total (col E) ≈ Q design
+    live_rows = [
+        (5, "HW (profondeur amont)", excel_interp(q_cell, "A", rating_end, x_col="E"), "m",
+         "Interpolation Courbe_de_tarage: Q_total → HW"),
+        (6, "WSE amont", f"=35.36+B5", "m", "WSE = 35.36 + HW"),
+        (7, "Q_ponceau", excel_interp(q_cell, "C", rating_end, x_col="E"), "m³/s",
+         "Q_pipe au même HW (courbe)"),
+        (8, "Q_débordement (fossé/rocher)", excel_interp(q_cell, "D", rating_end, x_col="E"), "m³/s",
+         "Q_overflow au même HW (courbe)"),
+        (9, "Q_total", f"=B7+B8", "m³/s", "Doit ≈ Q design (B4)"),
+        (10, "Contrôle (approx.)",
+         f'=IFERROR(INDEX(Courbe_de_tarage!$F$4:$F${rating_end},'
+         f'MATCH({q_cell},Courbe_de_tarage!$E$4:$E${rating_end},1)),"-")',
+         "-", "Texte du point de courbe le plus proche"),
+        (11, "Capacité ponceau à la clé",
+         excel_interp("1.05", "C", rating_end, x_col="A"), "m³/s",
+         "Q_pipe quand HW = D = 1.05 m"),
+        (12, "Débordement actif?",
+         '=IF(B5>1.05,"Oui","Non")', "-", "Oui si HW > clé (D=1.05)"),
+        (13, "Dépasse elev_max 37.4?",
+         '=IF(B6>37.4,"Oui","Non")', "-", "Oui si WSE > 37.4 m"),
+    ]
+    for row, label, formula, unit, note in live_rows:
+        ws2.cell(row, 1, label).border = THIN
+        cell = ws2.cell(row, 2, f"={formula}" if not str(formula).startswith("=") else formula)
+        cell.border = THIN
+        cell.fill = OK
+        if row in (5, 6, 7, 8, 9, 11):
+            cell.number_format = "0.000"
+        ws2.cell(row, 3, unit).border = THIN
+        ws2.cell(row, 4, note).border = THIN
+
+    # Conditional: warn fill on B13 when Oui — use CF
+    warn_fill = PatternFill(start_color="FDE68A", end_color="FDE68A", fill_type="solid")
+    ws2.conditional_formatting.add(
+        "B13",
+        FormulaRule(formula=['B13="Oui"'], fill=warn_fill),
+    )
+
+    ws2["A15"] = (
+        "Interprétation: si Q_ponceau < Q design, l'excédent passe en débordement (fossé). "
+        "Si « Dépasse 37.4? » = Oui, capacité insuffisante sous la cote max. "
+        "Pour un orage dans le temps: Hydrogramme_entree + Routing_stockage "
+        "(B5 hydrogramme peut être le même chiffre que B4 ici, ou différent)."
+    )
+    ws2["A15"].alignment = Alignment(wrap_text=True)
+    ws2.merge_cells("A15:D17")
+    ws2["A18"] = (
+        "Note: Resultat_Q9 = débit CONSTANT. Hydrogramme = débit qui varie dans le temps. "
+        "Les deux utilisent la même courbe de tarage."
+    )
+    ws2["A18"].font = Font(italic=True, size=10, color="64748B")
+    ws2.merge_cells("A18:D18")
     autosize(ws2)
 
     # --- Sheet: Courbe de tarage (+ S_geo, S live, Ind live) ---
@@ -411,11 +481,18 @@ def main() -> None:
         "S (m³)",
         "WSE>37.4?",
         "RHS (Ind cible)",
-        "2S/dt-Q",
+        "2S/dt−Q (report Puls)",
     ]
     for j, h in enumerate(hdr, start=1):
         wsR.cell(4, j, h)
     style_header(wsR, 4, 11)
+
+    wsR["A3"] = (
+        "Colonne « 2S/dt−Q » = terme de report Puls: RHS_suivant = cette_valeur + Qin_actuel + Qin_suivant. "
+        "Pas un débit physique — c'est un auxiliaire de calcul."
+    )
+    wsR["A3"].font = Font(italic=True, size=9, color="64748B")
+    wsR.merge_cells("A3:K3")
 
     # Excel routing rows align with hydrogramme rows
     r0 = 5  # first routing data row (= hydro first_data)
@@ -531,25 +608,61 @@ def main() -> None:
 
     # --- Sheet: Comparaison modes ---
     ws5 = wb.create_sheet("Comparaison_modes")
-    ws5["A1"] = "Comparaison overflow porous vs surface pour Q=9 (mêmes géométrie/S0)"
+    ws5["A1"] = "Comparaison des modes de débordement (référence pédagogique)"
     ws5["A1"].font = Font(bold=True, size=12)
-    ws5.append([])
-    hdr = ["Mode", "WSE (m)", "Q_pipe", "Q_overflow", "Q_total", "Sous 37.4?"]
-    ws5.append(hdr)
-    style_header(ws5, 3, 6)
-    for mode in ("porous", "surface", "both"):
-        pm = CulvertDitchParams(overflow_mode=mode)
-        r = solve_HW_for_Q(9.0, pm)
-        ok = "Oui" if r.Q_total >= 9.0 - 1e-3 and r.WSE <= pm.elev_max + 1e-6 else "Non / limite"
-        ws5.append(
-            [mode, round(r.WSE, 3), round(r.Q_pipe, 3), round(r.Q_ditch, 3), round(r.Q_total, 3), ok]
-        )
-    ws5["A8"] = (
-        "Note: mode porous (Wilkins) seul ne passe pas ~9 m³/s sous 37.4 m. "
-        "Mode surface (fossé rugueux / macropores dans 8–200 mm) est le défaut pratique."
+    ws5["A2"] = (
+        "Cette feuille compare 3 HYPOTHÈSES pour le débit AU-DESSUS de la clé du tuyau, "
+        "à un Q permanent fixe (B3). Elle n'est PAS utilisée par l'hydrogramme ni le routing "
+        "(ceux-ci utilisent toujours le mode « surface »)."
     )
-    ws5["A8"].alignment = Alignment(wrap_text=True)
-    ws5.merge_cells("A8:F10")
+    ws5["A2"].font = Font(italic=True, color="64748B")
+    ws5.merge_cells("A2:F2")
+
+    ws5["A3"] = "Q permanent de comparaison"
+    ws5["B3"] = Q_design
+    ws5["B3"].fill = YELLOW
+    ws5["C3"] = "m³/s — changez puis relancez python build_excel.py pour recalculer ce tableau"
+    ws5["C3"].font = Font(italic=True, size=9, color="64748B")
+
+    hdr = ["Mode", "Signification", "WSE (m)", "Q_pipe", "Q_overflow", "Q_total", "Sous 37.4?"]
+    for j, h in enumerate(hdr, start=1):
+        ws5.cell(5, j, h)
+    style_header(ws5, 5, 7)
+
+    mode_notes = {
+        "porous": "Eau seulement dans les pores du remblai (Wilkins) — très faible débit",
+        "surface": "Manning fossé rugueux / macropores — DÉFAUT du modèle",
+        "both": "Poreux + surface libre au-dessus du remblai",
+    }
+    for i, mode in enumerate(("porous", "surface", "both"), start=6):
+        pm = CulvertDitchParams(overflow_mode=mode)
+        r = solve_HW_for_Q(Q_design, pm)
+        ok = "Oui" if r.Q_total >= Q_design - 1e-3 and r.WSE <= pm.elev_max + 1e-6 else "Non / limite"
+        vals = [
+            mode,
+            mode_notes[mode],
+            round(r.WSE, 3),
+            round(r.Q_pipe, 3),
+            round(r.Q_ditch, 3),
+            round(r.Q_total, 3),
+            ok,
+        ]
+        for j, v in enumerate(vals, start=1):
+            cell = ws5.cell(i, j, v)
+            cell.border = THIN
+            if mode == "surface":
+                cell.fill = OK
+            elif ok.startswith("Non"):
+                cell.fill = WARN
+
+    ws5["A10"] = (
+        "Comment lire: la ligne « surface » (verte) est celle du reste du classeur. "
+        "« porous » montre pourquoi on n'utilise pas seulement l'écoulement dans le remblai: "
+        "WSE trop haut / capacité insuffisante. "
+        "B3 jaune n'est PAS live (besoin de 3 courbes différentes) — rebuild Python si vous changez B3."
+    )
+    ws5["A10"].alignment = Alignment(wrap_text=True)
+    ws5.merge_cells("A10:G12")
     autosize(ws5)
 
     wb.save(OUT)
