@@ -58,6 +58,8 @@ jobs:
       - name: Deploy to Cloud Run
         env:
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          # Flip to "false" (and set client SHOW_PRICING=true) to end feedback open-access.
+          OPEN_ACCESS_MODE: "true"
         run: |
           # Use Google Secret Manager-backed env vars on Cloud Run.
           # This avoids type conflicts when variables are configured as "secret refs".
@@ -70,7 +72,9 @@ jobs:
             --remove-env-vars "STRIPE_SECRET_KEY,STRIPE_WEBHOOK_SECRET,STRIPE_PRICE_CONSULTANT_MONTHLY,MONGO_URI,JWT_SECRET_KEY"
             --update-secrets "STRIPE_SECRET_KEY=stripe_secret_key:latest,STRIPE_WEBHOOK_SECRET=STRIPE_WEBHOOK_SECRET:latest,STRIPE_PRICE_CONSULTANT_MONTHLY=STRIPE_PRICE_MONTHLY:latest,MONGO_URI=mongo_uri:latest,JWT_SECRET_KEY=jwt_secret_key:latest"
           )
+          ENV_UPDATES="OPEN_ACCESS_MODE=${OPEN_ACCESS_MODE}"
           if [ -n "$FRONTEND_URL" ]; then
-            DEPLOY_ARGS+=(--update-env-vars "FRONTEND_URL=${FRONTEND_URL}")
+            ENV_UPDATES="${ENV_UPDATES},FRONTEND_URL=${FRONTEND_URL}"
           fi
+          DEPLOY_ARGS+=(--update-env-vars "${ENV_UPDATES}")
           gcloud run deploy "${DEPLOY_ARGS[@]}" --quiet

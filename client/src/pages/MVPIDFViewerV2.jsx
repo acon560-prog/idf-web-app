@@ -23,6 +23,7 @@ import {
   getApiBaseUrl,
   readJsonResponse,
 } from "../utils/apiConfig";
+import { OPEN_ACCESS_MODE } from "../config/accessMode.js";
 import { useTranslation } from "react-i18next";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -207,6 +208,12 @@ const MVPIDFViewerV2 = () => {
 
   useEffect(() => {
   if (!user) {
+    setTrialMessage("");
+    return;
+  }
+
+  // Feedback period: hide trial/paywall banners (Stripe code unchanged)
+  if (OPEN_ACCESS_MODE) {
     setTrialMessage("");
     return;
   }
@@ -1158,7 +1165,7 @@ const handleStationInputKeyDown = (event) => {
 
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 font-sans">
-        {(bannerMessage || trialExpired || isTrialPending) && (
+        {!OPEN_ACCESS_MODE && (bannerMessage || trialExpired || isTrialPending) && (
           <div className="w-full max-w-5xl mb-4">
             <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg shadow-sm text-sm space-y-3">
             <p>
