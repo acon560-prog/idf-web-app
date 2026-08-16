@@ -39,8 +39,14 @@ python3 run_model.py --Q 9 --TW 0.5   # si niveau aval connu
 `d50` (défaut 0,05 m) et `Cd_rock` (défaut 0,85) contrôlent le débit poreux.  
 Fourchette utile à explorer : `d50=0.03–0.10 m`, `Cd_rock=0.5–1.5`.
 
-## Limites
+## Hydrogramme + stockage
 
-- TW inconnu → résultats amont sensibles si l’aval est noyé  
-- Écoulement poreux empirique (pas un modèle DEM/CFD)  
-- Outil de pré-dimensionnement — valider avec HY-8 / HEC-RAS si critique
+```bash
+python3 build_excel.py
+```
+
+Ouvre `Ponceau_Fosse_Modele_Hydraulique.xlsx` :
+- **Hydrogramme_entree** — Q(t) triangulaire (pointe 9 m³/s)
+- **Routing_stockage** — `dS/dt = Q_in − Q_out(WSE)` (tuyau + fossé + pond amont optionnel)
+
+Comparer le WSE max transitoire au **Resultat_Q9** (régime permanent).
