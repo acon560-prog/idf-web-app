@@ -1,28 +1,40 @@
 """
-Compound hydraulic model: circular culvert (ponceau) + trapezoidal ditch (fossé).
+Compound hydraulic model: circular culvert (ponceau) + trapezoidal rockfill fossé.
 
 Behaviour
 ---------
-For a given upstream water-surface elevation (or target discharge Q):
-  Q_total = Q_pipe(HW) + Q_ditch(HW)
+Q_total(HW) = Q_pipe(HW) + Q_overflow(HW)
 
-- Pipe: FHWA HDS-5 inlet control (Form 2, SI) and outlet control (Manning + losses);
-  governing capacity = min(Qinlet, Qoutlet) at the same headwater.
-- Ditch: starts when HW exceeds the overflow threshold (default = pipe crown);
-  trapezoidal Manning conveyance in the fossé (rockfill → high n).
+- Pipe: FHWA HDS-5 inlet control (Form 2, SI) + outlet control (Manning + losses).
+- Overflow (above pipe crown): flow **through porous rockfill** 8–200 mm
+  (Wilkins / turbulent porous approximation), optionally plus free-surface
+  Manning if water rises above the rock surface.
 
-This is a preliminary 1D engineering tool — not a substitute for HEC-RAS.
+Default site values (user update 2026-08-16):
+  D=1.05 m, L=50.9 m, b=2 m, z=2
+  elev_invert_us=35.36, elev_invert_ds=34.47 → S0≈0.0175
+  elev_max=37.4, entrance=beveled, TW unknown → free outfall (0)
 """
 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, asdict
-from typing import Optional
+from dataclasses import asdict, dataclass, field
+from typing import Literal, Optional
 
 
 G = 9.81  # m/s²
 KU_SI = 1.811  # FHWA HDS-5 Form-2 SI conversion
+
+EntranceType = Literal["square_edge", "beveled", "groove_headwall"]
+
+# HDS-5 Form-2 coeffs (circular concrete) + Ke
+ENTRANCE_PRESETS: dict[str, dict[str, float]] = {
+    "square_edge": {"K": 0.0098, "M": 2.0, "c": 0.0398, "Y": 0.67, "Ke": 0.5},
+    # 45° bevelled ring / beveled entrance
+    "beveled": {"K": 0.0018, "M": 2.5, "c": 0.0300, "Y": 0.74, "Ke": 0.2},
+    "groove_headwall": {"K": 0.0078, "M": 2.0, "c": 0.0292, "Y": 0.74, "Ke": 0.2},
+}
 
 
 @dataclass
@@ -31,30 +43,59 @@ class CulvertDitchParams:
     D: float = 1.05
     L: float = 50.9
     b: float = 2.0
-    z: float = 2.0  # H:V horizontal run per 1 vertical
+    z: float = 2.0  # H:V
 
     # Elevations (m)
-    elev_invert: float = 35.13
+    elev_invert: float = 35.36  # upstream invert
+    elev_invert_ds: float = 34.47  # downstream invert
     elev_max: float = 37.4
+    # Top of rockfill surface (default = elev_max → rock fills to max stage)
+    elev_rock_top: Optional[float] = None
 
-    # When ditch conveyance starts (m above invert). Default = crown = D.
+    # Overflow starts at pipe crown unless overridden (m above US invert)
     y_overflow: Optional[float] = None
 
     # Hydraulics
-    S0: float = 0.01  # longitudinal slope (m/m) — PLEASE CONFIRM ON SITE
-    n_pipe: float = 0.013  # concrete / smooth
-    n_ditch: float = 0.045  # coarse rockfill 8–200 mm (adjust 0.035–0.080)
-    Ke: float = 0.5  # entrance loss (square edge w/ headwall ≈ 0.5)
-    TW: float = 0.0  # tailwater depth above outlet invert (0 = free outfall approx.)
+    S0: Optional[float] = None  # if None → from inverts / L
+    n_pipe: float = 0.013
+    n_surface: float = 0.045  # free-surface flow above rock (if any)
+    entrance: EntranceType = "beveled"
+    TW: float = 0.0  # unknown → free-outfall assumption
 
-    # FHWA HDS-5 Form-2 coeffs — circular concrete, square edge w/ headwall
-    K: float = 0.0098
-    M: float = 2.0
-    c: float = 0.0398
-    Y: float = 0.67
+    # Coarse 8–200 mm: preferential / macropore flow ≈ rough channel (default).
+    # Use overflow_mode="porous" for Wilkins seepage-only (much smaller Q).
+    overflow_mode: Literal["porous", "surface", "both"] = "surface"
+    n_porosity: float = 0.40
+    d50: float = 0.05  # m — characteristic size inside 8–200 mm band
+    Cd_rock: float = 0.85  # empirical bulk-velocity coefficient (calibrate)
+
+    # Filled from entrance preset unless overridden
+    K: float = field(default=0.0018)
+    M: float = field(default=2.5)
+    c: float = field(default=0.0300)
+    Y: float = field(default=0.74)
+    Ke: float = field(default=0.2)
+
+    def __post_init__(self) -> None:
+        preset = ENTRANCE_PRESETS.get(self.entrance, ENTRANCE_PRESETS["beveled"])
+        # Always apply preset for the chosen entrance (keeps coeffs consistent)
+        self.K = preset["K"]
+        self.M = preset["M"]
+        self.c = preset["c"]
+        self.Y = preset["Y"]
+        self.Ke = preset["Ke"]
+        if self.S0 is None:
+            if self.L > 0:
+                self.S0 = max(1e-6, (self.elev_invert - self.elev_invert_ds) / self.L)
+            else:
+                self.S0 = 0.017
 
     def overflow_depth(self) -> float:
         return self.D if self.y_overflow is None else self.y_overflow
+
+    def rock_top_depth(self) -> float:
+        top = self.elev_max if self.elev_rock_top is None else self.elev_rock_top
+        return max(self.overflow_depth(), top - self.elev_invert)
 
     def max_depth(self) -> float:
         return max(0.01, self.elev_max - self.elev_invert)
@@ -65,16 +106,15 @@ class CulvertDitchParams:
 
 @dataclass
 class RatingPoint:
-    HW: float  # headwater depth above invert (m)
-    WSE: float  # water-surface elev (m)
+    HW: float
+    WSE: float
     Q_pipe: float
     Q_ditch: float
     Q_total: float
-    control: str  # "inlet" | "outlet" | "ditch_only" | "compound"
+    control: str
 
 
 def _trapezoid(b: float, z: float, y: float) -> tuple[float, float, float]:
-    """Return A, P, Rh for trapezoid depth y."""
     if y <= 0:
         return 0.0, 0.0, 0.0
     A = (b + z * y) * y
@@ -89,40 +129,44 @@ def _manning_Q(n: float, A: float, Rh: float, S0: float) -> float:
     return (1.0 / n) * A * (Rh ** (2.0 / 3.0)) * math.sqrt(S0)
 
 
+def _porous_rockfill_Q(A_gross: float, p: CulvertDitchParams) -> float:
+    """
+    Turbulent porous flow through coarse rock (Wilkins-type bulk velocity).
+
+    V_bulk ≈ Cd * n_porosity * sqrt( g * d50 * S0 / (1 - n_porosity) )
+    Q = A_gross * V_bulk
+
+    Valid order-of-magnitude for 8–200 mm rock drains; calibrate Cd_rock / d50 on site.
+    """
+    if A_gross <= 0 or p.S0 <= 0 or p.d50 <= 0:
+        return 0.0
+    n = min(0.55, max(0.20, p.n_porosity))
+    V_bulk = p.Cd_rock * n * math.sqrt(G * p.d50 * p.S0 / (1.0 - n))
+    return A_gross * V_bulk
+
+
 def pipe_inlet_control_HW(Q: float, p: CulvertDitchParams) -> float:
-    """
-    FHWA HDS-5 Form-2 (SI): solve is not needed — return HW for given Q.
-    Unsubmerged: HW/D = K [Q/(Ku A sqrt(D))]^M
-    Submerged:   HW/D = c [Q/(Ku A sqrt(D))]^2 + Y
-    Transition blended near HW/D ≈ 1.0–1.2
-    """
     if Q <= 0:
         return 0.0
     A = p.area_full()
     arg = Q / (KU_SI * A * math.sqrt(p.D))
     hw_un = p.K * (arg ** p.M) * p.D
     hw_sub = (p.c * (arg ** 2) + p.Y) * p.D
-    # Smooth handoff around HW/D = 1.0
     if hw_un < 0.95 * p.D:
         return hw_un
     if hw_sub > 1.2 * p.D:
         return hw_sub
-    # Blend
     t = (hw_un / p.D - 0.95) / (1.2 - 0.95)
     t = min(1.0, max(0.0, t))
     return (1 - t) * hw_un + t * hw_sub
 
 
 def pipe_inlet_control_Q(HW: float, p: CulvertDitchParams) -> float:
-    """Invert inlet-control rating by bisection on Q."""
     if HW <= 0:
         return 0.0
-    # Upper bound: orifice-like
     Q_hi = 50.0
     for _ in range(60):
-        mid = 0.5 * Q_hi
-        if pipe_inlet_control_HW(mid, p) < HW:
-            # need larger Q upper bound
+        if pipe_inlet_control_HW(0.5 * Q_hi, p) < HW:
             Q_hi *= 2.0
             if Q_hi > 500:
                 break
@@ -139,18 +183,10 @@ def pipe_inlet_control_Q(HW: float, p: CulvertDitchParams) -> float:
 
 
 def pipe_outlet_control_Q(HW: float, p: CulvertDitchParams) -> float:
-    """
-    Full-barrel outlet control (conservative pressurized assumption when HW > D).
-    Energy: HW + S0*L = TW + (1+Ke) V^2/(2g) + (n^2 V^2 L)/Rh^(4/3)
-    with Rh = D/4 for full circle.
-    For HW < D, use partially full Manning (approximate free-surface barrel).
-    """
     if HW <= 1e-6 or p.S0 <= 0:
         return 0.0
 
     if HW < p.D:
-        # Partially full circular — use geometric theta
-        # y/D = HW/D; theta = 2 acos(1 - 2y/D)
         y = HW
         ratio = max(1e-6, min(0.999, y / p.D))
         theta = 2.0 * math.acos(1.0 - 2.0 * ratio)
@@ -160,15 +196,11 @@ def pipe_outlet_control_Q(HW: float, p: CulvertDitchParams) -> float:
         Rh = A / P if P > 0 else 0.0
         return _manning_Q(p.n_pipe, A, Rh, p.S0)
 
-    # Full barrel pressurized outlet control — solve for V
     A = p.area_full()
     Rh = p.D / 4.0
-    # Available head for losses along barrel (approx.)
-    # HW = TW + H_loss - S0*L  =>  H_loss = HW - TW + S0*L
     H_loss = HW - p.TW + p.S0 * p.L
     if H_loss <= 0:
         return 0.0
-    # H_loss = (1+Ke) V^2/(2g) + n^2 V^2 L / Rh^(4/3)
     friction_coef = (p.n_pipe**2) * p.L / (Rh ** (4.0 / 3.0))
     entrance_coef = (1.0 + p.Ke) / (2.0 * G)
     denom = entrance_coef + friction_coef
@@ -188,26 +220,56 @@ def pipe_Q(HW: float, p: CulvertDitchParams) -> tuple[float, str]:
     return Qo, "outlet"
 
 
-def ditch_Q(HW: float, p: CulvertDitchParams) -> float:
-    """Trapezoidal overflow above y_overflow (parallel to pipe)."""
+def overflow_Q(HW: float, p: CulvertDitchParams) -> float:
+    """
+    Flow above pipe crown up to elev_max:
+
+    - porous: turbulent seepage through rockfill prism (crown → HW)
+    - surface: rough open-channel Manning in the trapezoid above the crown
+              (represents preferential / overtopping flow in the rock ditch)
+    - both: porous through rock up to elev_rock_top, plus surface above rock top
+    """
     y0 = p.overflow_depth()
-    y = HW - y0
-    if y <= 0:
+    if HW <= y0:
         return 0.0
-    y_max = p.max_depth() - y0
-    y = min(y, max(0.0, y_max))
-    A, _, Rh = _trapezoid(p.b, p.z, y)
-    return _manning_Q(p.n_ditch, A, Rh, p.S0)
+
+    y_wse = min(HW, p.max_depth())
+    y_rock_top = p.rock_top_depth()
+    Q = 0.0
+
+    if p.overflow_mode == "porous":
+        y_fill = y_wse - y0
+        A_fill, _, _ = _trapezoid(p.b, p.z, y_fill)
+        Q += _porous_rockfill_Q(A_fill, p)
+
+    elif p.overflow_mode == "surface":
+        # Rough channel from crown upward (rock-lined fossé)
+        y_ch = y_wse - y0
+        A, _, Rh = _trapezoid(p.b, p.z, y_ch)
+        Q += _manning_Q(p.n_surface, A, Rh, p.S0)
+
+    elif p.overflow_mode == "both":
+        y_fill = min(y_wse, y_rock_top) - y0
+        if y_fill > 0:
+            A_fill, _, _ = _trapezoid(p.b, p.z, y_fill)
+            Q += _porous_rockfill_Q(A_fill, p)
+        if y_wse > y_rock_top:
+            y_surf = y_wse - y_rock_top
+            b_surf = p.b + 2.0 * p.z * max(0.0, y_rock_top - y0)
+            A, _, Rh = _trapezoid(b_surf, p.z, y_surf)
+            Q += _manning_Q(p.n_surface, A, Rh, p.S0)
+
+    return Q
 
 
 def rating_at_HW(HW: float, p: CulvertDitchParams) -> RatingPoint:
     qp, ctrl = pipe_Q(HW, p)
-    qd = ditch_Q(HW, p)
+    qd = overflow_Q(HW, p)
     qt = qp + qd
     if qd > 0 and qp > 0:
-        control = f"compound/{ctrl}"
+        control = f"compound/{ctrl}+{p.overflow_mode}"
     elif qd > 0:
-        control = "ditch_only"
+        control = f"overflow/{p.overflow_mode}"
     else:
         control = ctrl
     return RatingPoint(
@@ -220,23 +282,15 @@ def rating_at_HW(HW: float, p: CulvertDitchParams) -> RatingPoint:
     )
 
 
-def build_rating_curve(
-    p: CulvertDitchParams, n: int = 81
-) -> list[RatingPoint]:
+def build_rating_curve(p: CulvertDitchParams, n: int = 81) -> list[RatingPoint]:
     h_max = p.max_depth()
-    pts = []
-    for i in range(n):
-        HW = h_max * i / (n - 1)
-        pts.append(rating_at_HW(HW, p))
-    return pts
+    return [rating_at_HW(h_max * i / (n - 1), p) for i in range(n)]
 
 
 def solve_HW_for_Q(Q: float, p: CulvertDitchParams, tol: float = 1e-4) -> RatingPoint:
-    """Find HW such that Q_pipe + Q_ditch ≈ Q (bisection)."""
     if Q <= 0:
         return rating_at_HW(0.0, p)
     lo, hi = 0.0, p.max_depth()
-    # If even at max depth capacity is too small, return max
     top = rating_at_HW(hi, p)
     if top.Q_total < Q:
         return top
@@ -255,13 +309,12 @@ def solve_HW_for_Q(Q: float, p: CulvertDitchParams, tol: float = 1e-4) -> Rating
 def summarize(Q: float, p: CulvertDitchParams) -> dict:
     r = solve_HW_for_Q(Q, p)
     crown = rating_at_HW(p.D, p)
-    overflow_start = rating_at_HW(p.overflow_depth(), p)
     return {
         "inputs": asdict(p),
         "design_Q_m3s": Q,
         "result": asdict(r),
         "pipe_capacity_at_crown_m3s": crown.Q_pipe,
-        "Q_at_overflow_threshold_m3s": overflow_start.Q_total,
+        "S0_used": p.S0,
         "overflow_active": r.Q_ditch > 1e-6,
         "exceeds_max_stage": r.Q_total < Q - 1e-3,
     }

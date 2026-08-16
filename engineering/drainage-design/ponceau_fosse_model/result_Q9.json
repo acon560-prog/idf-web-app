@@ -1,0 +1,40 @@
+{
+  "inputs": {
+    "D": 1.05,
+    "L": 50.9,
+    "b": 2.0,
+    "z": 2.0,
+    "elev_invert": 35.36,
+    "elev_invert_ds": 34.47,
+    "elev_max": 37.4,
+    "elev_rock_top": null,
+    "y_overflow": null,
+    "S0": 0.017485265225933213,
+    "n_pipe": 0.013,
+    "n_surface": 0.045,
+    "entrance": "beveled",
+    "TW": 0.0,
+    "overflow_mode": "surface",
+    "n_porosity": 0.4,
+    "d50": 0.05,
+    "Cd_rock": 0.85,
+    "K": 0.0018,
+    "M": 2.5,
+    "c": 0.03,
+    "Y": 0.74,
+    "Ke": 0.2
+  },
+  "design_Q_m3s": 9.0,
+  "result": {
+    "HW": 1.7974822998046864,
+    "WSE": 37.157482299804684,
+    "Q_pipe": 4.2351657019511775,
+    "Q_ditch": 4.764472697389695,
+    "Q_total": 8.999638399340872,
+    "control": "compound/outlet+surface"
+  },
+  "pipe_capacity_at_crown_m3s": 3.5983090868016268,
+  "S0_used": 0.017485265225933213,
+  "overflow_active": true,
+  "exceeds_max_stage": false
+}

@@ -1,53 +1,46 @@
-# Modèle hydraulique composé — Ponceau + fossé
+# Modèle hydraulique composé — Ponceau + fossé (remblai poreux)
 
-Outil Python pour simuler le comportement d’un **ponceau circulaire** sous un **fossé trapézoïdal** (remblai granulaire).  
-Lorsque la capacité du ponceau est atteinte, le débit excédentaire passe dans le fossé.
-
-## Géométrie (selon votre coupe)
+## Données site (mises à jour)
 
 | Paramètre | Valeur |
 |-----------|--------|
-| Diamètre ponceau `D` | 1,05 m (1050 mm) |
-| Longueur `L` | 50,9 m |
-| Largeur fond fossé `b` | 2,0 m |
-| Talus `z` | 2H:1V |
-| Invert | 35,13 m |
-| Max hauteur d’eau | 37,4 m |
-| Remblai | granulaire 8–200 mm |
-| Débit entrant | ≈ 9 m³/s |
+| `D` | 1,05 m |
+| `L` | 50,9 m |
+| Invert amont | **35,36 m** |
+| Invert aval | **34,47 m** |
+| `S0 = Δz/L` | **0,0175** (≈ 0,017) |
+| `b`, `z` | 2,0 m ; 2H:1V |
+| Max WSE | 37,4 m |
+| Entrée | **biseautée (beveled)** → Ke≈0,2 |
+| Débordement | Au-dessus de la clé jusqu’à 37,4 m — **mode `surface`** (fossé enrochement / macropores). Mode `porous` (Wilkins) disponible mais **insuffisant pour ~9 m³/s**. |
+| Tailwater | **inconnu** → hypothèse exutoire libre (TW=0) |
 
-## Comportement modélisé
+## Comportement
 
 ```
-Q_total(HW) = Q_ponceau(HW) + Q_fossé(HW)
+Q_total = Q_ponceau(HW) + Q_remblai_poreux(HW)
 ```
 
-1. **Ponceau** — contrôle d’entrée (FHWA HDS-5 Form 2, SI) et contrôle de sortie (Manning + pertes) ; le plus limitatif gouverne.  
-2. **Fossé** — Manning trapézoïdal **au-dessus du seuil de débordement** (par défaut = clé du tuyau / crown).  
-   Le remblai 8–200 mm est représenté par un **n élevé** (défaut 0,045).
+1. Tant que WSE < clé du tuyau → ponceau seul  
+2. Au-delà → écoulement **turbulent dans le granulaire** (formule type Wilkins)  
+3. Option `--mode both` : poreux + surface libre au-dessus du remblai  
 
 ## Lancer
 
 ```bash
 cd engineering/drainage-design/ponceau_fosse_model
-python3 run_model.py --Q 9 --S0 0.01
-python3 run_model.py --Q 9 --S0 0.005 --csv rating_curve.csv --json result.json
+python3 run_model.py --Q 9 --csv rating.csv
+python3 run_model.py --Q 9.5 --Cd-rock 1.0 --d50 0.06
+python3 run_model.py --Q 9 --TW 0.5   # si niveau aval connu
 ```
 
-## Entrées encore requises (à confirmer)
+## Calage du remblai (important)
 
-Sans ces valeurs, le modèle utilise des **hypothèses** :
-
-1. **Pente longitudinale `S0`** (m/m) du ponceau / fossé — *critique*  
-2. **Matériau / n du tuyau** (béton ≈ 0,012–0,015 ; PEHD ≈ 0,011–0,012)  
-3. **n du fossé / remblai** (enrochement grossier ≈ 0,035–0,080)  
-4. **Niveau aval (tailwater)** au droit de la sortie  
-5. **Type d’entrée** (mur de tête, chanfrein, biseau) — change les coeffs HDS-5  
-6. Le fossé coule-t-il **à la surface du remblai** (canal rugueux) ou **à travers** le remblai (milieu poreux / Forchheimer) ?  
-   → Version actuelle = **canal rugueux parallèle** (plus simple, courant en pré-dim.)
+`d50` (défaut 0,05 m) et `Cd_rock` (défaut 0,85) contrôlent le débit poreux.  
+Fourchette utile à explorer : `d50=0.03–0.10 m`, `Cd_rock=0.5–1.5`.
 
 ## Limites
 
-- 1D, stationnaire, préliminaire  
-- Pas un substitut à HEC-RAS / HY-8 pour dimensionnement final  
-- Le débit ~9 m³/s pour D = 1,05 m est très élevé : le fossé portera une grande part du débit sauf pente très forte
+- TW inconnu → résultats amont sensibles si l’aval est noyé  
+- Écoulement poreux empirique (pas un modèle DEM/CFD)  
+- Outil de pré-dimensionnement — valider avec HY-8 / HEC-RAS si critique
