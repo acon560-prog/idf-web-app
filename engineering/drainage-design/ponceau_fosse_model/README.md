@@ -47,6 +47,7 @@ python3 build_excel.py
 
 Ouvre `Ponceau_Fosse_Modele_Hydraulique.xlsx` :
 - **Hydrogramme_entree** — Q(t) triangulaire (pointe 9 m³/s)
-- **Routing_stockage** — `dS/dt = Q_in − Q_out(WSE)` (tuyau + fossé + pond amont optionnel)
+- **Routing_stockage** — `dS/dt = Q_in − Q_out(WSE)` en **formules Excel live** (méthode Puls)
+- **Hydrogramme_entree** — triangle en **formules live**: changez `B5` (Q pointe, ex. 9→12), Montée, Descente, Pond A, dt
 
 Comparer le WSE max transitoire au **Resultat_Q9** (régime permanent).

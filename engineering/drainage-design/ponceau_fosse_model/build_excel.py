@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""Build Excel workbook for ponceau + fossé compound model."""
+"""Build Excel workbook for ponceau + fossé compound model.
+
+Hydrogramme_entree and Routing_stockage use live Excel formulas so the user can
+change Q peak / rise / fall / pond / dt without re-running Python.
+The rating curve Q(HW) and geometric storage S_geo still come from hydraulics.py.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
+from openpyxl.formatting.rule import FormulaRule
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
 from hydraulics import (
@@ -15,6 +21,7 @@ from hydraulics import (
     default_triangle_hydrograph,
     route_level_pool,
     solve_HW_for_Q,
+    storage_m3,
     summarize,
 )
 
@@ -32,6 +39,9 @@ THIN = Border(
     top=Side(style="thin", color="CBD5E1"),
     bottom=Side(style="thin", color="CBD5E1"),
 )
+
+# Pre-create enough hydrograph/routing rows for long events / small dt
+N_TIME_ROWS = 120  # e.g. 120 * 5 min = 600 min max span
 
 
 def style_header(ws, row: int, cols: int) -> None:
@@ -53,12 +63,39 @@ def autosize(ws, min_w=12, max_w=42) -> None:
         ws.column_dimensions[letter].width = width
 
 
+def excel_interp(rhs: str, value_col: str, rating_end: int, ind_col: str = "I") -> str:
+    """Local linear interpolation on Courbe_de_tarage: value vs Ind column."""
+    ind = f"Courbe_de_tarage!${ind_col}$4:${ind_col}${rating_end}"
+    val = f"Courbe_de_tarage!${value_col}$4:${value_col}${rating_end}"
+    m = f"MATCH({rhs},{ind},1)"
+    forecast = (
+        f"FORECAST({rhs},"
+        f"INDEX({val},{m}):INDEX({val},{m}+1),"
+        f"INDEX({ind},{m}):INDEX({ind},{m}+1))"
+    )
+    return (
+        f"IFERROR({forecast},"
+        f"IFERROR(INDEX({val},{m}),INDEX({val},1)))"
+    )
+
+
 def main() -> None:
     p = CulvertDitchParams()  # site defaults: beveled, S0 from inverts, surface overflow
     Q_design = 9.0
+    pond_area = 50.0
+    t_rise = 40.0
+    t_fall = 80.0
+    dt_min = 5.0
+
     summary = summarize(Q_design, p)
     result = solve_HW_for_Q(Q_design, p)
     rating = build_rating_curve(p, n=41)
+    rating_end = 3 + len(rating)  # last data row on Courbe_de_tarage
+
+    # Python routing (reference / peak highlight only; Excel has live Puls formulas)
+    t_list, q_list = default_triangle_hydrograph(Q_design, t_rise, t_fall, dt_min)
+    route = route_level_pool(t_list, q_list, p, pond_area_m2=pond_area, HW0=0.0)
+    peak = max(route, key=lambda s: s.WSE)
 
     wb = Workbook()
 
@@ -91,7 +128,7 @@ def main() -> None:
         ("Débordement", "d50 remblai", p.d50, "m (si mode porous)"),
         ("Débordement", "Porosité", p.n_porosity, "-"),
         ("Débordement", "Cd_rock", p.Cd_rock, "calage poreux"),
-        ("Débit", "Q design (permanent)", Q_design, "m³/s — hydrogramme = amélioration future"),
+        ("Débit", "Q design (permanent)", Q_design, "m³/s — pour Resultat_Q9 seulement"),
     ]
     for i, row in enumerate(rows, start=4):
         for j, val in enumerate(row, start=1):
@@ -102,7 +139,11 @@ def main() -> None:
             if j == 3 and i > 4:
                 cell.fill = YELLOW
     style_header(ws, 4, 4)
-    ws["A26"] = "Cellules jaunes = entrées principales (recalculer via run_model.py / build_excel.py après changement)."
+    ws["A26"] = (
+        "Pour l'hydrogramme / routing: éditer les jaunes sur Hydrogramme_entree "
+        "(Q pointe, Montée, Descente, Pond, dt) — formules Excel live. "
+        "Si vous changez D, n, L, S0…: python build_excel.py"
+    )
     ws["A26"].font = Font(italic=True, size=10, color="64748B")
     autosize(ws)
 
@@ -114,68 +155,62 @@ def main() -> None:
     wsF.column_dimensions["B"].width = 95
 
     lines = [
-        ("Important", "Les débits Q_ponceau / Q_débordement sont calculés dans Python (hydraulics.py), puis écrits dans Excel. Ce ne sont pas des formules Excel « live » (trop complexes: HDS-5 + Manning + routing). Relancer: python build_excel.py"),
+        ("Important", "Hydrogramme_entree + Routing_stockage = FORMULES Excel live. Changez Q pointe (9→12), Montée, Descente, Pond A ou dt → recalcul auto. Courbe Q(HW) = Python: si D/n/L change → python build_excel.py"),
         ("", ""),
         ("1. Cotes", ""),
         ("HW", "Profondeur d'eau amont au-dessus de l'invert du ponceau (m)"),
         ("WSE", "WSE = invert_amont + HW   →   35.36 + HW"),
         ("Clé (crown)", "elev_clé = invert_amont + D = 35.36 + 1.05 = 36.41 m"),
-        ("S0", "S0 = (invert_amont − invert_aval) / L = (35.36 − 34.47) / 50.9 ≈ 0.0175 m/m"),
+        ("S0", "S0 = (invert_amont - invert_aval) / L = (35.36 - 34.47) / 50.9 ≈ 0.0175 m/m"),
         ("", ""),
         ("2. Courbe de tarage = quoi?", ""),
-        ("Définition", "Table qui donne le débit que le système PEUT évacuer pour chaque niveau d'eau HW. On fixe HW, on calcule Q. Ce n'est PAS un hydrogramme (qui est Q vs temps)."),
-        ("Construction", "Pour HW = 0, 0.05, 0.10, … jusqu'à Hmax=37.4−35.36=2.04 m : Q_total(HW) = Q_pipe(HW) + Q_overflow(HW)"),
+        ("Définition", "Table débit évacuable pour chaque HW. On fixe HW, on calcule Q. Ce n'est PAS un hydrogramme (Q vs temps)."),
+        ("Construction", "HW = 0, 0.05, … Hmax : Q_total(HW) = Q_pipe(HW) + Q_overflow(HW)"),
+        ("Colonnes live", "S = S_geo + PondA*HW ; Ind = 2*S/(dt_sec) + Q_total  (pour routing Puls)"),
         ("", ""),
         ("3. Q_ponceau (FHWA HDS-5 + Manning)", ""),
-        ("Contrôle d'entrée", "Forme 2 (SI):  HW/D = K [Q / (Ku·A·√D)]^M   (non submergé) ;  HW/D = c [Q/(Ku·A·√D)]² + Y  (submergé). Ku=1.811. Entrée biseautée: K=0.0018, M=2.5, c=0.030, Y=0.74"),
-        ("Contrôle de sortie", "Plein tuyau: pertes H = (1+Ke) V²/(2g) + n² V² L / R^(4/3), R=D/4, Ke=0.2 (biseau). Partiellement plein: Manning circulaire."),
-        ("Q retenu", "Q_pipe = min(Q_entrée, Q_sortie) au même HW  (le plus limitatif gouverne)"),
+        ("Contrôle d'entrée", "Forme 2 SI: HW/D = K [Q/(Ku*A*sqrt(D))]^M (non subm.) ; HW/D = c [Q/(Ku*A*sqrt(D))]^2 + Y (subm.). Ku=1.811. Biseau: K=0.0018, M=2.5, c=0.030, Y=0.74"),
+        ("Contrôle de sortie", "Plein tuyau: H = (1+Ke)*V^2/(2g) + n^2*V^2*L/R^(4/3), R=D/4, Ke=0.2"),
+        ("Q retenu", "Q_pipe = min(Q_entrée, Q_sortie) au même HW"),
         ("", ""),
-        ("4. Q_débordement surface — formules complètes (quand HW > D)", ""),
-        ("Seuil", "Si HW <= D : Q_overflow = 0.  Si HW > D : y = HW - D  (profondeur d'eau AU-DESSUS de la clé)"),
-        ("Exemple", "HW = 1.78 m, D = 1.05 m  →  y = 1.78 - 1.05 = 0.73 m"),
-        ("Géométrie trapèze", "b = 2 m (fond), z = 2 (talus 2H:1V)"),
-        ("Aire A", "A = (b + z*y) * y"),
-        ("Exemple A", "A = (2 + 2*0.73) * 0.73 = (2 + 1.46) * 0.73 = 3.46 * 0.73 ≈ 2.53 m²"),
-        ("Périmètre mouillé P", "P = b + 2*y*sqrt(1 + z^2)"),
-        ("Exemple P", "P = 2 + 2*0.73*sqrt(1+4) = 2 + 1.46*sqrt(5) ≈ 2 + 1.46*2.236 ≈ 5.26 m"),
-        ("Rayon hydraulique R", "R = A / P"),
-        ("Exemple R", "R ≈ 2.53 / 5.26 ≈ 0.48 m"),
-        ("FORMULE Manning", "Q_overflow = (1/n) * A * R^(2/3) * S0^(1/2)"),
-        ("Paramètres", "n ≈ 0.045 (fossé enroché / rocher 8–200 mm), S0 ≈ 0.0175 (pente du site)"),
-        ("Exemple Q", "Q ≈ (1/0.045) * 2.53 * (0.48)^(2/3) * sqrt(0.0175) ≈ 22.3 * 2.53 * 0.61 * 0.132 ≈ 4.5 m³/s (ordre de grandeur)"),
-        ("Où c'est codé", "hydraulics.py → overflow_Q() + _manning_Q() + _trapezoid()"),
-        ("Mode porous (option)", "Wilkins: V_bulk ≈ Cd * n_por * sqrt(g * d50 * S0 / (1 - n_por)) ; Q = A * V_bulk  (beaucoup plus petit — insuffisant seul pour 9 m³/s)"),
+        ("4. Q_débordement surface (HW > D)", ""),
+        ("Seuil", "Si HW <= D : Q_overflow = 0.  Si HW > D : y = HW - D"),
+        ("Aire A", "A = (b + z*y) * y     b=2, z=2"),
+        ("Périmètre P", "P = b + 2*y*sqrt(1+z^2)"),
+        ("Rayon R", "R = A / P"),
+        ("FORMULE Manning", "Q_overflow = (1/n) * A * R^(2/3) * S0^(1/2)     n≈0.045"),
         ("", ""),
-        ("5. Pourquoi Manning et pas Bernoulli pour le débordement?", ""),
-        ("Bernoulli EST utilisé", "Pour le PONCET (contrôle de sortie): équation d'énergie / Bernoulli avec pertes: HW = TW + (1+Ke)*V^2/(2g) + pertes de frottement Manning"),
-        ("Pourquoi pas Bernoulli seul au-dessus de D", "Au-dessus de la clé, l'eau ne passe pas par un petit orifice court. Elle s'écoule dans un LONG fossé trapézoïdal rugueux (enrochement). Ce n'est pas un orifice."),
-        ("Formule orifice (à éviter ici)", "Q = Cd * A * sqrt(2*g*H)  viendrait de Bernoulli sans frottement — OK pour orifice/déversoir COURT, FAUX pour un canal long: ignore L, n, pente → surestime fortement Q"),
-        ("Lien Manning ↔ énergie", "Manning EST une forme pratique de Bernoulli/énergie en canal: on remplace les pertes de charge inconnues par une formule empirique de frottement (n, R, S)"),
-        ("Alternative déversoir", "Si l'eau débordait seulement sur une crête de route courte, on utiliserait un déversoir (aussi dérivé de Bernoulli). Ici le chemin est un fossé en pente → Manning canal ouvert"),
-        ("Résumé", "Pipe = HDS-5 + Bernoulli/énergie+pertes. Overflow fossé = Manning canal ouvert. Les deux reposent sur l'énergie; le frottement décide la formule."),
+        ("5. Pourquoi Manning et pas Bernoulli au-dessus de D?", ""),
+        ("Bernoulli EST utilisé", "Pour le tuyau (contrôle sortie): HW = TW + (1+Ke)*V^2/(2g) + pertes"),
+        ("Pourquoi pas orifice Bernoulli", "Au-dessus de la clé: long fossé rugueux, pas un orifice court. Q=Cd*A*sqrt(2gH) ignore L, n, pente → surestime"),
+        ("Résumé", "Pipe = HDS-5 + énergie. Overflow fossé = Manning canal ouvert."),
         ("", ""),
-        ("6. Régime permanent Q=9 (feuille Resultat_Q9)", ""),
-        ("Méthode", "On cherche HW tel que Q_pipe(HW)+Q_overflow(HW) = 9  (dichotomie / bisection)"),
-        ("Résultat typique", "WSE≈37.16 m ; Q_pipe≈4.2 ; Q_overflow≈4.8 m³/s"),
+        ("6. Régime permanent (Resultat_Q9)", ""),
+        ("Méthode", "Cherche HW tel que Q_pipe+Q_overflow = Q_design (Python). Pas live si vous changez Q design."),
         ("", ""),
-        ("7. Hydrogramme d'entrée (triangle)", ""),
-        ("Montée 0→Tmontée", "Q_in(t) = Qpointe * (t / Tmontée)     ex.: 9*(t/40)"),
-        ("Descente après pic", "Q_in(t) = Qpointe * (1 - (t-Tmontée)/Tdescente)"),
-        ("Exemple", "t=20 min → Qin=9*20/40=4.5 ; t=40 → 9 ; t=60 → 9*(1-20/80)=6.75"),
-        ("Pond amont A", "Surface fictive (m²) ajoutée au stockage: V_pond = A * HW. 0 = seulement tuyau+fossé. 50–500 = bassin/nappé amont simplifié."),
+        ("7. Hydrogramme d'entrée — FORMULES EXCEL LIVE", ""),
+        ("Où éditer", "Feuille Hydrogramme_entree: B4=Pond A ; B5=Q pointe ; B6=Montée (min) ; B7=Descente (min) ; B8=dt (min)"),
+        ("Changer 9 → 12", "Mettre 12 dans B5. Colonne Q_in + feuille Routing_stockage se mettent à jour."),
+        ("Temps t", "A11=0 ; puis A12 = SI(A11+dt > Montée+Descente; \"\"; A11+dt)"),
+        ("Montée", "Si t <= Montée:  Q_in = Qpointe * (t / Montée)"),
+        ("Descente", "Si t > Montée:   Q_in = Qpointe * (1 - (t-Montée)/Descente)"),
+        ("Formule Excel Q_in", "=SI(A11=\"\";\"\";SI(A11<=$B$6;$B$5*A11/$B$6;MAX(0;$B$5*(1-(A11-$B$6)/$B$7))))"),
+        ("Exemple", "Q=9, Montée=40: t=20→4.5; t=40→9; t=60→6.75.  Q=12: t=20→6; t=40→12"),
         ("", ""),
-        ("8. Routing stockage (feuille Routing_stockage)", ""),
-        ("Bilan", "dS/dt = Q_in - Q_out(WSE)    (continuité / level-pool)"),
-        ("Stockage S(HW)", "S ≈ V_tuyau(HW) + V_fossé(max(0,HW-D)) + A_pond*HW"),
-        ("Q_out", "Q_out = Q_pipe(HW) + Q_overflow(HW)  (+ déversoir large si WSE>37.4)"),
-        ("Numérique", "Pas de temps subdivisés; estimateur/correcteur sur Q_out. Voir hydraulics.py → route_level_pool()"),
-        ("Ligne jaune", "Pas de temps où WSE est maximal"),
+        ("8. Routing stockage — FORMULES EXCEL (méthode Puls)", ""),
+        ("Bilan", "dS/dt = Q_in - Q_out"),
+        ("dt_sec", "dt_sec = dt_min * 60  (Hydrogramme_entree!B8)"),
+        ("Indicateur", "Ind = 2*S/dt_sec + Q_out   (colonne I de Courbe_de_tarage)"),
+        ("Étape 0", "t=0: HW=0; Q_out=0; S=0"),
+        ("Étape n", "RHS = (2*S_prev/dt_sec - Q_out_prev) + Q_in_prev + Q_in_n"),
+        ("Lecture courbe", "Interpoler où Ind ≈ RHS → Q_out, HW, S, Q_pipe, Q_overflow"),
+        ("WSE", "WSE = 35.36 + HW"),
+        ("S", "S = S_geo(tuyau+fossé) + PondA*HW"),
         ("", ""),
         ("9. Fichiers source", ""),
-        ("hydraulics.py", "Toutes les formules hydrauliques"),
-        ("build_excel.py", "Remplit ce classeur à partir de hydraulics.py"),
-        ("run_model.py", "Affiche le résultat permanent dans le terminal"),
+        ("hydraulics.py", "Tarage Q(HW) et S_geo"),
+        ("build_excel.py", "Génère le classeur + formules live"),
+        ("run_model.py", "Résultat permanent terminal"),
     ]
     wsF["A3"] = "Sujet"
     wsF["B3"] = "Formule / explication"
@@ -188,9 +223,9 @@ def main() -> None:
             wsF.cell(i, 1).font = Font(bold=True, color="0F5C5C")
         wsF.row_dimensions[i].height = 35 if len(b) > 80 else 18
 
-    # --- Sheet 2: Resultat Q=9 ---
+    # --- Sheet: Resultat Q=9 ---
     ws2 = wb.create_sheet("Resultat_Q9")
-    ws2["A1"] = "Résultat pour Q permanent = 9 m³/s"
+    ws2["A1"] = "Résultat pour Q permanent = 9 m³/s (Python — pas live)"
     ws2["A1"].font = Font(bold=True, size=14)
     data = [
         ("Grandeur", "Valeur", "Unité", "Comment obtenu"),
@@ -213,193 +248,262 @@ def main() -> None:
     for r in range(4, 14):
         ws2.cell(r, 2).fill = OK if not summary["exceeds_max_stage"] else WARN
     ws2["A16"] = (
-        "Interprétation: le ponceau seul (~3.6 m³/s à la clé, ~4.2 m³/s au WSE de calcul) "
-        "est insuffisant pour 9 m³/s. L'excédent (~4.8 m³/s) passe dans le fossé au-dessus de la clé "
-        "(mode surface / écoulement préférentiel dans le remblai 8–200 mm). WSE ≈ 37.16 m < 37.4 m."
+        "Interprétation: le ponceau seul est insuffisant pour 9 m³/s. "
+        "L'excédent passe dans le fossé au-dessus de la clé. "
+        "Pour un événement dans le temps (et pour changer 9→12): Hydrogramme_entree + Routing_stockage."
     )
     ws2["A16"].alignment = Alignment(wrap_text=True)
     ws2.merge_cells("A16:D18")
-    ws2["A20"] = (
-        "Voir aussi la feuille Formules_explications. "
-        "Pour l'événement dans le temps: Hydrogramme_entree + Routing_stockage."
-    )
-    ws2["A20"].alignment = Alignment(wrap_text=True)
-    ws2.merge_cells("A20:D21")
     autosize(ws2)
 
-    # --- Sheet 3: Courbe de tarage ---
+    # --- Sheet: Courbe de tarage (+ S_geo, S live, Ind live) ---
     ws3 = wb.create_sheet("Courbe_de_tarage")
     ws3["A1"] = "Courbe de tarage Q = f(HW) — ponceau + débordement"
     ws3["A1"].font = Font(bold=True, size=14)
     ws3["A2"] = (
-        "COMMENT LIRE: on impose HW (col A), on calcule les débits. "
-        "WSE = 35.36+HW. Q_total = Q_ponceau + Q_débordement. "
-        "Détail des formules → feuille Formules_explications §§2–4."
+        "Q_pipe / Q_débord / Q_total = Python (fixe tant que géométrie fixe). "
+        "Colonnes S et Ind = formules Excel live (dépendent de Pond A et dt). "
+        "Utilisées par Routing_stockage (méthode Puls)."
     )
     ws3["A2"].font = Font(italic=True, color="64748B")
-    ws3.merge_cells("A2:F2")
+    ws3.merge_cells("A2:I2")
     headers = [
-        "HW (m) imposé",
+        "HW (m)",
         "WSE=35.36+HW",
-        "Q_ponceau (HDS-5/Manning)",
-        "Q_débord. (Manning fossé si HW>D)",
-        "Q_total = somme",
+        "Q_ponceau",
+        "Q_débord.",
+        "Q_total",
         "Contrôle",
+        "S_geo (m³)",
+        "S=S_geo+Pond*HW",
+        "Ind=2S/dt+Q",
     ]
     for j, h in enumerate(headers, start=1):
         ws3.cell(3, j, h)
-    style_header(ws3, 3, 6)
+    style_header(ws3, 3, 9)
+
     for i, pt in enumerate(rating, start=4):
-        # HW value
+        s_geo = storage_m3(pt.HW, p, pond_area_m2=0.0)
         ws3.cell(i, 1, round(pt.HW, 4)).border = THIN
-        # WSE as Excel formula referencing HW in column A
-        cell_wse = ws3.cell(i, 2)
-        cell_wse.value = f"=35.36+A{i}"
-        cell_wse.border = THIN
-        cell_wse.number_format = "0.000"
+        c_wse = ws3.cell(i, 2, f"=35.36+A{i}")
+        c_wse.border = THIN
+        c_wse.number_format = "0.000"
         for j, v in enumerate([pt.Q_pipe, pt.Q_ditch, pt.Q_total, pt.control], start=3):
             cell = ws3.cell(i, j, round(v, 4) if isinstance(v, float) else v)
             cell.border = THIN
-            if abs(pt.Q_total - 9.0) < 0.15 and pt.HW > 1.5:
-                cell.fill = YELLOW
-                ws3.cell(i, 1).fill = YELLOW
-                ws3.cell(i, 2).fill = YELLOW
-    last = 3 + len(rating)
-    ws3.cell(last + 2, 1, "Ligne jaune ≈ Q_total ≈ 9 m³/s")
-    ws3.cell(last + 3, 1, "Colonne B = formule Excel (=35.36+HW). Colonnes C–E = résultats Python (hydraulics.py).")
-    ws3.cell(last + 3, 1).font = Font(italic=True, size=10, color="64748B")
+        # S_geo static
+        c_sg = ws3.cell(i, 7, round(s_geo, 4))
+        c_sg.border = THIN
+        c_sg.number_format = "0.00"
+        # S live = S_geo + PondA * HW
+        c_s = ws3.cell(i, 8, f"=G{i}+Hydrogramme_entree!$B$4*A{i}")
+        c_s.border = THIN
+        c_s.number_format = "0.00"
+        # Ind = 2*S/(dt_sec) + Q_total
+        c_ind = ws3.cell(i, 9, f"=2*H{i}/(Hydrogramme_entree!$B$8*60)+E{i}")
+        c_ind.border = THIN
+        c_ind.number_format = "0.00"
+        if abs(pt.Q_total - 9.0) < 0.15 and pt.HW > 1.5:
+            for col in range(1, 7):
+                ws3.cell(i, col).fill = YELLOW
+
+    ws3.cell(rating_end + 2, 1, "Ligne jaune ≈ Q_total ≈ 9 m³/s (référence)")
+    ws3.cell(
+        rating_end + 3,
+        1,
+        "H = S_geo + PondA*HW ; I = 2*S/(dt*60)+Q_total. PondA et dt = Hydrogramme_entree B4 et B8.",
+    )
+    ws3.cell(rating_end + 3, 1).font = Font(italic=True, size=10, color="64748B")
     autosize(ws3)
 
-    # --- Sheet 4: Hydrogramme entrée (editable concept) ---
+    # --- Sheet: Hydrogramme entrée (LIVE formulas) ---
     ws4 = wb.create_sheet("Hydrogramme_entree")
-    ws4["A1"] = "Hydrogramme d'entrée Q(t) — triangle par défaut (pointe = 9 m³/s)"
+    ws4["A1"] = "Hydrogramme d'entrée Q(t) — TRIANGLE avec FORMULES EXCEL LIVE"
     ws4["A1"].font = Font(bold=True, size=13)
     ws4["A2"] = (
-        "FORMULE triangle: montée Qin=Qpointe*(t/Tmontée); "
-        "descente Qin=Qpointe*(1-(t-Tmontée)/Tdescente). "
-        "Ex: t=20 → 9*20/40=4.5. Colonnes jaunes générées par Python; "
-        "pour changer: modifier B4–B8 puis relancer python build_excel.py. "
-        "Détails → Formules_explications §§7–8."
+        "Éditez les cellules JAUNES (B4–B8). Exemple: pour Q=12, mettez 12 dans B5. "
+        "La colonne Q_in et la feuille Routing_stockage se recalculent automatiquement. "
+        "Formules: voir Formules_explications §7."
     )
     ws4["A2"].font = Font(italic=True, color="64748B")
     ws4.merge_cells("A2:D2")
 
-    # Routing options
-    ws4["A3"] = "Options routing"
+    ws4["A3"] = "Options (éditer ici)"
     ws4["A3"].font = Font(bold=True)
-    ws4["A4"] = "Pond amont A (m²)"
-    ws4["B4"] = 50.0  # small headwater pool assumption
-    ws4["B4"].fill = YELLOW
-    ws4["C4"] = "0 = seulement stockage tuyau+fossé; >0 ajoute un bassin amont simple"
-    ws4["A5"] = "Q pointe triangle"
-    ws4["B5"] = Q_design
-    ws4["B5"].fill = YELLOW
-    ws4["A6"] = "Montée (min)"
-    ws4["B6"] = 40
-    ws4["B6"].fill = YELLOW
-    ws4["A7"] = "Descente (min)"
-    ws4["B7"] = 80
-    ws4["B7"].fill = YELLOW
-    ws4["A8"] = "Pas dt (min)"
-    ws4["B8"] = 5
-    ws4["B8"].fill = YELLOW
+    inputs = [
+        (4, "Pond amont A (m²)", pond_area, "0 = tuyau+fossé seulement; >0 = bassin amont simplifié"),
+        (5, "Q pointe triangle (m³/s)", Q_design, "Changer 9 → 12 ici pour un nouvel hydrogramme"),
+        (6, "Montée (min)", t_rise, "Durée de la montée jusqu'à la pointe"),
+        (7, "Descente (min)", t_fall, "Durée de la descente après la pointe"),
+        (8, "Pas dt (min)", dt_min, "Pas de temps de l'hydrogramme / routing"),
+    ]
+    for row, label, val, note in inputs:
+        ws4.cell(row, 1, label)
+        c = ws4.cell(row, 2, val)
+        c.fill = YELLOW
+        c.border = THIN
+        ws4.cell(row, 3, note).font = Font(italic=True, size=9, color="64748B")
 
-    pond_area = float(ws4["B4"].value)
-    t_list, q_list = default_triangle_hydrograph(
-        Q_peak=float(ws4["B5"].value),
-        t_rise_min=float(ws4["B6"].value),
-        t_fall_min=float(ws4["B7"].value),
-        dt_min=float(ws4["B8"].value),
+    ws4["A9"] = (
+        "Formule Q_in: SI(t<=Montée; Qpointe*t/Montée; MAX(0; Qpointe*(1-(t-Montée)/Descente)))"
     )
+    ws4["A9"].font = Font(size=10, color="0F5C5C")
 
     ws4["A10"] = "t (min)"
-    ws4["B10"] = "Q_in (m³/s)"
+    ws4["B10"] = "Q_in (m³/s)  ← formule"
     style_header(ws4, 10, 2)
-    for i, (t, q) in enumerate(zip(t_list, q_list), start=11):
-        ws4.cell(i, 1, t).border = THIN
-        c = ws4.cell(i, 2, round(q, 4))
-        c.border = THIN
-        c.fill = YELLOW
+
+    # Row 11 = t=0; subsequent rows chain on dt until rise+fall
+    first_data = 11
+    last_data = first_data + N_TIME_ROWS - 1
+    ws4.cell(first_data, 1, 0).border = THIN
+    ws4.cell(
+        first_data,
+        2,
+        f'=IF(A{first_data}="","",IF(A{first_data}<=$B$6,$B$5*A{first_data}/$B$6,'
+        f"MAX(0,$B$5*(1-(A{first_data}-$B$6)/$B$7))))",
+    ).border = THIN
+    ws4.cell(first_data, 2).number_format = "0.0000"
+
+    for r in range(first_data + 1, last_data + 1):
+        prev = r - 1
+        # t = previous + dt if still within event, else blank
+        ws4.cell(
+            r,
+            1,
+            f'=IF(A{prev}="","",IF(A{prev}+$B$8>$B$6+$B$7,"",A{prev}+$B$8))',
+        ).border = THIN
+        ws4.cell(
+            r,
+            2,
+            f'=IF(A{r}="","",IF(A{r}<=$B$6,$B$5*A{r}/$B$6,'
+            f"MAX(0,$B$5*(1-(A{r}-$B$6)/$B$7))))",
+        ).border = THIN
+        ws4.cell(r, 2).number_format = "0.0000"
+
+    # Light yellow on Q_in to show computed (not manually typed)
+    for r in range(first_data, last_data + 1):
+        ws4.cell(r, 2).fill = PatternFill("solid", fgColor="E0F2FE")
+
     autosize(ws4)
 
-    # --- Sheet 5: Routing results ---
-    route = route_level_pool(t_list, q_list, p, pond_area_m2=pond_area, HW0=0.0)
+    # --- Sheet: Routing_stockage (LIVE Puls formulas) ---
     wsR = wb.create_sheet("Routing_stockage")
-    wsR["A1"] = "Routing stockage — dS/dt = Q_in − Q_out(WSE)"
+    wsR["A1"] = "Routing stockage — FORMULES EXCEL LIVE (méthode Puls)"
     wsR["A1"].font = Font(bold=True, size=13)
     wsR["A2"] = (
-        f"FORMULE: dS/dt = Qin − Qout(WSE), avec Qout = Q_pipe(HW)+Q_overflow(HW). "
-        f"S = volume tuyau + fossé × L + pond({pond_area:.0f} m²)×HW. "
-        f"TW={p.TW} m. Voir Formules_explications §8."
+        "dS/dt = Qin - Qout.  À chaque pas: RHS = (2S/dt - Q)_prev + Qin_prev + Qin. "
+        "On interpole la Courbe_de_tarage où Ind ≈ RHS. "
+        "Changez Q pointe / Pond / dt sur Hydrogramme_entree → cette feuille se met à jour. "
+        "Détail → Formules_explications §8."
     )
     wsR["A2"].font = Font(italic=True, color="64748B")
-    wsR.merge_cells("A2:H2")
+    wsR.merge_cells("A2:K2")
 
     hdr = [
         "t (min)",
-        "Q_in (m³/s)",
-        "Q_pipe (m³/s)",
-        "Q_overflow (m³/s)",
-        "Q_out (m³/s)",
+        "Q_in",
+        "Q_pipe",
+        "Q_overflow",
+        "Q_out",
         "HW (m)",
         "WSE (m)",
         "S (m³)",
-        "WSE > 37.4?",
+        "WSE>37.4?",
+        "RHS (Ind cible)",
+        "2S/dt-Q",
     ]
     for j, h in enumerate(hdr, start=1):
         wsR.cell(4, j, h)
-    style_header(wsR, 4, 9)
+    style_header(wsR, 4, 11)
 
-    peak = max(route, key=lambda s: s.WSE)
-    for i, s in enumerate(route, start=5):
-        over = "OUI" if s.WSE > p.elev_max + 1e-6 else ""
-        vals = [
-            s.t_min,
-            round(s.Q_in, 4),
-            round(s.Q_pipe, 4),
-            round(s.Q_overflow, 4),
-            round(s.Q_out, 4),
-            round(s.HW, 4),
-            round(s.WSE, 4),
-            round(s.S_m3, 2),
-            over,
-        ]
-        for j, v in enumerate(vals, start=1):
-            cell = wsR.cell(i, j, v)
-            cell.border = THIN
-            if s is peak:
-                cell.fill = YELLOW
-            if over:
-                cell.fill = WARN
+    # Excel routing rows align with hydrogramme rows
+    r0 = 5  # first routing data row (= hydro first_data)
+    r_last = r0 + N_TIME_ROWS - 1
+    dt_ref = "Hydrogramme_entree!$B$8"
 
-    summary_row = 5 + len(route) + 1
-    wsR.cell(summary_row, 1, "Résumé").font = Font(bold=True)
+    # Initial state t=0
+    hydro_r = first_data
+    wsR.cell(r0, 1, f"=Hydrogramme_entree!A{hydro_r}").border = THIN
+    wsR.cell(r0, 2, f"=Hydrogramme_entree!B{hydro_r}").border = THIN
+    wsR.cell(r0, 3, 0).border = THIN  # Q_pipe
+    wsR.cell(r0, 4, 0).border = THIN  # Q_overflow
+    wsR.cell(r0, 5, 0).border = THIN  # Q_out
+    wsR.cell(r0, 6, 0).border = THIN  # HW
+    wsR.cell(r0, 7, f"=IF(A{r0}=\"\",\"\",35.36+F{r0})").border = THIN
+    wsR.cell(r0, 8, 0).border = THIN  # S
+    wsR.cell(r0, 9, f'=IF(G{r0}="","",IF(G{r0}>37.4,"OUI",""))').border = THIN
+    wsR.cell(r0, 10, "").border = THIN
+    wsR.cell(r0, 11, f"=IF(A{r0}=\"\",\"\",2*H{r0}/({dt_ref}*60)-E{r0})").border = THIN
+
+    for i in range(1, N_TIME_ROWS):
+        r = r0 + i
+        prev = r - 1
+        hydro_r = first_data + i
+        rhs = f"K{prev}+B{prev}+B{r}"
+
+        wsR.cell(r, 1, f"=Hydrogramme_entree!A{hydro_r}").border = THIN
+        wsR.cell(r, 2, f"=Hydrogramme_entree!B{hydro_r}").border = THIN
+
+        # Only compute when t is present
+        def gated(formula: str) -> str:
+            return f'=IF(A{r}="","",{formula})'
+
+        wsR.cell(r, 3, gated(excel_interp(rhs, "C", rating_end))).border = THIN  # Q_pipe
+        wsR.cell(r, 4, gated(excel_interp(rhs, "D", rating_end))).border = THIN  # Q_overflow
+        wsR.cell(r, 5, gated(excel_interp(rhs, "E", rating_end))).border = THIN  # Q_out
+        wsR.cell(r, 6, gated(excel_interp(rhs, "A", rating_end))).border = THIN  # HW
+        wsR.cell(r, 7, f'=IF(A{r}="","",35.36+F{r})').border = THIN
+        wsR.cell(r, 8, gated(excel_interp(rhs, "H", rating_end))).border = THIN  # S
+        wsR.cell(r, 9, f'=IF(G{r}="","",IF(G{r}>37.4,"OUI",""))').border = THIN
+        wsR.cell(r, 10, gated(rhs)).border = THIN  # RHS
+        wsR.cell(r, 11, f'=IF(A{r}="","",2*H{r}/({dt_ref}*60)-E{r})').border = THIN
+
+        for col in (2, 3, 4, 5, 6, 7, 8, 10, 11):
+            wsR.cell(r, col).number_format = "0.0000"
+
+    for col in (2, 3, 4, 5, 6, 7, 8, 11):
+        wsR.cell(r0, col).number_format = "0.0000"
+
+    # Conditional highlight when WSE is max among non-blank rows
+    # (simple: yellow if G equals MAX of column — works in Excel)
+    yellow_fill = PatternFill(start_color="FFF59D", end_color="FFF59D", fill_type="solid")
+    wsR.conditional_formatting.add(
+        f"A{r0}:K{r_last}",
+        FormulaRule(
+            formula=[f'AND($A{r0}<>"",$G{r0}=MAX($G${r0}:$G${r_last}))'],
+            fill=yellow_fill,
+        ),
+    )
+
+    summary_row = r_last + 2
+    wsR.cell(summary_row, 1, "Résumé (formules live)").font = Font(bold=True)
     wsR.cell(summary_row + 1, 1, "WSE max")
-    wsR.cell(summary_row + 1, 2, round(peak.WSE, 3))
+    wsR.cell(summary_row + 1, 2, f"=MAX(G{r0}:G{r_last})")
+    wsR.cell(summary_row + 1, 2).fill = OK
     wsR.cell(summary_row + 1, 3, "m")
-    wsR.cell(summary_row + 2, 1, "t au pic de niveau")
-    wsR.cell(summary_row + 2, 2, peak.t_min)
-    wsR.cell(summary_row + 2, 3, "min")
-    wsR.cell(summary_row + 3, 1, "Q_in au même instant")
-    wsR.cell(summary_row + 3, 2, round(peak.Q_in, 3))
-    wsR.cell(summary_row + 4, 1, "Q_out au même instant")
-    wsR.cell(summary_row + 4, 2, round(peak.Q_out, 3))
-    wsR.cell(summary_row + 5, 1, "S max (approx)")
-    wsR.cell(summary_row + 5, 2, round(max(s.S_m3 for s in route), 1))
-    wsR.cell(summary_row + 5, 3, "m³")
-    for r in range(summary_row + 1, summary_row + 6):
-        wsR.cell(r, 2).fill = OK if peak.WSE <= p.elev_max else WARN
+    wsR.cell(summary_row + 2, 1, "S max")
+    wsR.cell(summary_row + 2, 2, f"=MAX(H{r0}:H{r_last})")
+    wsR.cell(summary_row + 2, 3, "m³")
+    wsR.cell(summary_row + 3, 1, "Q_in max")
+    wsR.cell(summary_row + 3, 2, f"=MAX(B{r0}:B{r_last})")
+    wsR.cell(summary_row + 3, 3, "m³/s")
+    wsR.cell(summary_row + 4, 1, "Réf. Python (build)")
+    wsR.cell(summary_row + 4, 2, round(peak.WSE, 3))
+    wsR.cell(summary_row + 4, 3, "m WSE max au moment du build (Puls Excel ≈ ce nombre)")
 
     wsR.cell(
-        summary_row + 7,
+        summary_row + 6,
         1,
-        "Ligne jaune = pas de temps du WSE max. "
-        "Comparer au Resultat_Q9 (régime permanent): le pic transitoire peut être plus bas grâce au stockage.",
+        "Ligne jaune (mise en forme conditionnelle) = pas où WSE = WSE max. "
+        "Si vous changez Q pointe à 12 sur Hydrogramme_entree!B5, ce résumé change tout seul.",
     )
-    wsR.merge_cells(start_row=summary_row + 7, start_column=1, end_row=summary_row + 8, end_column=9)
+    wsR.merge_cells(
+        start_row=summary_row + 6, start_column=1, end_row=summary_row + 7, end_column=11
+    )
     autosize(wsR)
 
-    # --- Sheet 6: Notes hydro ---
+    # --- Sheet: Notes ---
     wsN = wb.create_sheet("Hydrogramme_notes")
     wsN["A1"] = "Hyétogramme vs hydrogramme — et ce que fait ce classeur"
     wsN["A1"].font = Font(bold=True, size=13)
@@ -407,19 +511,25 @@ def main() -> None:
         "",
         "Hyétogramme = pluie i(t) [mm/h]. Hydrogramme = débit Q(t) [m³/s] à l'entrée du ponceau.",
         "",
-        "Feuille Hydrogramme_entree : Q(t) triangulaire (pointe 9 m³/s, montée 40 min, descente 80 min).",
-        "Feuille Routing_stockage : résout dS/dt = Q_in − Q_out(WSE) avec S = f(HW).",
+        "COMMENT CHANGER LE DÉBIT DE POINTE (ex. 9 → 12):",
+        "  1. Ouvrir Hydrogramme_entree",
+        "  2. Mettre 12 dans la cellule jaune B5 (Q pointe)",
+        "  3. La colonne Q_in et Routing_stockage se recalculent (formules Excel)",
         "",
-        "Pour coller VOTRE hydrogramme: remplacez les Qin jaunes (idéalement via rebuild après édition du script,",
-        "ou demandez une version 100% formules Excel).",
+        "Autres jaunes: B4=Pond A, B6=Montée, B7=Descente, B8=dt.",
         "",
-        "Chaîne complète future: hyétogramme → ruissellement (rationnel/SCS) → hydrogramme → ce routing.",
+        "Formule triangle:",
+        "  montée:   Qin = Qpointe * t / Montée",
+        "  descente: Qin = Qpointe * (1 - (t - Montée) / Descente)",
+        "",
+        "Routing = méthode Puls (pas besoin de relancer Python pour Q pointe / pond / dt).",
+        "Si vous changez D, n, L, pente: relancer python build_excel.py (courbe de tarage).",
     ]
     for i, line in enumerate(notes, start=2):
         wsN.cell(i, 1, line)
     wsN.column_dimensions["A"].width = 110
 
-    # --- Sheet 7: Comparaison modes ---
+    # --- Sheet: Comparaison modes ---
     ws5 = wb.create_sheet("Comparaison_modes")
     ws5["A1"] = "Comparaison overflow porous vs surface pour Q=9 (mêmes géométrie/S0)"
     ws5["A1"].font = Font(bold=True, size=12)
@@ -431,7 +541,9 @@ def main() -> None:
         pm = CulvertDitchParams(overflow_mode=mode)
         r = solve_HW_for_Q(9.0, pm)
         ok = "Oui" if r.Q_total >= 9.0 - 1e-3 and r.WSE <= pm.elev_max + 1e-6 else "Non / limite"
-        ws5.append([mode, round(r.WSE, 3), round(r.Q_pipe, 3), round(r.Q_ditch, 3), round(r.Q_total, 3), ok])
+        ws5.append(
+            [mode, round(r.WSE, 3), round(r.Q_pipe, 3), round(r.Q_ditch, 3), round(r.Q_total, 3), ok]
+        )
     ws5["A8"] = (
         "Note: mode porous (Wilkins) seul ne passe pas ~9 m³/s sous 37.4 m. "
         "Mode surface (fossé rugueux / macropores dans 8–200 mm) est le défaut pratique."
@@ -446,6 +558,7 @@ def main() -> None:
         f"Routing peak WSE={peak.WSE:.3f} m at t={peak.t_min:.0f} min "
         f"(Qin={peak.Q_in:.2f}, Qout={peak.Q_out:.2f})"
     )
+    print(f"Live Excel rows: {N_TIME_ROWS}; rating rows 4..{rating_end}")
 
 
 if __name__ == "__main__":
