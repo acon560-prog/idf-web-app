@@ -318,3 +318,186 @@ def summarize(Q: float, p: CulvertDitchParams) -> dict:
         "overflow_active": r.Q_ditch > 1e-6,
         "exceeds_max_stage": r.Q_total < Q - 1e-3,
     }
+
+
+def _circular_area(D: float, y: float) -> float:
+    """Partially full circular area for depth y (0..D)."""
+    if y <= 0:
+        return 0.0
+    if y >= D:
+        return math.pi * (D / 2.0) ** 2
+    ratio = max(1e-9, min(0.999999, y / D))
+    theta = 2.0 * math.acos(1.0 - 2.0 * ratio)
+    r = D / 2.0
+    return (r * r / 2.0) * (theta - math.sin(theta))
+
+
+def storage_m3(HW: float, p: CulvertDitchParams, pond_area_m2: float = 0.0) -> float:
+    """
+    Approximate stored volume vs upstream depth HW:
+      - water in pipe barrel (circular segment × L)
+      - water in trapezoidal fossé above crown (A × L)
+      - above elev_max: vertical prism using top width at max stage × L
+      - optional upstream pond surface area × HW
+    """
+    HW = max(0.0, HW)
+    Hmax = p.max_depth()
+    y0 = p.overflow_depth()
+
+    V_pipe = _circular_area(p.D, min(HW, p.D)) * p.L
+
+    V_ditch = 0.0
+    if HW > y0:
+        y_fill = min(HW, Hmax) - y0
+        if y_fill > 0:
+            A, _, _ = _trapezoid(p.b, p.z, y_fill)
+            V_ditch = A * p.L
+        if HW > Hmax:
+            A_top, _, _ = _trapezoid(p.b, p.z, max(0.0, Hmax - y0))
+            # Preferential overtopping prism (vertical walls at top width)
+            Tw = p.b + 2.0 * p.z * max(0.0, Hmax - y0)
+            V_ditch += Tw * (HW - Hmax) * p.L
+
+    V_pond = pond_area_m2 * HW
+    return V_pipe + V_ditch + V_pond
+
+
+def outflow_total(HW: float, p: CulvertDitchParams) -> tuple[float, float, float]:
+    """Pipe + overflow rating, plus broad-crest weir if WSE > elev_max."""
+    Hmax = p.max_depth()
+    r = rating_at_HW(min(max(HW, 0.0), Hmax), p)
+    qp, qd = r.Q_pipe, r.Q_ditch
+    qt = r.Q_total
+    if HW > Hmax:
+        h_sp = HW - Hmax
+        Tw = p.b + 2.0 * p.z * max(0.0, Hmax - p.overflow_depth())
+        # Broad-crested weir (SI approx): Q = C * L * h^(3/2)
+        C = 1.7
+        qt += C * max(Tw, 1.0) * (h_sp ** 1.5)
+    return qp, qd, qt
+
+
+def hw_from_storage(S: float, p: CulvertDitchParams, pond_area_m2: float = 0.0) -> float:
+    """Invert S(HW) by bisection."""
+    if S <= 0:
+        return 0.0
+    lo, hi = 0.0, max(p.max_depth(), 1.0)
+    for _ in range(40):
+        if storage_m3(hi, p, pond_area_m2) >= S:
+            break
+        hi *= 1.4
+        if hi > 50:
+            # Extremely large storage request — return hi cap
+            return hi
+    for _ in range(80):
+        mid = 0.5 * (lo + hi)
+        if storage_m3(mid, p, pond_area_m2) < S:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+@dataclass
+class RouteStep:
+    t_min: float
+    Q_in: float
+    Q_pipe: float
+    Q_overflow: float
+    Q_out: float
+    HW: float
+    WSE: float
+    S_m3: float
+
+
+def default_triangle_hydrograph(
+    Q_peak: float = 9.0,
+    t_rise_min: float = 40.0,
+    t_fall_min: float = 80.0,
+    dt_min: float = 5.0,
+) -> tuple[list[float], list[float]]:
+    """Simple triangular inflow hydrograph peaking at Q_peak."""
+    t_end = t_rise_min + t_fall_min
+    ts: list[float] = []
+    qs: list[float] = []
+    t = 0.0
+    while t <= t_end + 1e-9:
+        if t <= t_rise_min:
+            q = Q_peak * (t / t_rise_min) if t_rise_min > 0 else Q_peak
+        else:
+            q = Q_peak * max(0.0, 1.0 - (t - t_rise_min) / t_fall_min)
+        ts.append(t)
+        qs.append(q)
+        t += dt_min
+    return ts, qs
+
+
+def route_level_pool(
+    t_min: list[float],
+    Q_in: list[float],
+    p: CulvertDitchParams,
+    pond_area_m2: float = 0.0,
+    HW0: float = 0.0,
+    n_sub: int = 10,
+) -> list[RouteStep]:
+    """
+    Level-pool storage routing with sub-steps:
+      dS/dt = Q_in - Q_out(HW)
+    Q_out from compound rating + weir above elev_max.
+    """
+    if len(t_min) != len(Q_in) or len(t_min) < 2:
+        raise ValueError("t_min and Q_in must be same length >= 2")
+
+    steps: list[RouteStep] = []
+    HW = max(0.0, HW0)
+    S = storage_m3(HW, p, pond_area_m2)
+    qp, qd, qt = outflow_total(HW, p)
+    steps.append(
+        RouteStep(
+            t_min=t_min[0],
+            Q_in=Q_in[0],
+            Q_pipe=qp,
+            Q_overflow=qd,
+            Q_out=qt,
+            HW=HW,
+            WSE=p.elev_invert + HW,
+            S_m3=S,
+        )
+    )
+
+    for i in range(len(t_min) - 1):
+        dt_total = (t_min[i + 1] - t_min[i]) * 60.0
+        if dt_total <= 0:
+            raise ValueError("t_min must be increasing")
+        dt = dt_total / n_sub
+        for k in range(n_sub):
+            # linear Qin within interval
+            frac0 = k / n_sub
+            frac1 = (k + 1) / n_sub
+            Qin0 = Q_in[i] * (1 - frac0) + Q_in[i + 1] * frac0
+            Qin1 = Q_in[i] * (1 - frac1) + Q_in[i + 1] * frac1
+            Qin_avg = 0.5 * (Qin0 + Qin1)
+
+            _, _, Qout0 = outflow_total(HW, p)
+            # Implicit-ish: iterate HW once
+            S_pred = max(0.0, S + (Qin_avg - Qout0) * dt)
+            HW_pred = hw_from_storage(S_pred, p, pond_area_m2)
+            _, _, Qout1 = outflow_total(HW_pred, p)
+            Qout = 0.5 * (Qout0 + Qout1)
+            S = max(0.0, S + (Qin_avg - Qout) * dt)
+            HW = hw_from_storage(S, p, pond_area_m2)
+
+        qp, qd, qt = outflow_total(HW, p)
+        steps.append(
+            RouteStep(
+                t_min=t_min[i + 1],
+                Q_in=Q_in[i + 1],
+                Q_pipe=qp,
+                Q_overflow=qd,
+                Q_out=qt,
+                HW=HW,
+                WSE=p.elev_invert + HW,
+                S_m3=S,
+            )
+        )
+    return steps
