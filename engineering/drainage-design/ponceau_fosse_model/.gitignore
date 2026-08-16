@@ -2,3 +2,6 @@ __pycache__/
 __pycache__/
 *.csv
 result_*.json
+__pycache__/
+rating*.csv
+result_*.json
