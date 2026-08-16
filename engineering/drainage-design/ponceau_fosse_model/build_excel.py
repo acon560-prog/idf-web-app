@@ -131,30 +131,48 @@ def main() -> None:
         ("Contrôle de sortie", "Plein tuyau: pertes H = (1+Ke) V²/(2g) + n² V² L / R^(4/3), R=D/4, Ke=0.2 (biseau). Partiellement plein: Manning circulaire."),
         ("Q retenu", "Q_pipe = min(Q_entrée, Q_sortie) au même HW  (le plus limitatif gouverne)"),
         ("", ""),
-        ("4. Q_débordement (fossé / remblai)", ""),
-        ("Seuil", "Débute quand HW > D (au-dessus de la clé). y = HW − D"),
-        ("Géométrie fossé", "Trapèze: A = (b + z·y)·y ; P = b + 2y√(1+z²) ; R = A/P   avec b=2 m, z=2"),
-        ("Mode surface (défaut)", "Manning: Q = (1/n) A R^(2/3) √S0   avec n≈0.045 (rocher 8–200 mm, écoulement préférentiel)"),
-        ("Mode porous (option)", "Wilkins approx.: V_bulk ≈ Cd·n_por·√(g·d50·S0/(1−n_por)) ; Q = A·V_bulk  (beaucoup plus petit — insuffisant seul pour 9 m³/s)"),
+        ("4. Q_débordement surface — formules complètes (quand HW > D)", ""),
+        ("Seuil", "Si HW <= D : Q_overflow = 0.  Si HW > D : y = HW - D  (profondeur d'eau AU-DESSUS de la clé)"),
+        ("Exemple", "HW = 1.78 m, D = 1.05 m  →  y = 1.78 - 1.05 = 0.73 m"),
+        ("Géométrie trapèze", "b = 2 m (fond), z = 2 (talus 2H:1V)"),
+        ("Aire A", "A = (b + z*y) * y"),
+        ("Exemple A", "A = (2 + 2*0.73) * 0.73 = (2 + 1.46) * 0.73 = 3.46 * 0.73 ≈ 2.53 m²"),
+        ("Périmètre mouillé P", "P = b + 2*y*sqrt(1 + z^2)"),
+        ("Exemple P", "P = 2 + 2*0.73*sqrt(1+4) = 2 + 1.46*sqrt(5) ≈ 2 + 1.46*2.236 ≈ 5.26 m"),
+        ("Rayon hydraulique R", "R = A / P"),
+        ("Exemple R", "R ≈ 2.53 / 5.26 ≈ 0.48 m"),
+        ("FORMULE Manning", "Q_overflow = (1/n) * A * R^(2/3) * S0^(1/2)"),
+        ("Paramètres", "n ≈ 0.045 (fossé enroché / rocher 8–200 mm), S0 ≈ 0.0175 (pente du site)"),
+        ("Exemple Q", "Q ≈ (1/0.045) * 2.53 * (0.48)^(2/3) * sqrt(0.0175) ≈ 22.3 * 2.53 * 0.61 * 0.132 ≈ 4.5 m³/s (ordre de grandeur)"),
+        ("Où c'est codé", "hydraulics.py → overflow_Q() + _manning_Q() + _trapezoid()"),
+        ("Mode porous (option)", "Wilkins: V_bulk ≈ Cd * n_por * sqrt(g * d50 * S0 / (1 - n_por)) ; Q = A * V_bulk  (beaucoup plus petit — insuffisant seul pour 9 m³/s)"),
         ("", ""),
-        ("5. Régime permanent Q=9 (feuille Resultat_Q9)", ""),
+        ("5. Pourquoi Manning et pas Bernoulli pour le débordement?", ""),
+        ("Bernoulli EST utilisé", "Pour le PONCET (contrôle de sortie): équation d'énergie / Bernoulli avec pertes: HW = TW + (1+Ke)*V^2/(2g) + pertes de frottement Manning"),
+        ("Pourquoi pas Bernoulli seul au-dessus de D", "Au-dessus de la clé, l'eau ne passe pas par un petit orifice court. Elle s'écoule dans un LONG fossé trapézoïdal rugueux (enrochement). Ce n'est pas un orifice."),
+        ("Formule orifice (à éviter ici)", "Q = Cd * A * sqrt(2*g*H)  viendrait de Bernoulli sans frottement — OK pour orifice/déversoir COURT, FAUX pour un canal long: ignore L, n, pente → surestime fortement Q"),
+        ("Lien Manning ↔ énergie", "Manning EST une forme pratique de Bernoulli/énergie en canal: on remplace les pertes de charge inconnues par une formule empirique de frottement (n, R, S)"),
+        ("Alternative déversoir", "Si l'eau débordait seulement sur une crête de route courte, on utiliserait un déversoir (aussi dérivé de Bernoulli). Ici le chemin est un fossé en pente → Manning canal ouvert"),
+        ("Résumé", "Pipe = HDS-5 + Bernoulli/énergie+pertes. Overflow fossé = Manning canal ouvert. Les deux reposent sur l'énergie; le frottement décide la formule."),
+        ("", ""),
+        ("6. Régime permanent Q=9 (feuille Resultat_Q9)", ""),
         ("Méthode", "On cherche HW tel que Q_pipe(HW)+Q_overflow(HW) = 9  (dichotomie / bisection)"),
         ("Résultat typique", "WSE≈37.16 m ; Q_pipe≈4.2 ; Q_overflow≈4.8 m³/s"),
         ("", ""),
-        ("6. Hydrogramme d'entrée (triangle)", ""),
-        ("Montée 0→Tmontée", "Q_in(t) = Qpointe · (t / Tmontée)     ex.: 9·(t/40)"),
-        ("Descente après pic", "Q_in(t) = Qpointe · (1 − (t−Tmontée)/Tdescente)"),
-        ("Exemple", "t=20 min → Qin=9·20/40=4.5 ; t=40 → 9 ; t=60 → 9·(1−20/80)=6.75"),
-        ("Pond amont A", "Surface fictive (m²) ajoutée au stockage: V_pond = A · HW. 0 = seulement tuyau+fossé. 50–500 = bassin/nappé amont simplifié."),
+        ("7. Hydrogramme d'entrée (triangle)", ""),
+        ("Montée 0→Tmontée", "Q_in(t) = Qpointe * (t / Tmontée)     ex.: 9*(t/40)"),
+        ("Descente après pic", "Q_in(t) = Qpointe * (1 - (t-Tmontée)/Tdescente)"),
+        ("Exemple", "t=20 min → Qin=9*20/40=4.5 ; t=40 → 9 ; t=60 → 9*(1-20/80)=6.75"),
+        ("Pond amont A", "Surface fictive (m²) ajoutée au stockage: V_pond = A * HW. 0 = seulement tuyau+fossé. 50–500 = bassin/nappé amont simplifié."),
         ("", ""),
-        ("7. Routing stockage (feuille Routing_stockage)", ""),
-        ("Bilan", "dS/dt = Q_in − Q_out(WSE)    (continuité / level-pool)"),
-        ("Stockage S(HW)", "S ≈ V_tuyau(HW)·(aire circulaire partielle × L) + V_fossé(max(0,HW−D)) + A_pond·HW"),
+        ("8. Routing stockage (feuille Routing_stockage)", ""),
+        ("Bilan", "dS/dt = Q_in - Q_out(WSE)    (continuité / level-pool)"),
+        ("Stockage S(HW)", "S ≈ V_tuyau(HW) + V_fossé(max(0,HW-D)) + A_pond*HW"),
         ("Q_out", "Q_out = Q_pipe(HW) + Q_overflow(HW)  (+ déversoir large si WSE>37.4)"),
         ("Numérique", "Pas de temps subdivisés; estimateur/correcteur sur Q_out. Voir hydraulics.py → route_level_pool()"),
         ("Ligne jaune", "Pas de temps où WSE est maximal"),
         ("", ""),
-        ("8. Fichiers source", ""),
+        ("9. Fichiers source", ""),
         ("hydraulics.py", "Toutes les formules hydrauliques"),
         ("build_excel.py", "Remplit ce classeur à partir de hydraulics.py"),
         ("run_model.py", "Affiche le résultat permanent dans le terminal"),
@@ -261,7 +279,7 @@ def main() -> None:
         "descente Qin=Qpointe*(1-(t-Tmontée)/Tdescente). "
         "Ex: t=20 → 9*20/40=4.5. Colonnes jaunes générées par Python; "
         "pour changer: modifier B4–B8 puis relancer python build_excel.py. "
-        "Détails → Formules_explications §§6–7."
+        "Détails → Formules_explications §§7–8."
     )
     ws4["A2"].font = Font(italic=True, color="64748B")
     ws4.merge_cells("A2:D2")
@@ -312,7 +330,7 @@ def main() -> None:
     wsR["A2"] = (
         f"FORMULE: dS/dt = Qin − Qout(WSE), avec Qout = Q_pipe(HW)+Q_overflow(HW). "
         f"S = volume tuyau + fossé × L + pond({pond_area:.0f} m²)×HW. "
-        f"TW={p.TW} m. Voir Formules_explications §7."
+        f"TW={p.TW} m. Voir Formules_explications §8."
     )
     wsR["A2"].font = Font(italic=True, color="64748B")
     wsR.merge_cells("A2:H2")
