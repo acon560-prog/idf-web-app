@@ -39,14 +39,35 @@ python3 run_model.py --Q 9 --TW 0.5   # si niveau aval connu
 `d50` (défaut 0,05 m) et `Cd_rock` (défaut 0,85) contrôlent le débit poreux.  
 Fourchette utile à explorer : `d50=0.03–0.10 m`, `Cd_rock=0.5–1.5`.
 
-## Hydrogramme + stockage
+## Excel — usage sans Python (bureau)
+
+Le fichier `Ponceau_Fosse_Modele_Hydraulique.xlsx` calcule la **courbe de tarage en formules Excel**.
+
+| Besoin | Où éditer |
+|--------|-----------|
+| Géométrie D, n, L, inverts, mode… | **Parametres** (jaunes) |
+| Q permanent | **Resultat_Q9!B4** |
+| Orage (pointe, montée, pond…) | **Hydrogramme_entree!B4–B8** |
+| Niveau d'eau max | **Routing_stockage** → WSE max |
+| Mode débordement | **Parametres!C17** (`surface` / `porous` / `both`) |
+
+Voir aussi la feuille **Guide_Sans_Python**.
+
+## Python conservé (optionnel)
 
 ```bash
-python3 build_excel.py
+cd engineering/drainage-design/ponceau_fosse_model
+python3 build_excel.py          # régénère le .xlsx
+python3 run_model.py --Q 9      # validation terminal
 ```
 
+Fichiers: `hydraulics.py`, `build_excel.py`, `excel_rating_formulas.py`, `run_model.py`.
+
+## Hydrogramme + stockage
+
 Ouvre `Ponceau_Fosse_Modele_Hydraulique.xlsx` :
-- **Hydrogramme_entree** — triangle en **formules Excel live**: changez `B5` (Q pointe, ex. 9→12), Montée, Descente, Pond A, dt
-- **Routing_stockage** — `dS/dt = Q_in − Q_out(WSE)` en **formules live** (méthode Puls)
+- **Courbe_de_tarage** — Q(HW) en formules depuis Parametres
+- **Hydrogramme_entree** — triangle live
+- **Routing_stockage** — Puls live → **WSE max**
 
 Comparer le WSE max transitoire au **Resultat_Q9** (régime permanent).
