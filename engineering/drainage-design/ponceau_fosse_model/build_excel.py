@@ -439,10 +439,16 @@ def main() -> None:
     wsR = wb.create_sheet("Routing_stockage")
     wsR["A1"] = "Routing stockage — Puls LIVE (WSE max = niveau d'eau max)"
     wsR["A1"].font = Font(bold=True, size=13)
-    wsR["A2"] = "Utilise Courbe_de_tarage (formules Parametres). Géométrie OU hydrogramme → WSE max live."
+    wsR["A2"] = (
+        "IMPORTANT: HW ≈ 1.7 m = PROFONDEUR au-dessus de l'invert. "
+        "WSE ≈ 37.0 m = ÉLÉVATION absolue = invert(35.36) + HW. "
+        "Ce n'est pas une erreur: avant vous lisiez WSE (~37); HW (~1.7) est seulement la profondeur."
+    )
     wsR["A2"].font = Font(italic=True, color="64748B")
     wsR.merge_cells("A2:K2")
-    wsR["A3"] = "2S/dt−Q = report Puls. RHS = cible Ind. FORECAST = interpolation."
+    wsR["A3"] = (
+        "Formule: WSE = Parametres!C9 + HW.  2S/dt−Q = report Puls. RHS = cible Ind."
+    )
     wsR["A3"].font = Font(italic=True, size=9, color="64748B")
     wsR.merge_cells("A3:K3")
 
@@ -452,9 +458,9 @@ def main() -> None:
         "Q_pipe",
         "Q_overflow",
         "Q_out",
-        "HW (m)",
-        "WSE (m)",
-        "S (m³)",
+        "HW profondeur (m)",
+        "WSE élévation (m)",
+        "S stockage (m³)",
         "WSE>max?",
         "RHS (Ind cible)",
         "2S/dt−Q (report Puls)",
@@ -515,17 +521,21 @@ def main() -> None:
 
     summary_row = r_last + 2
     wsR.cell(summary_row, 1, "Résumé (live)").font = Font(bold=True)
-    wsR.cell(summary_row + 1, 1, "WSE max")
+    wsR.cell(summary_row + 1, 1, "WSE max (élévation)")
     wsR.cell(summary_row + 1, 2, f"=MAX(G{r0}:G{r_last})")
     wsR.cell(summary_row + 1, 2).fill = OK
-    wsR.cell(summary_row + 1, 3, "m  ← niveau d'eau maximum")
-    wsR.cell(summary_row + 2, 1, "S max")
-    wsR.cell(summary_row + 2, 2, f"=MAX(H{r0}:H{r_last})")
-    wsR.cell(summary_row + 3, 1, "Q_in max")
-    wsR.cell(summary_row + 3, 2, f"=MAX(B{r0}:B{r_last})")
-    wsR.cell(summary_row + 4, 1, "Réf. Python au build")
-    wsR.cell(summary_row + 4, 2, round(peak.WSE, 3))
-    wsR.cell(summary_row + 4, 3, "m (validation optionnelle)")
+    wsR.cell(summary_row + 1, 3, "m  ← comparer à 37.4 m")
+    wsR.cell(summary_row + 2, 1, "HW max (profondeur)")
+    wsR.cell(summary_row + 2, 2, f"=MAX(F{r0}:F{r_last})")
+    wsR.cell(summary_row + 2, 3, "m  ← au-dessus de l'invert (≈ WSE−35.36)")
+    wsR.cell(summary_row + 3, 1, "S max")
+    wsR.cell(summary_row + 3, 2, f"=MAX(H{r0}:H{r_last})")
+    wsR.cell(summary_row + 3, 3, "m³")
+    wsR.cell(summary_row + 4, 1, "Q_in max")
+    wsR.cell(summary_row + 4, 2, f"=MAX(B{r0}:B{r_last})")
+    wsR.cell(summary_row + 5, 1, "Réf. Python au build")
+    wsR.cell(summary_row + 5, 2, round(peak.WSE, 3))
+    wsR.cell(summary_row + 5, 3, "m WSE (validation optionnelle)")
     autosize(wsR)
 
     # --- Notes ---
