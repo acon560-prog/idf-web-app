@@ -63,11 +63,24 @@ python3 run_model.py --Q 9      # validation terminal
 
 Fichiers: `hydraulics.py`, `build_excel.py`, `excel_rating_formulas.py`, `run_model.py`.
 
+## Hydrogramme Chicago (défaut)
+
+Feuille **Hydrogramme_entree** :
+- `B3` = `Chicago` (ou `Triangle`)
+- `B5` = Q pointe (ex. **10** m³/s)
+- `B9` = Td = **60 min** (adéquat pour ce ponceau/fossé ; Tc typ. 10–20 min)
+- `B10` = r ≈ 0.375 (position du pic)
+- `B11–B13` = coeffs IDF a, b, c — **caler sur votre station**
+
+Construction: hyétogramme Keifer–Chu i(t) puis `Q(t) = Qpointe * i(t) / max(i)`.
+
+Voir **Hydrogramme_notes** et **Formules_explications**.
+
 ## Hydrogramme + stockage
 
 Ouvre `Ponceau_Fosse_Modele_Hydraulique.xlsx` :
 - **Courbe_de_tarage** — Q(HW) en formules depuis Parametres
-- **Hydrogramme_entree** — triangle live
+- **Hydrogramme_entree** — Chicago (défaut) ou triangle live
 - **Routing_stockage** — Puls live → **WSE max**
 
 Comparer le WSE max transitoire au **Resultat_Q9** (régime permanent).

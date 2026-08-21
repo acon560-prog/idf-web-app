@@ -432,6 +432,75 @@ def default_triangle_hydrograph(
     return ts, qs
 
 
+def chicago_intensity_mm_h(
+    t_min: float,
+    Td_min: float,
+    r: float,
+    a: float,
+    b: float,
+    c: float,
+) -> float:
+    """
+    Chicago / Keifer–Chu instantaneous rainfall intensity i(t) [mm/h].
+
+    IDF mean intensity: ī(td) = a / (td + b)^c   (td in minutes)
+    Peak at tp = r * Td.
+    """
+    if Td_min <= 0 or not (0.0 < r < 1.0) or a <= 0 or b <= 0:
+        return 0.0
+    tp = r * Td_min
+    t = max(0.0, min(float(t_min), Td_min))
+    if t <= tp:
+        tb = tp - t  # time before peak
+        denom = tb / r + b
+        if denom <= 0:
+            return 0.0
+        return a * ((1.0 - c) * (tb / r) + b) / (denom ** (c + 1.0))
+    ta = t - tp  # time after peak
+    denom = ta / (1.0 - r) + b
+    if denom <= 0:
+        return 0.0
+    return a * ((1.0 - c) * (ta / (1.0 - r)) + b) / (denom ** (c + 1.0))
+
+
+def chicago_hydrograph(
+    Q_peak: float = 10.0,
+    Td_min: float = 60.0,
+    r: float = 0.375,
+    a: float = 1000.0,
+    b: float = 5.0,
+    c: float = 0.80,
+    dt_min: float = 5.0,
+) -> tuple[list[float], list[float], list[float]]:
+    """
+    Chicago-shaped inflow hydrograph scaled so max(Q) = Q_peak.
+
+    Steps:
+      1) Build Chicago hyetograph i(t) from IDF coeffs (a,b,c)
+      2) Include the peak time tp = r*Td in the time grid
+      3) Scale: Q(t) = Q_peak * i(t) / max(i)
+
+    Default Td=60 min: adequate for this site (short pipe travel time,
+    typical small urban/industrial Tc ~10–20 min; Td ≥ ~2–3 Tc).
+    """
+    if Td_min <= 0 or dt_min <= 0:
+        return [0.0], [0.0], [0.0]
+
+    tp = r * Td_min
+    # Uniform grid + explicit peak time (so Q_peak is attained)
+    t_set = {round(k * dt_min, 10) for k in range(int(Td_min / dt_min) + 1)}
+    t_set.add(round(tp, 10))
+    t_set.add(round(Td_min, 10))
+    ts = sorted(t for t in t_set if 0.0 <= t <= Td_min + 1e-9)
+
+    intens = [chicago_intensity_mm_h(t, Td_min, r, a, b, c) for t in ts]
+    i_peak = max(intens) if intens else 1.0
+    if i_peak <= 0:
+        i_peak = 1.0
+    qs = [Q_peak * (i / i_peak) for i in intens]
+    return ts, qs, intens
+
+
 def route_level_pool(
     t_min: list[float],
     Q_in: list[float],

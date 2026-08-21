@@ -25,6 +25,7 @@ from excel_rating_formulas import (
 )
 from hydraulics import (
     CulvertDitchParams,
+    chicago_hydrograph,
     default_triangle_hydrograph,
     route_level_pool,
     solve_HW_for_Q,
@@ -102,14 +103,26 @@ def _put_param(ws, row: int, section: str, name: str, value, note: str, yellow: 
 
 def main() -> None:
     p = CulvertDitchParams()
-    Q_design = 9.0
+    Q_design = 10.0  # design peak for Chicago example (editable in Excel)
     pond_area = 50.0
     t_rise = 40.0
     t_fall = 80.0
     dt_min = 5.0
+    # Chicago defaults for this culvert/ditch site
+    Td_chicago = 60.0  # min — see Formules / Guide
+    r_peak = 0.375
+    idf_a, idf_b, idf_c = 1000.0, 5.0, 0.80
     rating_end = RATING_END
 
-    t_list, q_list = default_triangle_hydrograph(Q_design, t_rise, t_fall, dt_min)
+    t_list, q_list, _intens = chicago_hydrograph(
+        Q_peak=Q_design,
+        Td_min=Td_chicago,
+        r=r_peak,
+        a=idf_a,
+        b=idf_b,
+        c=idf_c,
+        dt_min=dt_min,
+    )
     route = route_level_pool(t_list, q_list, p, pond_area_m2=pond_area, HW0=0.0)
     peak = max(route, key=lambda s: s.WSE)
 
@@ -204,8 +217,15 @@ def main() -> None:
         ("0. Sans Python (bureau)", ""),
         ("Géométrie", "Parametres cellules jaunes C5–C22"),
         ("Q permanent", "Resultat_Q9!B4"),
-        ("Hydrogramme", "Hydrogramme_entree!B4–B8"),
+        ("Hydrogramme", "Hydrogramme_entree: B3=Chicago|Triangle ; B5=Q pointe ; B9=Td ; B10=r ; B11–B13=IDF"),
         ("WSE max orage", "Routing_stockage → WSE max"),
+        ("", ""),
+        ("Chicago (détail)", ""),
+        ("IDF", "ī(td)=a/(td+b)^c"),
+        ("i(t) avant pic", "i=a*[(1-c)*(tb/r)+b]/(tb/r+b)^(c+1)   tb=tp-t   tp=r*Td"),
+        ("i(t) après pic", "i=a*[(1-c)*(ta/(1-r))+b]/(ta/(1-r)+b)^(c+1)   ta=t-tp"),
+        ("Q(t)", "Q=Qpointe*i(t)/i_max   i_max=a/b^c"),
+        ("Td choisi", "60 min pour ce site (ponceau court, Tc~10–20 min)"),
         ("", ""),
         ("1. Cotes", ""),
         ("WSE", "WSE = Parametres!C9 + HW"),
@@ -250,8 +270,13 @@ def main() -> None:
         "2) Débit permanent (ex. 9 → 12)",
         "   → Resultat_Q9!B4 jaune → lire WSE",
         "",
-        "3) Orage (pointe, montée, descente, pond)",
-        "   → Hydrogramme_entree B4–B8 → Routing_stockage « WSE max »",
+        "3) Orage Chicago (défaut) ou Triangle",
+        "   → Hydrogramme_entree: B3=Chicago, B5=Q pointe (ex. 10), B9=Td=60 min",
+        "   → IDF a,b,c en B11–B13 (caler sur votre station)",
+        "   → Routing_stockage « WSE max »",
+        "",
+        "Chicago en bref: hyétogramme Keifer–Chu → Q(t)=Qpointe*i(t)/i_max",
+        "Td=60 min choisi pour ce culvert/fossé (voir Hydrogramme_notes).",
         "",
         "4) Mode débordement",
         "   → Parametres C17 = surface | porous | both",
@@ -384,21 +409,37 @@ def main() -> None:
     ws3.cell(rating_end + 2, 1).font = Font(italic=True, size=10, color="64748B")
     autosize(ws3)
 
-    # --- Hydrogramme ---
+    # --- Hydrogramme (Chicago default + Triangle option) ---
     ws4 = wb.create_sheet("Hydrogramme_entree")
-    ws4["A1"] = "Hydrogramme d'entrée Q(t) — TRIANGLE FORMULES LIVE"
+    ws4["A1"] = "Hydrogramme d'entrée — Chicago (défaut) ou Triangle — FORMULES LIVE"
     ws4["A1"].font = Font(bold=True, size=13)
-    ws4["A2"] = "Éditez B4–B8 (jaunes). Voir Guide_Sans_Python."
+    ws4["A2"] = (
+        "Méthode Chicago (Keifer–Chu): hyétogramme IDF → forme de Q(t) calée sur Q pointe. "
+        "Durée Td=60 min adaptée à ce ponceau/fossé (Tc site typ. 10–20 min). "
+        "Pour Q=10: mettre 10 dans B5. B3=Chicago ou Triangle."
+    )
     ws4["A2"].font = Font(italic=True, color="64748B")
-    ws4.merge_cells("A2:D2")
-    ws4["A3"] = "Options (éditer ici)"
-    ws4["A3"].font = Font(bold=True)
+    ws4.merge_cells("A2:E2")
+
+    ws4["A3"] = "Méthode"
+    c_meth = ws4["B3"]
+    c_meth.value = "Chicago"
+    c_meth.fill = YELLOW
+    c_meth.border = THIN
+    ws4["C3"] = "Chicago | Triangle"
+    ws4["C3"].font = Font(italic=True, size=9, color="64748B")
+
     for row, label, val, note in [
-        (4, "Pond amont A (m²)", pond_area, "stockage amont simplifié"),
-        (5, "Q pointe triangle (m³/s)", Q_design, "ex. 9 → 12"),
-        (6, "Montée (min)", t_rise, ""),
-        (7, "Descente (min)", t_fall, ""),
-        (8, "Pas dt (min)", dt_min, ""),
+        (4, "Pond amont A (m²)", pond_area, "stockage amont (ne pas déplacer: Courbe lit B4)"),
+        (5, "Q pointe (m³/s)", Q_design, "ex. 10 — pic de l'hydrogramme"),
+        (6, "Montée triangle (min)", t_rise, "utilisé si B3=Triangle"),
+        (7, "Descente triangle (min)", t_fall, "utilisé si B3=Triangle"),
+        (8, "Pas dt (min)", dt_min, "ne pas déplacer: Courbe/Routing lit B8"),
+        (9, "Td Chicago (min)", Td_chicago, "durée orage — défaut 60 min pour ce site"),
+        (10, "r (position du pic)", r_peak, "tp=r*Td ; typ. 0.3–0.5 (urbain ~0.375)"),
+        (11, "IDF a", idf_a, "ī=a/(t+b)^c  [mm/h, t en min] — caler sur VOTRE IDF"),
+        (12, "IDF b", idf_b, "min"),
+        (13, "IDF c", idf_c, "-"),
     ]:
         ws4.cell(row, 1, label)
         c = ws4.cell(row, 2, val)
@@ -406,43 +447,107 @@ def main() -> None:
         c.border = THIN
         ws4.cell(row, 3, note).font = Font(italic=True, size=9, color="64748B")
 
-    ws4["A10"] = "t (min)"
-    ws4["B10"] = "Q_in (m³/s)"
-    style_header(ws4, 10, 2)
-    first_data = 11
+    ws4["A14"] = (
+        "Chicago: i(t) (col C) puis Q=Qpointe*i/MAX(i) pour garantir le pic. "
+        "Triangle: montée/descente. Voir Formules_explications + Hydrogramme_notes."
+    )
+    ws4["A14"].font = Font(size=9, color="0F5C5C")
+    ws4.merge_cells("A14:E14")
+
+    # B15 = max intensity over the table (for exact Q peak)
+    ws4["A15"] = "i_max utilisé (auto)"
+    ws4["B15"] = f'=IF(UPPER($B$3)="CHICAGO",MAX(C17:C{17 + N_TIME_ROWS - 1}),1)'
+    ws4["B15"].border = THIN
+    ws4["C15"] = "MAX des i Chicago — Q=Qpointe*i/i_max"
+    ws4["C15"].font = Font(italic=True, size=9, color="64748B")
+
+    def _excel_i(t_cell: str) -> str:
+        """Chicago instantaneous intensity at time t_cell."""
+        tp = "($B$10*$B$9)"
+        tb = f"({tp}-{t_cell})"
+        i_b = (
+            f"$B$11*((1-$B$13)*(({tb})/$B$10)+$B$12)"
+            f"/((({tb})/$B$10)+$B$12)^($B$13+1)"
+        )
+        ta = f"({t_cell}-{tp})"
+        i_a = (
+            f"$B$11*((1-$B$13)*(({ta})/(1-$B$10))+$B$12)"
+            f"/((({ta})/(1-$B$10))+$B$12)^($B$13+1)"
+        )
+        return f"IF({t_cell}<={tp},{i_b},{i_a})"
+
+    def _excel_q(t_cell: str, i_cell: str) -> str:
+        q_chi = f"IF($B$15<=0,0,$B$5*{i_cell}/$B$15)"
+        q_tri = (
+            f"IF({t_cell}<=$B$6,$B$5*{t_cell}/$B$6,"
+            f"MAX(0,$B$5*(1-({t_cell}-$B$6)/$B$7)))"
+        )
+        return f'IF(UPPER($B$3)="CHICAGO",{q_chi},{q_tri})'
+
+    def _excel_end() -> str:
+        return 'IF(UPPER($B$3)="CHICAGO",$B$9,$B$6+$B$7)'
+
+    ws4["A16"] = "t (min)"
+    ws4["B16"] = "Q_in (m³/s)"
+    ws4["C16"] = "i Chicago (mm/h)"
+    style_header(ws4, 16, 3)
+
+    first_data = 17
     last_data = first_data + N_TIME_ROWS - 1
+    end_ref = _excel_end()
+
+    # Build time series: regular dt steps; peak time tp inserted via formula rows
+    # Use: t = previous + dt, but also allow hitting tp by using a hybrid:
+    # A17=0; next = IF(prev<tp AND prev+dt>tp, tp, IF(prev+dt>end,"",prev+dt))
+    tp_ref = "($B$10*$B$9)"
+
     ws4.cell(first_data, 1, 0).border = THIN
     ws4.cell(
         first_data,
-        2,
-        f'=IF(A{first_data}="","",IF(A{first_data}<=$B$6,$B$5*A{first_data}/$B$6,'
-        f"MAX(0,$B$5*(1-(A{first_data}-$B$6)/$B$7))))",
+        3,
+        f'=IF(OR(A{first_data}="",UPPER($B$3)<>"CHICAGO"),"",{_excel_i(f"A{first_data}")})',
     ).border = THIN
-    ws4.cell(first_data, 2).number_format = "0.0000"
-    ws4.cell(first_data, 2).fill = PatternFill("solid", fgColor="E0F2FE")
+    ws4.cell(
+        first_data,
+        2,
+        f'=IF(A{first_data}="","",{_excel_q(f"A{first_data}", f"C{first_data}")})',
+    ).border = THIN
+    for col in (2, 3):
+        ws4.cell(first_data, col).number_format = "0.0000"
+        ws4.cell(first_data, col).fill = PatternFill("solid", fgColor="E0F2FE")
+
     for r in range(first_data + 1, last_data + 1):
         prev = r - 1
+        # Insert peak time tp when the regular step would jump over it
         ws4.cell(
-            r, 1, f'=IF(A{prev}="","",IF(A{prev}+$B$8>$B$6+$B$7,"",A{prev}+$B$8))'
+            r,
+            1,
+            f'=IF(A{prev}="","",'
+            f'IF(AND(UPPER($B$3)="CHICAGO",A{prev}<{tp_ref},A{prev}+$B$8>{tp_ref}),{tp_ref},'
+            f'IF(A{prev}+$B$8>({end_ref}),"",A{prev}+$B$8)))',
+        ).border = THIN
+        ws4.cell(
+            r,
+            3,
+            f'=IF(OR(A{r}="",UPPER($B$3)<>"CHICAGO"),"",{_excel_i(f"A{r}")})',
         ).border = THIN
         ws4.cell(
             r,
             2,
-            f'=IF(A{r}="","",IF(A{r}<=$B$6,$B$5*A{r}/$B$6,'
-            f"MAX(0,$B$5*(1-(A{r}-$B$6)/$B$7))))",
+            f'=IF(A{r}="","",{_excel_q(f"A{r}", f"C{r}")})',
         ).border = THIN
-        ws4.cell(r, 2).number_format = "0.0000"
-        ws4.cell(r, 2).fill = PatternFill("solid", fgColor="E0F2FE")
+        for col in (2, 3):
+            ws4.cell(r, col).number_format = "0.0000"
+            ws4.cell(r, col).fill = PatternFill("solid", fgColor="E0F2FE")
     autosize(ws4)
 
     # --- Routing ---
     wsR = wb.create_sheet("Routing_stockage")
-    wsR["A1"] = "Routing stockage — Puls LIVE (WSE max = niveau d'eau max)"
+    wsR["A1"] = "Routing stockage — Puls LIVE (lit Hydrogramme_entree, y compris Chicago)"
     wsR["A1"].font = Font(bold=True, size=13)
     wsR["A2"] = (
-        "IMPORTANT: HW ≈ 1.7 m = PROFONDEUR au-dessus de l'invert. "
-        "WSE ≈ 37.0 m = ÉLÉVATION absolue = invert(35.36) + HW. "
-        "Ce n'est pas une erreur: avant vous lisiez WSE (~37); HW (~1.7) est seulement la profondeur."
+        "IMPORTANT: HW = PROFONDEUR (~1.7 m). WSE = ÉLÉVATION = invert + HW (~37 m). "
+        "Q_in vient de Hydrogramme_entree (Chicago ou Triangle)."
     )
     wsR["A2"].font = Font(italic=True, color="64748B")
     wsR.merge_cells("A2:K2")
@@ -540,19 +645,37 @@ def main() -> None:
 
     # --- Notes ---
     wsN = wb.create_sheet("Hydrogramme_notes")
-    wsN["A1"] = "Notes hydrogramme"
+    wsN["A1"] = "Chicago vs Triangle — et comment c'est construit"
     wsN["A1"].font = Font(bold=True, size=13)
     for i, line in enumerate(
         [
             "",
-            "Qin triangle: montée Qpointe*t/Montée ; descente Qpointe*(1-(t-Montée)/Descente)",
-            "Géométrie: Parametres (live). Orage: Hydrogramme_entree. WSE max: Routing_stockage.",
-            "Python optionnel: build_excel.py / hydraulics.py / run_model.py",
+            "=== MÉTHODE CHICAGO (Keifer–Chu) — défaut du classeur ===",
+            "1) IDF: intensité moyenne ī(td) = a / (td + b)^c   (td en minutes, ī en mm/h)",
+            "2) Hyétogramme: intensité INSTANTANÉE i(t) avant/après le pic tp = r*Td",
+            "   Avant pic (tb = tp − t):  i = a * [(1−c)*(tb/r) + b] / (tb/r + b)^(c+1)",
+            "   Après pic (ta = t − tp):  i = a * [(1−c)*(ta/(1−r)) + b] / (ta/(1−r) + b)^(c+1)",
+            "3) Pic d'intensité: i_max = a / b^c",
+            "4) Hydrogramme calé sur un débit donné:  Q(t) = Q_pointe * i(t) / i_max",
+            "   → pour Q_pointe = 10 m³/s, le maximum de Q_in est exactement 10.",
+            "",
+            "Durée Td = 60 min (choix pour ce ponceau + fossé):",
+            "  - temps de parcours dans le tuyau (L=50.9 m) ≈ quelques minutes",
+            "  - Tc typique petit bassin urbain/industriel ≈ 10–20 min",
+            "  - règle pratique: Td ≥ ~2–3 × Tc → 60 min est adéquat (120 min si bassin plus grand)",
+            "",
+            "Coeffs a,b,c: remplacer par ceux de VOTRE courbe IDF (période de retour du projet).",
+            "La forme de Q(t) dépend surtout de b, c, r, Td ; a s'annule dans i/i_max.",
+            "",
+            "=== TRIANGLE (option) ===",
+            "Mettre B3 = Triangle. Qin = montée/descente linéaires (B6, B7).",
+            "",
+            "Routing: feuille Routing_stockage lit la colonne Q_in (inchangée).",
         ],
         start=2,
     ):
         wsN.cell(i, 1, line)
-    wsN.column_dimensions["A"].width = 100
+    wsN.column_dimensions["A"].width = 110
 
     # --- Comparaison modes ---
     ws5 = wb.create_sheet("Comparaison_modes")
