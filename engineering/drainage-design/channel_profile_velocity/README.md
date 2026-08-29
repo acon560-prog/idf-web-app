@@ -49,6 +49,8 @@ Clean CSVs in `st_therese_data/`.
 
 **Adverse slopes:** `S0` is kept signed as surveyed. Where `S0 ≤ 0`, velocity / depth are left blank (no `|S0|`).
 
+**Area formulas:** sheets `Formules_Aire` + `Aire_1000`…`Aire_8000` — edit yellow **WSE** to recompute **A** and **P** with live Excel formulas (trapezoid / triangle per segment).
+
 ## When you have DXF/CSV from AutoCAD
 
 
