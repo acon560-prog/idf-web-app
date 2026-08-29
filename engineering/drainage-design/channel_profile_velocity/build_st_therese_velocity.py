@@ -179,83 +179,94 @@ def _seg_peri_formula(wse_cell: str, x0: str, z0: str, x1: str, z1: str) -> str:
     )
 
 
+def _area_sum_formula(wse_ref: str, first_row: int, n_pts: int) -> str:
+    """Sum of segment wet areas at WSE, points in columns B (x) / C (z)."""
+    parts = []
+    for i in range(n_pts - 1):
+        r = first_row + i
+        parts.append(
+            f"({_seg_area_formula(wse_ref, f'B{r}', f'C{r}', f'B{r + 1}', f'C{r + 1}')})"
+        )
+    return "+".join(parts)
+
+
+def _peri_sum_formula(wse_ref: str, first_row: int, n_pts: int) -> str:
+    parts = []
+    for i in range(n_pts - 1):
+        r = first_row + i
+        parts.append(
+            f"({_seg_peri_formula(wse_ref, f'B{r}', f'C{r}', f'B{r + 1}', f'C{r + 1}')})"
+        )
+    return "+".join(parts)
+
+
 def add_area_formula_sheets(
     wb: Workbook,
     sections: dict[str, list[tuple[float, float, str]]],
     results: list,
 ) -> None:
-    """One sheet per section with live Excel formulas for A and P vs editable WSE."""
-    # Overview / theory
+    """One sheet per section: A/P formulas + Excel bisection for normal-depth WSE."""
+    N_BISECT = 30  # enough for ~1e-9 relative precision on WSE
+
     wsF = wb.create_sheet("Formules_Aire", 1)
-    wsF["A1"] = "Comment l'aire A est calculée (formules Excel actives dans les onglets Aire_*)"
+    wsF["A1"] = "Aire A, profondeur normale yn / WSE — tout en formules Excel"
     wsF["A1"].font = Font(bold=True, size=13, color="0F5C5C")
     lines = [
         "",
-        "Géométrie: chaque coupe = polyligne Distance (x) vs Elev (z) du fichier sections.",
-        "On fixe une cote d'eau WSE. Pour chaque segment [i → i+1]:",
+        "Pourquoi ce n'est pas une seule formule fermée:",
+        "  Pour une coupe irrégulière, yn n'a pas de formule algébrique directe.",
+        "  On cherche WSE tel que Q_manning(WSE) = Q  →  itération (dichotomie) dans la feuille.",
         "",
-        "  d0 = WSE − z_i     d1 = WSE − z_{i+1}",
+        "Géométrie (chaque segment de la polyligne Distance–Elev):",
+        "  d0 = WSE − z_i ,  d1 = WSE − z_{i+1}",
+        "  sec → Ai=0 ;  mouillé → Ai = ½(d0+d1)|Δx| ;  partiel → triangle jusqu'à la ligne d'eau",
+        "  A = Σ Ai ,  P = Σ Pi ,  R = A/P",
+        "  Q_manning = (1/n)·A·R^(2/3)·√S0     (seulement si S0 > 0)",
         "",
-        "  1) Segment totalement sec (d0≤0 et d1≤0):     Ai = 0 ,  Pi = 0",
-        "  2) Segment totalement mouillé (d0≥0 et d1≥0):",
-        "        Ai = ½ · (d0 + d1) · |x_{i+1} − x_i|     (trapèze)",
-        "        Pi = √[(x_{i+1}−x_i)² + (z_{i+1}−z_i)²]  (longueur du fond)",
-        "  3) Un bout sec / un bout mouillé: intersection avec WSE en xi,",
-        "        Ai = ½ · d_wet · |xi − x_wet|            (triangle)",
-        "        Pi = longueur du bout mouillé jusqu'à xi",
+        "Profondeur normale dans les onglets Aire_* (S0 > 0):",
+        "  Entrées jaunes: Q et n seulement.",
+        "  WSE (B2) = résultat de la dichotomie (colonnes I→O) — formule, pas une saisie.",
+        "  À chaque pas: mid = (lo+hi)/2 ; si Q_manning(mid) < Q → lo=mid sinon hi=mid.",
+        "  Après 30 pas, WSE a convergé; A, P, V se calculent à ce WSE.",
         "",
-        "  A = Σ Ai     P = Σ Pi     R = A/P",
-        "  Si S0 > 0:  Q_manning = (1/n)·A·R^(2/3)·√S0     V = Q / A",
-        "",
-        "Onglets Aire_1+000 … Aire_8+000: cellule WSE jaune éditable → A et P se recalculent.",
-        "La WSE initiale est celle de la profondeur normale (si S0>0), sinon fond+1 m.",
-        "Les résultats Resultats_Q736 restent les valeurs Manning résolues par Python.",
+        "Si S0 ≤ 0: pas de profondeur normale → WSE exploratoire (jaune) pour voir A/P seulement.",
+        "Resultats_Q736: même physique (référence Python); les onglets Aire_* sont autonomes Excel.",
     ]
     for i, line in enumerate(lines, start=2):
         wsF.cell(i, 1, line)
     wsF.column_dimensions["A"].width = 110
 
-    wse_by_sid = {}
-    for sid, _snote, _S0, computed, r in results:
-        if computed and not math.isnan(getattr(r, "WSE", float("nan"))):
-            wse_by_sid[sid] = float(r.WSE)
-        else:
-            wse_by_sid[sid] = None
-
     s0_by_sid = {sid: S0 for sid, _n, S0, _c, _r in results}
 
     for sid in sorted(SECTION_STATIONS.keys(), key=lambda x: SECTION_STATIONS[x]):
         pts = sections[sid]
+        n_pts = len(pts)
         safe = sid.replace("+", "")
         ws = wb.create_sheet(f"Aire_{safe}")
         bed = min(p[1] for p in pts)
-        wse0 = wse_by_sid[sid] if wse_by_sid[sid] is not None else bed + 1.0
+        zmax = max(p[1] for p in pts)
         s0 = s0_by_sid.get(sid)
+        can_normal = s0 is not None and s0 > 0.0
 
-        ws["A1"] = f"Section {sid} — aire / périmètre mouillés (formules Excel)"
+        ws["A1"] = f"Section {sid} — profondeur normale + aire (formules Excel)"
         ws["A1"].font = Font(bold=True, size=12, color="0F5C5C")
         ws.merge_cells("A1:G1")
-
-        ws["A2"] = "WSE (m)"
-        ws["B2"] = round(wse0, 4)
-        ws["B2"].fill = YELLOW
-        ws["B2"].border = THIN
-        ws["C2"] = "← éditer (jaune) : A et P se recalculent"
-        ws["C2"].font = Font(italic=True, color="64748B")
 
         ws["A3"] = "Station cum. (m)"
         ws["B3"] = SECTION_STATIONS[sid]
         ws["A4"] = "S0 réel"
         ws["B4"] = s0 if s0 is not None else None
-        if s0 is not None and s0 <= 0:
+        if not can_normal:
             ws["B4"].fill = SKIP
-            ws["C4"] = "adverse/nulle — Manning non applicable"
+            ws["C4"] = "adverse/nulle — pas de yn / Manning"
         ws["A5"] = "Q (m³/s)"
         ws["B5"] = Q_DESIGN
         ws["B5"].fill = YELLOW
+        ws["B5"].border = THIN
         ws["A6"] = "n Manning"
         ws["B6"] = N_MANNING
         ws["B6"].fill = YELLOW
+        ws["B6"].border = THIN
 
         # Point table starts at row 8
         hdr_row = 8
@@ -274,7 +285,7 @@ def add_area_formula_sheets(
             ws.cell(r, 3, round(z, 4)).border = THIN
             ws.cell(r, 4, desc).border = THIN
             ws.cell(r, 5, f"=$B$2-C{r}").border = THIN
-            if i < len(pts) - 1:
+            if i < n_pts - 1:
                 x0, z0, x1, z1 = f"B{r}", f"C{r}", f"B{r+1}", f"C{r+1}"
                 ws.cell(r, 6, f"={_seg_area_formula('$B$2', x0, z0, x1, z1)}").border = THIN
                 ws.cell(r, 7, f"={_seg_peri_formula('$B$2', x0, z0, x1, z1)}").border = THIN
@@ -282,7 +293,7 @@ def add_area_formula_sheets(
                 ws.cell(r, 6, None).border = THIN
                 ws.cell(r, 7, None).border = THIN
 
-        last_pt = first + len(pts) - 1
+        last_pt = first + n_pts - 1
         last_seg = last_pt - 1
 
         sum_row = last_pt + 2
@@ -298,12 +309,12 @@ def add_area_formula_sheets(
         ws.cell(sum_row, 7).number_format = "0.0000"
         ws.cell(sum_row - 1, 7, "P = Σ Pi")
 
-        # Derived
+        # Derived block
         drow = sum_row + 2
         ws.cell(drow, 1, "Fond min (m)")
         ws.cell(drow, 2, f"=MIN(C{first}:C{last_pt})")
         ws.cell(drow + 1, 1, "y = WSE − fond (m)")
-        ws.cell(drow + 1, 2, f"=B2-B{drow}")
+        ws.cell(drow + 1, 2, f"=IF(ISNUMBER(B2),B2-B{drow},\"\")")
         ws.cell(drow + 2, 1, "A (m²)")
         ws.cell(drow + 2, 2, f"=F{sum_row}")
         ws.cell(drow + 2, 2).fill = OK
@@ -312,9 +323,64 @@ def add_area_formula_sheets(
         ws.cell(drow + 3, 2).fill = OK
         ws.cell(drow + 4, 1, "R = A/P (m)")
         ws.cell(drow + 4, 2, f"=IF(B{drow+3}>0,B{drow+2}/B{drow+3},0)")
-        ws.cell(drow + 5, 1, "Q_manning (m³/s)")
-        if s0 is not None and s0 > 0:
-            # Q = (1/n)*A*R^(2/3)*SQRT(S0)
+
+        # --- Bisection block (normal depth) when S0 > 0 ---
+        # Columns: I=iter, J=lo, K=hi, L=mid, M=A_mid, N=P_mid, O=Q_mid
+        bis_hdr = 8
+        ws.cell(6, 9, "Dichotomie yn (formules) — ne pas éditer")
+        ws.cell(6, 9).font = Font(bold=True, color="0F5C5C")
+        for j, h in enumerate(
+            ["iter", "lo", "hi", "mid=WSE essai", "A(mid)", "P(mid)", "Q_manning(mid)"],
+            start=9,
+        ):
+            ws.cell(bis_hdr, j, h)
+            ws.cell(bis_hdr, j).font = Font(bold=True, color="FFFFFF")
+            ws.cell(bis_hdr, j).fill = HEADER_FILL
+
+        if can_normal:
+            r0 = bis_hdr + 1
+            # Initial bounds: just above bed, just below top of section
+            ws.cell(r0, 9, 1)
+            ws.cell(r0, 10, f"=B{drow}+0.0001")  # lo
+            ws.cell(r0, 11, f"=MAX(C{first}:C{last_pt})-0.0001")  # hi
+            ws.cell(r0, 12, f"=(J{r0}+K{r0})/2")  # mid
+            ws.cell(r0, 13, f"={_area_sum_formula(f'L{r0}', first, n_pts)}")
+            ws.cell(r0, 14, f"={_peri_sum_formula(f'L{r0}', first, n_pts)}")
+            ws.cell(
+                r0,
+                15,
+                f'=IF(OR($B$6<=0,M{r0}<=0,N{r0}<=0,$B$4<=0),0,'
+                f'(1/$B$6)*M{r0}*((M{r0}/N{r0})^(2/3))*SQRT($B$4))',
+            )
+
+            for k in range(1, N_BISECT):
+                r = r0 + k
+                prev = r - 1
+                ws.cell(r, 9, k + 1)
+                # if Q(mid) < Q → search higher: lo=mid, else hi=mid
+                ws.cell(r, 10, f'=IF(O{prev}<$B$5,L{prev},J{prev})')
+                ws.cell(r, 11, f'=IF(O{prev}<$B$5,K{prev},L{prev})')
+                ws.cell(r, 12, f"=(J{r}+K{r})/2")
+                ws.cell(r, 13, f"={_area_sum_formula(f'L{r}', first, n_pts)}")
+                ws.cell(r, 14, f"={_peri_sum_formula(f'L{r}', first, n_pts)}")
+                ws.cell(
+                    r,
+                    15,
+                    f'=IF(OR($B$6<=0,M{r}<=0,N{r}<=0,$B$4<=0),0,'
+                    f'(1/$B$6)*M{r}*((M{r}/N{r})^(2/3))*SQRT($B$4))',
+                )
+
+            last_bis = r0 + N_BISECT - 1
+            # WSE = converged mid (formula, not yellow)
+            ws["A2"] = "WSE = yn (m)"
+            ws["B2"] = f"=L{last_bis}"
+            ws["B2"].fill = OK
+            ws["B2"].border = THIN
+            ws["B2"].number_format = "0.0000"
+            ws["C2"] = "← calculé par dichotomie (colonne L) pour Q_manning = Q ; pas une saisie"
+            ws["C2"].font = Font(italic=True, color="64748B")
+
+            ws.cell(drow + 5, 1, "Q_manning à WSE (m³/s)")
             ws.cell(
                 drow + 5,
                 2,
@@ -323,18 +389,32 @@ def add_area_formula_sheets(
             ws.cell(drow + 6, 1, "V = Q/A (m/s)")
             ws.cell(drow + 6, 2, f"=IF(B{drow+2}>0,B5/B{drow+2},0)")
             ws.cell(drow + 6, 2).fill = OK
-            ws.cell(drow + 7, 1, "Note")
+            ws.cell(drow + 6, 2).number_format = "0.000"
+            ws.cell(drow + 7, 1, "Écart Q_manning − Q")
+            ws.cell(drow + 7, 2, f"=B{drow+5}-B5")
+            ws.cell(drow + 7, 2).number_format = "0.0000"
+            ws.cell(drow + 8, 1, "Note")
             ws.cell(
-                drow + 7,
+                drow + 8,
                 2,
-                "V utilise Q de B5 (débit de projet). Pour la profondeur normale, ajuster WSE jusqu'à Q_manning ≈ Q.",
+                "Changer Q (B5) ou n (B6) → WSE, A, V se recalculent seuls. S0 vient du longitudinal.",
             )
         else:
+            ws["A2"] = "WSE exploratoire (m)"
+            ws["B2"] = round(bed + 1.0, 4)
+            ws["B2"].fill = YELLOW
+            ws["B2"].border = THIN
+            ws["C2"] = "← S0≤0: pas de yn; WSE jaune seulement pour explorer A/P"
+            ws["C2"].font = Font(italic=True, color="64748B")
+            ws.cell(drow + 5, 1, "Q_manning")
             ws.cell(drow + 5, 2, None)
             ws.cell(drow + 5, 3, "S0≤0 → pas de Manning / V")
             ws.cell(drow + 5, 3).fill = SKIP
+            ws.cell(bis_hdr + 1, 9, "N/A (S0≤0)")
 
-        for col, w in zip("ABCDEFG", [6, 14, 12, 10, 12, 16, 16]):
+        for col, w in zip("ABCDEFG", [22, 14, 12, 10, 12, 16, 16]):
+            ws.column_dimensions[col].width = w
+        for col, w in zip("IJKLMNO", [6, 11, 11, 14, 11, 11, 16]):
             ws.column_dimensions[col].width = w
 
 
@@ -528,7 +608,7 @@ def main() -> None:
         "• Si S0 ≤ 0 : pas de calcul Manning → y / WSE / V vides. Pas de |S0|.",
         "• Si S0 > 0 : V = Q / A à la profondeur normale.",
         "• Fr > 1 ≈ régime torrentiel local.",
-        "• Voir onglets Formules_Aire et Aire_* : formules Excel live pour A et P.",
+        "• Voir onglets Formules_Aire et Aire_* : WSE (yn) calculé en Excel par dichotomie si S0>0.",
         "• CSV nettoyés dans st_therese_data/ pour relecture.",
         "• Lignes orange = pente adverse/nulle. Lignes vertes = Manning OK.",
     ]
@@ -556,9 +636,10 @@ def main() -> None:
             "  4) Chercher WSE tel que (1/n)·A·R^(2/3)·√S0 = Q",
             "  5) V = Q / A",
             "",
-            "Aire mouillée (détail dans Formules_Aire + onglets Aire_*):",
-            "  Ai = ½(d0+d1)|Δx| si segment mouillé; triangle si partiellement mouillé; 0 si sec",
-            "  A = Σ Ai ; P = Σ Pi ; R = A/P",
+            "Aire mouillée + profondeur normale (onglets Formules_Aire et Aire_*):",
+            "  Ai = ½(d0+d1)|Δx| si segment mouillé; triangle si partiel; 0 si sec",
+            "  A = Σ Ai ; P = Σ Pi ; R = A/P ; Q_manning = (1/n)·A·R^(2/3)·√S0",
+            "  yn / WSE: dichotomie Excel (30 pas) jusqu'à Q_manning = Q — pas une saisie manuelle",
             "",
             f"Q = {Q_DESIGN} m³/s, n = {N_MANNING}",
             "Correspondance section → station: 1+000@0, 2+000@13.78, 3+000@23.66, 4+000@35.64,",
