@@ -47,6 +47,8 @@ start SteTherese_Fosse_Vitesse_Q736.xlsx
 Uses uploaded longitudinal + 8 surveyed sections. Default: **Q = 7.36 m³/s**, **n = 0.035**.
 Clean CSVs in `st_therese_data/`.
 
+**Adverse slopes:** `S0` is kept signed as surveyed. Where `S0 ≤ 0`, velocity / depth are left blank (no `|S0|`).
+
 ## When you have DXF/CSV from AutoCAD
 
 
