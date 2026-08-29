@@ -36,7 +36,19 @@ start Profil_Vitesse_Demo_Invente.xlsx
 | `build_excel_demo.py` | Builds the Excel workbook |
 | `incoming/` | Drop real AutoCAD exports later |
 
+## Ste-Thérèse real survey run
+
+```bat
+cd engineering\drainage-design\channel_profile_velocity
+python build_st_therese_velocity.py
+start SteTherese_Fosse_Vitesse_Q736.xlsx
+```
+
+Uses uploaded longitudinal + 8 surveyed sections. Default: **Q = 7.36 m³/s**, **n = 0.035**.
+Clean CSVs in `st_therese_data/`.
+
 ## When you have DXF/CSV from AutoCAD
+
 
 Put CSVs in `incoming/` with columns:
 
