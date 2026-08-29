@@ -501,20 +501,22 @@ def main() -> None:
         "Profondeur normale (Manning) si S0 > 0 ; sinon V non calculée."
     )
     ws["A2"].font = Font(italic=True, color="64748B")
-    ws.merge_cells("A2:L2")
+    ws.merge_cells("A2:K2")
 
     ws["A4"] = "Q (m³/s)"
     ws["B4"] = Q_DESIGN
     ws["B4"].fill = YELLOW
+    ws["B4"].number_format = "0.000"
     ws["A5"] = "n Manning"
     ws["B5"] = N_MANNING
     ws["B5"].fill = YELLOW
-    ws["C5"] = "Pour recalculer: éditer build_st_therese_velocity.py puis python build_st_therese_velocity.py"
+    ws["B5"].number_format = "0.000"
+    ws["C5"] = "Feuilles Section_* : modifier Q et n (jaune) pour recalculer."
 
     hdr = [
         "Section",
-        "Station cum. (m)",
-        "S0 réel (signé)",
+        "Station (m)",
+        "S0 (-)",
         "y (m)",
         "WSE (m)",
         "Fond min (m)",
@@ -522,19 +524,15 @@ def main() -> None:
         "P (m)",
         "R (m)",
         "V (m/s)",
-        "Fr",
-        "OK?",
-        "Note S0 / capacité",
+        "Remarque",
     ]
     for j, h in enumerate(hdr, start=1):
         ws.cell(7, j, h)
     style_header(ws, 7, len(hdr))
 
     for i, (sid, snote, S0_real, computed, r) in enumerate(results, start=8):
-        note = snote if (computed and r.ok) else (
-            snote if not computed else f"{snote} | {r.note}"
-        )
         if computed and not math.isnan(r.V):
+            remark = snote if r.ok else f"{snote} — {r.note}"
             vals = [
                 sid,
                 round(r.station_m, 3),
@@ -546,9 +544,7 @@ def main() -> None:
                 round(r.P, 3),
                 round(r.R, 3),
                 round(r.V, 3),
-                round(r.Fr, 2),
-                "Oui" if r.ok else "Non",
-                note,
+                remark,
             ]
             row_fill = OK if r.ok else WARN
         else:
@@ -563,9 +559,7 @@ def main() -> None:
                 None,
                 None,
                 None,
-                None,
-                "—",
-                note,
+                snote,
             ]
             row_fill = SKIP
 
@@ -578,9 +572,9 @@ def main() -> None:
                 cell.number_format = "0.00000"
             if j == 3 and S0_real is not None and S0_real <= 0:
                 cell.fill = SKIP
-            elif j == 10:
+            elif j == 10 and computed:
                 cell.fill = row_fill
-            elif not computed and j in (4, 5, 7, 8, 9, 10, 11):
+            elif not computed and j in (4, 5, 7, 8, 9, 10):
                 cell.fill = SKIP
 
     last = 7 + len(results)
@@ -608,7 +602,7 @@ def main() -> None:
         "• S0 ≤ 0 : profondeur normale non applicable (V non calculée).",
         "• S0 > 0 : Manning, V = Q/A à la profondeur normale.",
         "• Détail par coupe : onglets Section_* ; hypothèses : Notes_calcul.",
-        "• Orange = pente adverse/nulle ; vert = calcul OK.",
+        "• Orange = pente adverse/nulle ; vert = V calculée.",
     ]
     for k, line in enumerate(notes):
         ws.cell(last + 7 + k, 1, line)
@@ -617,8 +611,8 @@ def main() -> None:
     for col in ws.columns:
         ws.column_dimensions[col[0].column_letter].width = 14
     ws.column_dimensions["A"].width = 12
-    ws.column_dimensions["C"].width = 16
-    ws.column_dimensions["M"].width = 42
+    ws.column_dimensions["C"].width = 12
+    ws.column_dimensions["K"].width = 42
 
     # Methode sheet
     wsM = wb.create_sheet("Methode")
