@@ -49,8 +49,8 @@ Clean CSVs in `st_therese_data/`.
 
 **Adverse slopes:** `S0` is kept signed as surveyed. Where `S0 ≤ 0`, velocity / depth are left blank (no `|S0|`).
 
-**Area / normal depth formulas:** sheets `Formules_Aire` + `Aire_1000`…`Aire_8000`.
-Where S0 > 0, **WSE is computed in Excel** by bisection (not typed): change yellow **Q** or **n** and yn updates.
+**Section sheets:** `Section_1000`…`Section_8000` show inputs (Q, n) and results to 3 decimals.
+Solver detail is on very hidden `calc_*` sheets. See `Notes_calcul` for hypotheses.
 
 ## When you have DXF/CSV from AutoCAD
 
