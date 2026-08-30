@@ -13,6 +13,7 @@ const DEFAULTS = {
   b: "0.5",
   z: "2.0",
   D: "2.0",
+  H: "", // optional bank / wall height (m) — trap & rect only
 };
 
 /** b (rect/trap width): 0.1 … 3.0 m */
@@ -80,53 +81,85 @@ function YnArrow({ x, yBed, yWater }) {
   );
 }
 
-function TrapezoidSketch({ b, z, yn, Q, n, S0, aria }) {
+function TrapezoidSketch({ b, z, yn, Q, n, S0, aria, bankH = null, overCapacity = false, QmaxApprox }) {
   const padY = 36;
   const W = 420;
-  const H = 280;
+  const svgH = 280;
   const channelTop = padY + 18;
-  const channelBottom = H - padY - 28;
+  const channelBottom = svgH - padY - 28;
   const maxDepthPx = channelBottom - channelTop;
 
   const bVis = Math.max(40, Math.min(160, 40 + b * 80));
   const zVis = Math.max(20, Math.min(100, 20 + z * 28));
-  const hasYn = yn != null && Number.isFinite(yn) && yn > 0;
-  const yMaxGuess = Math.max(hasYn ? yn : 0.5, 0.4);
+  const hasYn = !overCapacity && yn != null && Number.isFinite(yn) && yn > 0;
+  const hasBank = bankH != null && Number.isFinite(bankH) && bankH > 0;
+  const depthRef = hasBank ? bankH : hasYn ? yn : 0.5;
   const yVis = hasYn
-    ? Math.max(8, Math.min(maxDepthPx * 0.92, (yn / yMaxGuess) * maxDepthPx * 0.85 + 12))
-    : 0;
+    ? Math.max(8, Math.min(maxDepthPx * 0.92, (yn / depthRef) * maxDepthPx * 0.85 + 12))
+    : overCapacity && hasBank
+      ? maxDepthPx * 0.85
+      : 0;
+  const bankVis = hasBank
+    ? Math.max(12, Math.min(maxDepthPx * 0.92, (bankH / depthRef) * maxDepthPx * 0.85 + 12))
+    : null;
 
   const cx = W / 2;
   const yBank = channelTop;
   const yBed = channelBottom;
   const yWater = yBed - yVis;
+  const yBankLine = bankVis != null ? yBed - bankVis : yBank;
   const bedL = cx - bVis / 2;
   const bedR = cx + bVis / 2;
   const topL = bedL - zVis;
   const topR = bedR + zVis;
-  const t = yVis / (yBed - yBank || 1);
-  const waterL = bedL - zVis * t;
-  const waterR = bedR + zVis * t;
+  const tWater = maxDepthPx > 0 ? yVis / maxDepthPx : 0;
+  const tBank = maxDepthPx > 0 && bankVis != null ? bankVis / maxDepthPx : 1;
+  const waterL = bedL - zVis * tWater;
+  const waterR = bedR + zVis * tWater;
+  const bankL = bedL - zVis * tBank;
+  const bankR = bedR + zVis * tBank;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={aria}>
+    <svg viewBox={`0 0 ${W} ${svgH}`} className="h-auto w-full" role="img" aria-label={aria}>
       <SvgDefs />
-      <rect x="0" y="0" width={W} height={H} fill="#F1F5F9" />
+      <rect x="0" y="0" width={W} height={svgH} fill={overCapacity ? "#FEF2F2" : "#F1F5F9"} />
       <path
-        d={`M 0 ${yBank + 8} L ${topL} ${yBank} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${topR} ${yBank} L ${W} ${yBank + 8} L ${W} ${H} L 0 ${H} Z`}
+        d={`M 0 ${yBank + 8} L ${topL} ${yBank} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${topR} ${yBank} L ${W} ${yBank + 8} L ${W} ${svgH} L 0 ${svgH} Z`}
         fill="#E2E8F0"
         opacity="0.55"
       />
-      {hasYn && (
+      {(hasYn || overCapacity) && yVis > 0 && (
         <motion.path
           d={`M ${waterL} ${yWater} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${waterR} ${yWater} Z`}
-          fill="url(#ndWater)"
+          fill={overCapacity ? "#FECACA" : "url(#ndWater)"}
           initial={false}
           animate={{ d: `M ${waterL} ${yWater} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${waterR} ${yWater} Z` }}
           transition={{ type: "spring", stiffness: 120, damping: 18 }}
         />
       )}
-      <path d={`M ${topL} ${yBank} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${topR} ${yBank}`} fill="none" stroke="#1E293B" strokeWidth="2.5" strokeLinejoin="round" />
+      <path
+        d={`M ${topL} ${yBank} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${topR} ${yBank}`}
+        fill="none"
+        stroke={overCapacity ? "#B91C1C" : "#1E293B"}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      {hasBank && (
+        <>
+          <line
+            x1={bankL}
+            y1={yBankLine}
+            x2={bankR}
+            y2={yBankLine}
+            stroke="#B45309"
+            strokeWidth="1.5"
+            strokeDasharray="4 3"
+          />
+          <text x={cx} y={yBankLine - 8} textAnchor="middle" fill="#B45309" style={{ fontSize: 11, fontWeight: 700 }}>
+            H
+          </text>
+        </>
+      )}
       {hasYn && (
         <>
           <line x1={waterL} y1={yWater} x2={waterR} y2={yWater} stroke="#1D4E89" strokeWidth="1.5" strokeDasharray="5 3" />
@@ -135,6 +168,11 @@ function TrapezoidSketch({ b, z, yn, Q, n, S0, aria }) {
           </text>
           <YnArrow x={bedL - 22} yBed={yBed} yWater={yWater} />
         </>
+      )}
+      {overCapacity && (
+        <text x={cx} y={yBed - maxDepthPx * 0.45} textAnchor="middle" fill="#991B1B" style={{ fontSize: 13, fontWeight: 700 }}>
+          {QmaxApprox != null ? `Q > Qmax ≈ ${formatNum(QmaxApprox, 3)}` : "Q > bank capacity"}
+        </text>
       )}
       <line x1={bedL} y1={yBed + 14} x2={bedR} y2={yBed + 14} stroke="#C0392B" strokeWidth="1.5" />
       <text x={cx} y={yBed + 28} textAnchor="middle" fill="#C0392B" style={{ fontSize: 12, fontWeight: 700 }}>
@@ -148,39 +186,64 @@ function TrapezoidSketch({ b, z, yn, Q, n, S0, aria }) {
   );
 }
 
-function RectangularSketch({ b, yn, Q, n, S0, aria }) {
+function RectangularSketch({ b, yn, Q, n, S0, aria, bankH = null, overCapacity = false, QmaxApprox }) {
   const W = 420;
-  const H = 280;
+  const svgH = 280;
   const yBank = 54;
-  const yBed = H - 64;
+  const yBed = svgH - 64;
   const maxDepthPx = yBed - yBank;
   const bVis = Math.max(50, Math.min(200, 50 + b * 70));
-  const hasYn = yn != null && Number.isFinite(yn) && yn > 0;
-  const yMaxGuess = Math.max(hasYn ? yn : 0.5, 0.4);
+  const hasYn = !overCapacity && yn != null && Number.isFinite(yn) && yn > 0;
+  const hasBank = bankH != null && Number.isFinite(bankH) && bankH > 0;
+  const depthRef = hasBank ? bankH : hasYn ? yn : 0.5;
   const yVis = hasYn
-    ? Math.max(8, Math.min(maxDepthPx * 0.9, (yn / yMaxGuess) * maxDepthPx * 0.85 + 12))
-    : 0;
+    ? Math.max(8, Math.min(maxDepthPx * 0.9, (yn / depthRef) * maxDepthPx * 0.85 + 12))
+    : overCapacity && hasBank
+      ? maxDepthPx * 0.85
+      : 0;
+  const bankVis = hasBank
+    ? Math.max(12, Math.min(maxDepthPx * 0.9, (bankH / depthRef) * maxDepthPx * 0.85 + 12))
+    : null;
   const cx = W / 2;
   const yWater = yBed - yVis;
+  const yBankLine = bankVis != null ? yBed - bankVis : yBank;
   const L = cx - bVis / 2;
   const R = cx + bVis / 2;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label={aria}>
+    <svg viewBox={`0 0 ${W} ${svgH}`} className="h-auto w-full" role="img" aria-label={aria}>
       <SvgDefs />
-      <rect x="0" y="0" width={W} height={H} fill="#F1F5F9" />
-      <path d={`M 0 ${yBank} L ${L} ${yBank} L ${L} ${yBed} L ${R} ${yBed} L ${R} ${yBank} L ${W} ${yBank} L ${W} ${H} L 0 ${H} Z`} fill="#E2E8F0" opacity="0.55" />
-      {hasYn && (
+      <rect x="0" y="0" width={W} height={svgH} fill={overCapacity ? "#FEF2F2" : "#F1F5F9"} />
+      <path
+        d={`M 0 ${yBank} L ${L} ${yBank} L ${L} ${yBed} L ${R} ${yBed} L ${R} ${yBank} L ${W} ${yBank} L ${W} ${svgH} L 0 ${svgH} Z`}
+        fill="#E2E8F0"
+        opacity="0.55"
+      />
+      {(hasYn || overCapacity) && yVis > 0 && (
         <motion.rect
           x={L}
           width={bVis}
-          fill="url(#ndWater)"
+          fill={overCapacity ? "#FECACA" : "url(#ndWater)"}
           initial={false}
           animate={{ y: yWater, height: yVis }}
           transition={{ type: "spring", stiffness: 120, damping: 18 }}
         />
       )}
-      <path d={`M ${L} ${yBank} L ${L} ${yBed} L ${R} ${yBed} L ${R} ${yBank}`} fill="none" stroke="#1E293B" strokeWidth="2.5" strokeLinejoin="round" />
+      <path
+        d={`M ${L} ${yBank} L ${L} ${yBed} L ${R} ${yBed} L ${R} ${yBank}`}
+        fill="none"
+        stroke={overCapacity ? "#B91C1C" : "#1E293B"}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      {hasBank && (
+        <>
+          <line x1={L} y1={yBankLine} x2={R} y2={yBankLine} stroke="#B45309" strokeWidth="1.5" strokeDasharray="4 3" />
+          <text x={cx} y={yBankLine - 8} textAnchor="middle" fill="#B45309" style={{ fontSize: 11, fontWeight: 700 }}>
+            H
+          </text>
+        </>
+      )}
       {hasYn && (
         <>
           <line x1={L} y1={yWater} x2={R} y2={yWater} stroke="#1D4E89" strokeWidth="1.5" strokeDasharray="5 3" />
@@ -189,6 +252,11 @@ function RectangularSketch({ b, yn, Q, n, S0, aria }) {
           </text>
           <YnArrow x={L - 22} yBed={yBed} yWater={yWater} />
         </>
+      )}
+      {overCapacity && (
+        <text x={cx} y={yBed - maxDepthPx * 0.45} textAnchor="middle" fill="#991B1B" style={{ fontSize: 13, fontWeight: 700 }}>
+          {QmaxApprox != null ? `Q > Qmax ≈ ${formatNum(QmaxApprox, 3)}` : "Q > bank capacity"}
+        </text>
       )}
       <line x1={L} y1={yBed + 14} x2={R} y2={yBed + 14} stroke="#C0392B" strokeWidth="1.5" />
       <text x={cx} y={yBed + 28} textAnchor="middle" fill="#C0392B" style={{ fontSize: 12, fontWeight: 700 }}>
@@ -353,7 +421,9 @@ export default function NormalDepth() {
     const b = parsePositive(submitted.b, { allowZero: true });
     const z = parsePositive(submitted.z, { allowZero: true });
     const D = parsePositive(submitted.D);
-    return { shape, Q, S0, n, b, z, D };
+    const Hraw = String(submitted.H ?? "").trim();
+    const H = Hraw === "" ? null : parsePositive(submitted.H);
+    return { shape, Q, S0, n, b, z, D, H };
   }, [submitted]);
 
   const result = useMemo(() => {
@@ -378,6 +448,7 @@ export default function NormalDepth() {
         n: parsed.n,
         S0: parsed.S0,
         b: parsed.b,
+        H: parsed.H ?? undefined,
       });
     }
     if (parsed.z == null) return { yn: null, converged: false, error: "invalid_input" };
@@ -388,6 +459,7 @@ export default function NormalDepth() {
       S0: parsed.S0,
       b: parsed.b,
       z: parsed.z,
+      H: parsed.H ?? undefined,
     });
   }, [parsed]);
 
@@ -398,7 +470,9 @@ export default function NormalDepth() {
     const b = parsePositive(inputs.b, { allowZero: true }) ?? parsed.b ?? 0.5;
     const z = parsePositive(inputs.z, { allowZero: true }) ?? parsed.z ?? 1;
     const D = parsePositive(inputs.D) ?? parsed.D ?? 1;
-    return { shape: inputs.shape, Q, S0, n, b, z, D };
+    const Hraw = String(inputs.H ?? "").trim();
+    const H = Hraw === "" ? null : parsePositive(inputs.H);
+    return { shape: inputs.shape, Q, S0, n, b, z, D, H };
   }, [inputs, parsed]);
 
   const setField = (key) => (value) => setInputs((prev) => ({ ...prev, [key]: value }));
@@ -550,7 +624,22 @@ export default function NormalDepth() {
                     options={D_OPTIONS}
                   />
                 )}
+                {inputs.shape !== "circular" && (
+                  <YellowInput
+                    id="nd-H"
+                    label="H"
+                    unit={`m — ${t("normalDepth.bankHeight")} (${t("normalDepth.optional")})`}
+                    value={inputs.H}
+                    onChange={setField("H")}
+                    accent="#B45309"
+                    step="0.1"
+                    min="0"
+                  />
+                )}
               </div>
+              {inputs.shape !== "circular" && (
+                <p className="mt-2 text-xs text-slate-500">{t("normalDepth.bankHeightHint")}</p>
+              )}
             </div>
 
             <button
@@ -572,7 +661,11 @@ export default function NormalDepth() {
                   role="alert"
                 >
                   <p className="font-semibold">{t("normalDepth.exceedsCapacityTitle")}</p>
-                  <p className="mt-1 leading-relaxed">{t("normalDepth.exceedsCapacity")}</p>
+                  <p className="mt-1 leading-relaxed">
+                    {result.bankHeight != null
+                      ? t("normalDepth.exceedsCapacityBank")
+                      : t("normalDepth.exceedsCapacity")}
+                  </p>
                   <ul className="mt-2 space-y-1 font-mono text-xs sm:text-sm">
                     <li>
                       Q = {formatNum(parsed.Q, 3)} m³/s
@@ -583,9 +676,14 @@ export default function NormalDepth() {
                       </li>
                     )}
                     {parsed.D != null && <li>D = {formatNum(parsed.D, 3)} m</li>}
+                    {result.bankHeight != null && (
+                      <li>H = {formatNum(result.bankHeight, 3)} m</li>
+                    )}
                   </ul>
                   <p className="mt-2 text-xs leading-relaxed text-rose-800">
-                    {t("normalDepth.exceedsCapacityHint")}
+                    {result.bankHeight != null
+                      ? t("normalDepth.exceedsCapacityBankHint")
+                      : t("normalDepth.exceedsCapacityHint")}
                   </p>
                   <p className="mt-2 text-xs font-medium text-rose-900">
                     {t("normalDepth.noYnFill")}
@@ -625,6 +723,14 @@ export default function NormalDepth() {
                       <dd className="font-mono text-slate-800">{formatNum(result.fillRatio * 100, 1)}%</dd>
                     </div>
                   )}
+                  {submitted.shape !== "circular" &&
+                    result.fillRatioBank != null &&
+                    Number.isFinite(result.fillRatioBank) && (
+                    <div className="col-span-2">
+                      <dt className="text-slate-500">yn / H</dt>
+                      <dd className="font-mono text-slate-800">{formatNum(result.fillRatioBank * 100, 1)}%</dd>
+                    </div>
+                  )}
                 </dl>
               ) : (
                 <p className="mt-2 text-sm text-rose-700">{t("normalDepth.invalid")}</p>
@@ -649,6 +755,9 @@ export default function NormalDepth() {
                   Q={live.Q}
                   n={live.n}
                   S0={live.S0}
+                  bankH={live.H}
+                  overCapacity={result.error === "exceeds_capacity"}
+                  QmaxApprox={result.QmaxApprox}
                   aria={t("normalDepth.sketchAria")}
                 />
               ) : live.shape === "circular" ? (
@@ -670,6 +779,9 @@ export default function NormalDepth() {
                   Q={live.Q}
                   n={live.n}
                   S0={live.S0}
+                  bankH={live.H}
+                  overCapacity={result.error === "exceeds_capacity"}
+                  QmaxApprox={result.QmaxApprox}
                   aria={t("normalDepth.sketchAria")}
                 />
               )}
@@ -686,6 +798,12 @@ export default function NormalDepth() {
                 <li className="flex items-center gap-1.5">
                   <span className="h-2.5 w-2.5 rounded-sm bg-[var(--nd-z)]" />
                   <span>z — {t("normalDepth.sideSlope")}</span>
+                </li>
+              )}
+              {live.shape !== "circular" && (
+                <li className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-sm bg-[#B45309]" />
+                  <span>H — {t("normalDepth.bankHeight")} ({t("normalDepth.optional")})</span>
                 </li>
               )}
               {live.shape === "circular" && (

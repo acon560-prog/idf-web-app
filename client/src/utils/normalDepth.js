@@ -67,7 +67,9 @@ function packResult(Q, geo, yn, converged, iterations, qMid, extra = {}) {
 
 /**
  * Solve normal depth yn for given Q (bisection).
- * @param {{ shape: 'trapezoid'|'rectangular'|'circular', Q, n, S0, b?, z?, D? }} params
+ * @param {{ shape: 'trapezoid'|'rectangular'|'circular', Q, n, S0, b?, z?, D?, H? }} params
+ *   H = optional bank / wall height (m) for trapezoid & rectangular. If set and yn would
+ *   exceed H (or Q > capacity at y=H), returns error "exceeds_capacity".
  */
 export function solveNormalDepth(params, opts = {}) {
   const maxIter = opts.maxIter ?? 80;
@@ -81,7 +83,8 @@ export function solveNormalDepth(params, opts = {}) {
   }
 
   let dims;
-  let yMax;
+  let yMax; // hard ceiling for free-surface depth (pipe almost-full or bank height)
+  let bankHeight = null;
 
   if (shape === "circular") {
     const D = params.D;
@@ -107,7 +110,24 @@ export function solveNormalDepth(params, opts = {}) {
       return { yn: null, converged: false, iterations: 0, error: "invalid_input" };
     }
     dims = { b };
-    yMax = null;
+    const H = params.H;
+    if (H != null && Number.isFinite(H) && H > 0) {
+      bankHeight = H;
+      yMax = H;
+      const qMax = manningDischarge(n, S0, shape, dims, H);
+      if (Q > qMax * 1.001) {
+        return {
+          yn: null,
+          converged: false,
+          iterations: 0,
+          error: "exceeds_capacity",
+          QmaxApprox: qMax,
+          bankHeight: H,
+        };
+      }
+    } else {
+      yMax = null;
+    }
   } else {
     const b = params.b;
     const z = params.z;
@@ -115,7 +135,24 @@ export function solveNormalDepth(params, opts = {}) {
       return { yn: null, converged: false, iterations: 0, error: "invalid_input" };
     }
     dims = { b, z };
-    yMax = null;
+    const H = params.H;
+    if (H != null && Number.isFinite(H) && H > 0) {
+      bankHeight = H;
+      yMax = H;
+      const qMax = manningDischarge(n, S0, shape, dims, H);
+      if (Q > qMax * 1.001) {
+        return {
+          yn: null,
+          converged: false,
+          iterations: 0,
+          error: "exceeds_capacity",
+          QmaxApprox: qMax,
+          bankHeight: H,
+        };
+      }
+    } else {
+      yMax = null;
+    }
   }
 
   let yLo = 1e-6;
@@ -128,12 +165,14 @@ export function solveNormalDepth(params, opts = {}) {
     if (yMax != null) {
       yHi = Math.min(yMax, yHi * 1.5 + 0.01);
       if (yHi >= yMax * 0.999 && qHi < Q) {
+        const yCap = shape === "circular" ? 0.94 * dims.D : yMax;
         return {
           yn: null,
           converged: false,
           iterations: 0,
           error: "exceeds_capacity",
-          QmaxApprox: manningDischarge(n, S0, shape, dims, 0.94 * dims.D),
+          QmaxApprox: manningDischarge(n, S0, shape, dims, yCap),
+          ...(bankHeight != null ? { bankHeight } : {}),
         };
       }
     } else {
@@ -155,10 +194,15 @@ export function solveNormalDepth(params, opts = {}) {
     yn = yMid;
     if (Math.abs(qMid - Q) < tolQ || yHi - yLo < tolY) {
       const geo = sectionGeometry(shape, dims, yn);
-      const extra =
-        shape === "circular" && dims.D
-          ? { fillRatio: yn / dims.D, thetaDeg: ((geo.theta || 0) * 180) / Math.PI }
-          : {};
+      const extra = {};
+      if (shape === "circular" && dims.D) {
+        extra.fillRatio = yn / dims.D;
+        extra.thetaDeg = ((geo.theta || 0) * 180) / Math.PI;
+      }
+      if (bankHeight != null) {
+        extra.bankHeight = bankHeight;
+        extra.fillRatioBank = yn / bankHeight;
+      }
       return packResult(Q, geo, yn, true, iterations, qMid, extra);
     }
     if (qMid < Q) yLo = yMid;
@@ -166,10 +210,15 @@ export function solveNormalDepth(params, opts = {}) {
   }
 
   const geo = sectionGeometry(shape, dims, yn);
-  const extra =
-    shape === "circular" && dims.D
-      ? { fillRatio: yn / dims.D, thetaDeg: ((geo.theta || 0) * 180) / Math.PI }
-      : {};
+  const extra = {};
+  if (shape === "circular" && dims.D) {
+    extra.fillRatio = yn / dims.D;
+    extra.thetaDeg = ((geo.theta || 0) * 180) / Math.PI;
+  }
+  if (bankHeight != null) {
+    extra.bankHeight = bankHeight;
+    extra.fillRatioBank = yn / bankHeight;
+  }
   return packResult(
     Q,
     geo,
