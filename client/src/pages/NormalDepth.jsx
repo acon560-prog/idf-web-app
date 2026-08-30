@@ -90,8 +90,11 @@ function TrapezoidSketch({ b, z, yn, Q, n, S0, aria }) {
 
   const bVis = Math.max(40, Math.min(160, 40 + b * 80));
   const zVis = Math.max(20, Math.min(100, 20 + z * 28));
-  const yMaxGuess = Math.max(yn || 0.5, 0.4);
-  const yVis = Math.max(8, Math.min(maxDepthPx * 0.92, ((yn || 0) / yMaxGuess) * maxDepthPx * 0.85 + 12));
+  const hasYn = yn != null && Number.isFinite(yn) && yn > 0;
+  const yMaxGuess = Math.max(hasYn ? yn : 0.5, 0.4);
+  const yVis = hasYn
+    ? Math.max(8, Math.min(maxDepthPx * 0.92, (yn / yMaxGuess) * maxDepthPx * 0.85 + 12))
+    : 0;
 
   const cx = W / 2;
   const yBank = channelTop;
@@ -114,23 +117,29 @@ function TrapezoidSketch({ b, z, yn, Q, n, S0, aria }) {
         fill="#E2E8F0"
         opacity="0.55"
       />
-      <motion.path
-        d={`M ${waterL} ${yWater} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${waterR} ${yWater} Z`}
-        fill="url(#ndWater)"
-        initial={false}
-        animate={{ d: `M ${waterL} ${yWater} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${waterR} ${yWater} Z` }}
-        transition={{ type: "spring", stiffness: 120, damping: 18 }}
-      />
+      {hasYn && (
+        <motion.path
+          d={`M ${waterL} ${yWater} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${waterR} ${yWater} Z`}
+          fill="url(#ndWater)"
+          initial={false}
+          animate={{ d: `M ${waterL} ${yWater} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${waterR} ${yWater} Z` }}
+          transition={{ type: "spring", stiffness: 120, damping: 18 }}
+        />
+      )}
       <path d={`M ${topL} ${yBank} L ${bedL} ${yBed} L ${bedR} ${yBed} L ${topR} ${yBank}`} fill="none" stroke="#1E293B" strokeWidth="2.5" strokeLinejoin="round" />
-      <line x1={waterL} y1={yWater} x2={waterR} y2={yWater} stroke="#1D4E89" strokeWidth="1.5" strokeDasharray="5 3" />
-      <text x={cx} y={yWater - 10} textAnchor="middle" fill="#475569" style={{ fontSize: 11, fontWeight: 600 }}>
-        Tw
-      </text>
+      {hasYn && (
+        <>
+          <line x1={waterL} y1={yWater} x2={waterR} y2={yWater} stroke="#1D4E89" strokeWidth="1.5" strokeDasharray="5 3" />
+          <text x={cx} y={yWater - 10} textAnchor="middle" fill="#475569" style={{ fontSize: 11, fontWeight: 600 }}>
+            Tw
+          </text>
+          <YnArrow x={bedL - 22} yBed={yBed} yWater={yWater} />
+        </>
+      )}
       <line x1={bedL} y1={yBed + 14} x2={bedR} y2={yBed + 14} stroke="#C0392B" strokeWidth="1.5" />
       <text x={cx} y={yBed + 28} textAnchor="middle" fill="#C0392B" style={{ fontSize: 12, fontWeight: 700 }}>
         b
       </text>
-      <YnArrow x={bedL - 22} yBed={yBed} yWater={yWater} />
       <text x={(bedR + topR) / 2 + 8} y={(yBed + yBank) / 2} fill="#6C3483" style={{ fontSize: 12, fontWeight: 700 }}>
         z
       </text>
@@ -146,8 +155,11 @@ function RectangularSketch({ b, yn, Q, n, S0, aria }) {
   const yBed = H - 64;
   const maxDepthPx = yBed - yBank;
   const bVis = Math.max(50, Math.min(200, 50 + b * 70));
-  const yMaxGuess = Math.max(yn || 0.5, 0.4);
-  const yVis = Math.max(8, Math.min(maxDepthPx * 0.9, ((yn || 0) / yMaxGuess) * maxDepthPx * 0.85 + 12));
+  const hasYn = yn != null && Number.isFinite(yn) && yn > 0;
+  const yMaxGuess = Math.max(hasYn ? yn : 0.5, 0.4);
+  const yVis = hasYn
+    ? Math.max(8, Math.min(maxDepthPx * 0.9, (yn / yMaxGuess) * maxDepthPx * 0.85 + 12))
+    : 0;
   const cx = W / 2;
   const yWater = yBed - yVis;
   const L = cx - bVis / 2;
@@ -158,45 +170,49 @@ function RectangularSketch({ b, yn, Q, n, S0, aria }) {
       <SvgDefs />
       <rect x="0" y="0" width={W} height={H} fill="#F1F5F9" />
       <path d={`M 0 ${yBank} L ${L} ${yBank} L ${L} ${yBed} L ${R} ${yBed} L ${R} ${yBank} L ${W} ${yBank} L ${W} ${H} L 0 ${H} Z`} fill="#E2E8F0" opacity="0.55" />
-      <motion.rect
-        x={L}
-        width={bVis}
-        fill="url(#ndWater)"
-        initial={false}
-        animate={{ y: yWater, height: yVis }}
-        transition={{ type: "spring", stiffness: 120, damping: 18 }}
-      />
+      {hasYn && (
+        <motion.rect
+          x={L}
+          width={bVis}
+          fill="url(#ndWater)"
+          initial={false}
+          animate={{ y: yWater, height: yVis }}
+          transition={{ type: "spring", stiffness: 120, damping: 18 }}
+        />
+      )}
       <path d={`M ${L} ${yBank} L ${L} ${yBed} L ${R} ${yBed} L ${R} ${yBank}`} fill="none" stroke="#1E293B" strokeWidth="2.5" strokeLinejoin="round" />
-      <line x1={L} y1={yWater} x2={R} y2={yWater} stroke="#1D4E89" strokeWidth="1.5" strokeDasharray="5 3" />
-      <text x={cx} y={yWater - 10} textAnchor="middle" fill="#475569" style={{ fontSize: 11, fontWeight: 600 }}>
-        Tw = b
-      </text>
+      {hasYn && (
+        <>
+          <line x1={L} y1={yWater} x2={R} y2={yWater} stroke="#1D4E89" strokeWidth="1.5" strokeDasharray="5 3" />
+          <text x={cx} y={yWater - 10} textAnchor="middle" fill="#475569" style={{ fontSize: 11, fontWeight: 600 }}>
+            Tw = b
+          </text>
+          <YnArrow x={L - 22} yBed={yBed} yWater={yWater} />
+        </>
+      )}
       <line x1={L} y1={yBed + 14} x2={R} y2={yBed + 14} stroke="#C0392B" strokeWidth="1.5" />
       <text x={cx} y={yBed + 28} textAnchor="middle" fill="#C0392B" style={{ fontSize: 12, fontWeight: 700 }}>
         b
       </text>
-      <YnArrow x={L - 22} yBed={yBed} yWater={yWater} />
       <FlowLabels Q={Q} n={n} S0={S0} />
     </svg>
   );
 }
 
-function CircularSketch({ D, yn, Q, n, S0, aria }) {
+function CircularSketch({ D, yn, Q, n, S0, aria, overCapacity = false, QmaxApprox }) {
   const W = 420;
   const H = 280;
   const cx = W / 2;
   const cy = H / 2 + 10;
   const r = Math.max(40, Math.min(100, 40 + D * 45));
-  const ySafe = Math.min(Math.max(yn || 0, 0), D * 0.999);
-  const fill = D > 0 ? ySafe / D : 0;
-  // Water surface y from bottom of circle
+  // Valid yn only when not over capacity; never invent a fake depth
+  const hasYn = !overCapacity && yn != null && Number.isFinite(yn) && yn > 0;
+  const ySafe = hasYn ? Math.min(Math.max(yn, 0), D * 0.999) : 0;
+  const fill = D > 0 && hasYn ? ySafe / D : overCapacity ? 1 : 0;
   const yFromBottom = fill * 2 * r;
   const waterY = cy + r - yFromBottom;
-  // Chord half-width
   const dy = cy - waterY;
   const halfChord = Math.sqrt(Math.max(0, r * r - dy * dy));
-
-  // Clip water to circle below waterline
   const clipId = "ndCircClip";
 
   return (
@@ -207,36 +223,72 @@ function CircularSketch({ D, yn, Q, n, S0, aria }) {
           <rect x={cx - r - 2} y={waterY} width={2 * r + 4} height={cy + r - waterY + 2} />
         </clipPath>
       </defs>
-      <rect x="0" y="0" width={W} height={H} fill="#F1F5F9" />
-      <motion.circle
+      <rect x="0" y="0" width={W} height={H} fill={overCapacity ? "#FEF2F2" : "#F1F5F9"} />
+      {(hasYn || overCapacity) && (
+        <motion.circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          fill={overCapacity ? "#FECACA" : "url(#ndWater)"}
+          clipPath={overCapacity ? undefined : `url(#${clipId})`}
+          initial={false}
+          animate={{ r }}
+          transition={{ type: "spring", stiffness: 120, damping: 18 }}
+        />
+      )}
+      <circle
         cx={cx}
         cy={cy}
         r={r}
-        fill="url(#ndWater)"
-        clipPath={`url(#${clipId})`}
-        initial={false}
-        animate={{ r }}
-        transition={{ type: "spring", stiffness: 120, damping: 18 }}
+        fill="none"
+        stroke={overCapacity ? "#B91C1C" : "#1E293B"}
+        strokeWidth="2.5"
       />
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1E293B" strokeWidth="2.5" />
-      <line
-        x1={cx - halfChord}
-        y1={waterY}
-        x2={cx + halfChord}
-        y2={waterY}
-        stroke="#1D4E89"
-        strokeWidth="1.5"
-        strokeDasharray="5 3"
-      />
-      <text x={cx} y={waterY - 10} textAnchor="middle" fill="#475569" style={{ fontSize: 11, fontWeight: 600 }}>
-        Tw
-      </text>
-      {/* D dimension */}
+      {hasYn && (
+        <>
+          <line
+            x1={cx - halfChord}
+            y1={waterY}
+            x2={cx + halfChord}
+            y2={waterY}
+            stroke="#1D4E89"
+            strokeWidth="1.5"
+            strokeDasharray="5 3"
+          />
+          <text x={cx} y={waterY - 10} textAnchor="middle" fill="#475569" style={{ fontSize: 11, fontWeight: 600 }}>
+            Tw
+          </text>
+          <YnArrow x={cx - r - 24} yBed={cy + r} yWater={waterY} />
+        </>
+      )}
+      {overCapacity && (
+        <>
+          <text
+            x={cx}
+            y={cy - 6}
+            textAnchor="middle"
+            fill="#991B1B"
+            style={{ fontSize: 13, fontWeight: 700 }}
+          >
+            Q &gt; capacity
+          </text>
+          {QmaxApprox != null && Number.isFinite(QmaxApprox) && (
+            <text
+              x={cx}
+              y={cy + 12}
+              textAnchor="middle"
+              fill="#991B1B"
+              style={{ fontSize: 11, fontFamily: "ui-monospace, monospace" }}
+            >
+              {`Qmax ≈ ${formatNum(QmaxApprox, 3)} m³/s`}
+            </text>
+          )}
+        </>
+      )}
       <line x1={cx - r} y1={cy + r + 18} x2={cx + r} y2={cy + r + 18} stroke="#C0392B" strokeWidth="1.5" />
       <text x={cx} y={cy + r + 32} textAnchor="middle" fill="#C0392B" style={{ fontSize: 12, fontWeight: 700 }}>
         D
       </text>
-      <YnArrow x={cx - r - 24} yBed={cy + r} yWater={waterY} />
       <FlowLabels Q={Q} n={n} S0={S0} />
     </svg>
   );
@@ -515,11 +567,31 @@ export default function NormalDepth() {
               {result.error === "invalid_input" ? (
                 <p className="mt-2 text-sm text-rose-700">{t("normalDepth.invalid")}</p>
               ) : result.error === "exceeds_capacity" ? (
-                <p className="mt-2 text-sm text-rose-700">
-                  {t("normalDepth.exceedsCapacity")}
-                  {result.QmaxApprox != null ? ` (≈ ${formatNum(result.QmaxApprox, 3)} m³/s)` : ""}
-                </p>
-              ) : (
+                <div
+                  className="mt-3 rounded-md border border-rose-300 bg-rose-50 px-3 py-3 text-sm text-rose-900"
+                  role="alert"
+                >
+                  <p className="font-semibold">{t("normalDepth.exceedsCapacityTitle")}</p>
+                  <p className="mt-1 leading-relaxed">{t("normalDepth.exceedsCapacity")}</p>
+                  <ul className="mt-2 space-y-1 font-mono text-xs sm:text-sm">
+                    <li>
+                      Q = {formatNum(parsed.Q, 3)} m³/s
+                    </li>
+                    {result.QmaxApprox != null && (
+                      <li>
+                        {t("normalDepth.qmaxLabel")} ≈ {formatNum(result.QmaxApprox, 3)} m³/s
+                      </li>
+                    )}
+                    {parsed.D != null && <li>D = {formatNum(parsed.D, 3)} m</li>}
+                  </ul>
+                  <p className="mt-2 text-xs leading-relaxed text-rose-800">
+                    {t("normalDepth.exceedsCapacityHint")}
+                  </p>
+                  <p className="mt-2 text-xs font-medium text-rose-900">
+                    {t("normalDepth.noYnFill")}
+                  </p>
+                </div>
+              ) : result.converged && result.yn != null ? (
                 <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                   <div>
                     <dt className="text-slate-500">yn</dt>
@@ -545,13 +617,17 @@ export default function NormalDepth() {
                     <dt className="text-slate-500">P</dt>
                     <dd className="font-mono text-slate-800">{formatNum(result.wettedPerimeter, 3)} m</dd>
                   </div>
-                  {submitted.shape === "circular" && result.fillRatio != null && (
+                  {submitted.shape === "circular" &&
+                    result.fillRatio != null &&
+                    Number.isFinite(result.fillRatio) && (
                     <div className="col-span-2">
                       <dt className="text-slate-500">yn / D</dt>
                       <dd className="font-mono text-slate-800">{formatNum(result.fillRatio * 100, 1)}%</dd>
                     </div>
                   )}
                 </dl>
+              ) : (
+                <p className="mt-2 text-sm text-rose-700">{t("normalDepth.invalid")}</p>
               )}
             </div>
           </motion.form>
@@ -569,7 +645,7 @@ export default function NormalDepth() {
               {live.shape === "rectangular" ? (
                 <RectangularSketch
                   b={live.b}
-                  yn={result.yn ?? 0.5}
+                  yn={result.error ? null : result.yn}
                   Q={live.Q}
                   n={live.n}
                   S0={live.S0}
@@ -578,17 +654,19 @@ export default function NormalDepth() {
               ) : live.shape === "circular" ? (
                 <CircularSketch
                   D={live.D}
-                  yn={result.yn ?? live.D * 0.4}
+                  yn={result.error ? null : result.yn}
                   Q={live.Q}
                   n={live.n}
                   S0={live.S0}
+                  overCapacity={result.error === "exceeds_capacity"}
+                  QmaxApprox={result.QmaxApprox}
                   aria={t("normalDepth.sketchAria")}
                 />
               ) : (
                 <TrapezoidSketch
                   b={live.b}
                   z={live.z}
-                  yn={result.yn ?? 0.5}
+                  yn={result.error ? null : result.yn}
                   Q={live.Q}
                   n={live.n}
                   S0={live.S0}
