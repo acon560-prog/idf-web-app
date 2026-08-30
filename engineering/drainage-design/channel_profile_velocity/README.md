@@ -49,8 +49,9 @@ Clean CSVs in `st_therese_data/`.
 
 **Adverse slopes:** `S0` is kept signed as surveyed. Where `S0 ≤ 0`, velocity / depth are left blank (no `|S0|`).
 
-**Section sheets:** `Section_1000`…`Section_8000` show inputs (Q, n) and results to 3 decimals.
-Solver detail is on very hidden `calc_*` sheets. See `Notes_calcul` for hypotheses.
+**Office (no Python):** on `Resultats_Q736`, change yellow **Q** or **n** — the summary table and all `Section_*` sheets recalculate in Excel.
+
+**At home (optional rebuild):** `python build_st_therese_velocity.py` only if you change the source script or survey files.
 
 ## When you have DXF/CSV from AutoCAD
 

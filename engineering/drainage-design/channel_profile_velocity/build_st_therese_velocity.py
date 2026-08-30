@@ -231,7 +231,8 @@ def add_area_formula_sheets(
         "Pente adverse (S0 ≤ 0)",
         "  La profondeur normale n'est pas définie ; S0 est reporté tel quel et V n'est pas calculée.",
         "",
-        "Entrées (jaune) sur chaque feuille Section_* : débit Q et coefficient n.",
+        "Entrées (jaune) : Q et n sur la feuille Resultats_Q736 uniquement.",
+        "  Modifier Q ou n → toutes les feuilles Section_* et le tableau récapitulatif se mettent à jour.",
     ]
     for i, line in enumerate(lines, start=2):
         wsF.cell(i, 1, line)
@@ -268,15 +269,17 @@ def add_area_formula_sheets(
             ws["C4"].font = Font(italic=True, color="9A3412")
 
         ws["A5"] = "Q (m³/s)"
-        ws["B5"] = Q_DESIGN
-        ws["B5"].fill = YELLOW
+        ws["B5"] = "='Resultats_Q736'!B4"
         ws["B5"].border = THIN
         ws["B5"].number_format = FMT3
+        ws["C5"] = "lié à Resultats_Q736"
+        ws["C5"].font = Font(italic=True, color="64748B", size=9)
         ws["A6"] = "n Manning"
-        ws["B6"] = N_MANNING
-        ws["B6"].fill = YELLOW
+        ws["B6"] = "='Resultats_Q736'!B5"
         ws["B6"].border = THIN
         ws["B6"].number_format = FMT3
+        ws["C6"] = "lié à Resultats_Q736"
+        ws["C6"].font = Font(italic=True, color="64748B", size=9)
 
         ws["A8"] = "Résultats"
         ws["A8"].font = Font(bold=True)
@@ -497,8 +500,8 @@ def main() -> None:
     ws["A1"] = "Fossé Ste-Thérèse — vitesse aux sections réelles (survey)"
     ws["A1"].font = Font(bold=True, size=14)
     ws["A2"] = (
-        f"Q = {Q_DESIGN} m³/s ; n = {N_MANNING}. "
-        "Profondeur normale (Manning) si S0 > 0 ; sinon V non calculée."
+        f"Valeurs par défaut Q = {Q_DESIGN} m³/s ; n = {N_MANNING}. "
+        "Modifier Q ou n (jaune) → le tableau et les Section_* se recalculent (pas besoin de Python)."
     )
     ws["A2"].font = Font(italic=True, color="64748B")
     ws.merge_cells("A2:K2")
@@ -506,12 +509,14 @@ def main() -> None:
     ws["A4"] = "Q (m³/s)"
     ws["B4"] = Q_DESIGN
     ws["B4"].fill = YELLOW
+    ws["B4"].border = THIN
     ws["B4"].number_format = "0.000"
     ws["A5"] = "n Manning"
     ws["B5"] = N_MANNING
     ws["B5"].fill = YELLOW
+    ws["B5"].border = THIN
     ws["B5"].number_format = "0.000"
-    ws["C5"] = "Feuilles Section_* : modifier Q et n (jaune) pour recalculer."
+    ws["C5"] = "← seules entrées à changer au bureau"
 
     hdr = [
         "Section",
@@ -531,19 +536,21 @@ def main() -> None:
     style_header(ws, 7, len(hdr))
 
     for i, (sid, snote, S0_real, computed, r) in enumerate(results, start=8):
-        if computed and not math.isnan(r.V):
+        safe = sid.replace("+", "")
+        sec_ref = f"Section_{safe}"
+        if computed:
             remark = snote if r.ok else f"{snote} — {r.note}"
             vals = [
                 sid,
                 round(r.station_m, 3),
                 round(S0_real, 5) if S0_real is not None else None,
-                round(r.y_m, 3),
-                round(r.WSE, 3),
-                round(r.bed_elev, 3),
-                round(r.A, 3),
-                round(r.P, 3),
-                round(r.R, 3),
-                round(r.V, 3),
+                f"='{sec_ref}'!B10",
+                f"='{sec_ref}'!B9",
+                f"='{sec_ref}'!B9-'{sec_ref}'!B10",
+                f"='{sec_ref}'!B11",
+                f"='{sec_ref}'!B12",
+                f"='{sec_ref}'!B13",
+                f"='{sec_ref}'!B14",
                 remark,
             ]
             row_fill = OK if r.ok else WARN
@@ -566,7 +573,7 @@ def main() -> None:
         for j, v in enumerate(vals, start=1):
             cell = ws.cell(i, j, v)
             cell.border = THIN
-            if j in (2, 4, 5, 6, 7, 8, 9, 10) and isinstance(v, (int, float)):
+            if j in (2, 4, 5, 6, 7, 8, 9, 10):
                 cell.number_format = "0.000"
             if j == 3 and isinstance(v, (int, float)):
                 cell.number_format = "0.00000"
@@ -578,25 +585,25 @@ def main() -> None:
                 cell.fill = SKIP
 
     last = 7 + len(results)
-    vs = [r.V for _, _, _, computed, r in results if computed and not math.isnan(r.V)]
-    ys = [r.y_m for _, _, _, computed, r in results if computed and not math.isnan(r.y_m)]
+    first_data = 8
     ws.cell(last + 2, 1, "V max")
-    ws.cell(last + 2, 2, round(max(vs), 3) if vs else None)
+    ws.cell(last + 2, 2, f"=MAX(J{first_data}:J{last})")
     ws.cell(last + 2, 2).fill = OK
     ws.cell(last + 2, 2).number_format = "0.000"
     ws.cell(last + 2, 3, "m/s")
     ws.cell(last + 3, 1, "V min")
-    ws.cell(last + 3, 2, round(min(vs), 3) if vs else None)
+    ws.cell(last + 3, 2, f"=MIN(J{first_data}:J{last})")
     ws.cell(last + 3, 2).number_format = "0.000"
     ws.cell(last + 3, 3, "m/s")
     ws.cell(last + 4, 1, "y max")
-    ws.cell(last + 4, 2, round(max(ys), 3) if ys else None)
+    ws.cell(last + 4, 2, f"=MAX(D{first_data}:D{last})")
     ws.cell(last + 4, 2).number_format = "0.000"
     ws.cell(last + 4, 3, "m")
 
     ws.cell(last + 6, 1, "Notes")
     ws.cell(last + 6, 1).font = Font(bold=True)
     notes = [
+        "• Modifier Q (B4) ou n (B5) : le tableau se recalcule automatiquement (Excel).",
         "• Géométrie : coupes Distance–Élévation du levé.",
         "• S0 issu du profil longitudinal (valeur signée).",
         "• S0 ≤ 0 : profondeur normale non applicable (V non calculée).",
@@ -613,7 +620,6 @@ def main() -> None:
     ws.column_dimensions["A"].width = 12
     ws.column_dimensions["C"].width = 12
     ws.column_dimensions["K"].width = 42
-
     # Methode sheet
     wsM = wb.create_sheet("Methode")
     wsM["A1"] = "Méthode"
