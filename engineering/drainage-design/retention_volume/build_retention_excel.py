@@ -25,10 +25,11 @@ from openpyxl.utils import get_column_letter
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "Volume_Retention_Ponceau_900.xlsx"
 
-# Hydrograph (min, m³/s)
+# Hydrograph (min, m³/s) — includes interpolated Qin=Qcap crossings (~9.37 and ~44.4 min)
 HYDRO = [
     (0.0, 0.778),
     (5.0, 1.170),
+    (9.37, 1.770),  # début stockage (Qin = Qcap Ø900)
     (10.0, 1.857),
     (15.0, 3.202),
     (20.0, 6.309),
@@ -37,6 +38,7 @@ HYDRO = [
     (32.5, 3.857),
     (37.5, 2.689),
     (42.5, 1.953),
+    (44.4, 1.770),  # fin accumulation nette (Qin = Qcap)
     (47.5, 1.462),
     (52.5, 1.121),
     (57.5, 0.875),
@@ -176,14 +178,18 @@ def build() -> Path:
         if abs(q - 9.6) < 1e-6:
             note = "Pointe"
             wh.cell(i, 2).fill = ORANGE
+        elif abs(q - QCAP_900) < 1e-9:
+            note = "Qin = Qcap (croisement)"
+            wh.cell(i, 2).fill = BLUE
         wh.cell(i, 3, note).border = THIN
     last_h = 3 + len(HYDRO)
-    wh["A18"] = "Qpointe (m³/s)"
-    wh["B18"] = f"=MAX(B4:B{last_h})"
-    wh["B18"].fill = GREEN
-    wh["A19"] = "t pointe (min)"
-    wh["B19"] = 22.5
-    wh["B19"].number_format = "0.0"
+    sum_row = last_h + 2
+    wh.cell(sum_row, 1, "Qpointe (m³/s)")
+    wh.cell(sum_row, 2, f"=MAX(B4:B{last_h})")
+    wh.cell(sum_row, 2).fill = GREEN
+    wh.cell(sum_row + 1, 1, "t pointe (min)")
+    wh.cell(sum_row + 1, 2, 22.5)
+    wh.cell(sum_row + 1, 2).number_format = "0.0"
 
     chart = LineChart()
     chart.title = "Hydrogramme Qin"
@@ -206,7 +212,10 @@ def build() -> Path:
     wa["B2"].fill = YELLOW
     wa["B2"].number_format = "0.00"
     wa["A3"] = "Vmax (m³)"
-    wa["B3"] = "=MAX(H8:H20)"
+    n = len(HYDRO)
+    first = 8
+    last = first + n - 1
+    wa["B3"] = f"=MAX(H{first}:H{last})"
     wa["B3"].fill = GREEN
     wa["B3"].number_format = "0.0"
     wa["C3"] = "Maximum du volume stocké cumulé"
@@ -226,8 +235,6 @@ def build() -> Path:
         wa.cell(7, j, h)
     style_header(wa, 7, len(cols))
 
-    n = len(HYDRO)
-    first = 8
     for i, (t, q) in enumerate(HYDRO):
         r = first + i
         # t, Qin from hydro sheet
@@ -260,7 +267,6 @@ def build() -> Path:
         wa.cell(r, 8).fill = GREEN
         wa.cell(r, 9, f'=IF(H{r}>0.5,"oui","non")').border = THIN
 
-    last = first + n - 1
     wa["A5"] = "t début stockage approx (min)"
     # first time Qin>Qout via match — leave note; formula hard in Excel without helper
     wa["B5"] = "voir courbe / entre 5 et 10 min (~9.4 min)"
@@ -448,8 +454,9 @@ def build() -> Path:
     wb2["A8"] = "Aire (m²)"
     wb2["B8"] = "=Parametres!B15"
     wb2["B8"].fill = YELLOW
+    r0 = 14
     wb2["A9"] = "Vmax_B (m³)"
-    wb2["B9"] = "=MAX(G14:G26)"
+    wb2["B9"] = f"=MAX(G{r0}:G{r0+n-1})"
     wb2["B9"].fill = GREEN
     wb2["B9"].number_format = "0.0"
     wb2["A10"] = "Hmax_B (m)"
@@ -462,9 +469,7 @@ def build() -> Path:
         wb2.cell(13, j, h)
     style_header(wb2, 13, 7)
 
-    # Use Python to write values for Method B as starting point AND formulas where possible
     # Pure formula Euler:
-    r0 = 14
     for i in range(n):
         r = r0 + i
         wb2.cell(r, 1, f"=Hydrogramme!A{4+i}")
