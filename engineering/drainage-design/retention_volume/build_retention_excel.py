@@ -233,8 +233,8 @@ def build() -> Path:
     notes = [
         "• Méthode A: Qout fixe = Q_plein Manning Ø900 (n=0,013). Pas un jugement IC/OC complet.",
         "• Le stockage commence quand Qin dépasse Qout; Vmax = max du volume stocké (pas (Qp−Qout)×durée).",
-        "• Méthode B: orifice Q=f(H) plafonné — illustration seulement; HY-8 / HEC-RAS donnerait une vraie courbe.",
-        "• Ø1200 Q_plein ≈ 4,93 m³/s avec le même n: cohérent, mais aval du Ø900 donc non limitant pour la rétention.",
+        "• Méthode B: Qout = f(H) depuis feuille Courbe_QH_900 (FHWA inlet+outlet).",
+        "• Voir feuille Fichiers_lies pour les anciens Excel HY-8 / ponceau+fossé.",
         "• Vérifier que le radier amont Ø900 (34.88) est bien le fond de la zone de rétention étudiée.",
     ]
     for i, line in enumerate(notes, start=42):
@@ -378,180 +378,157 @@ def build() -> Path:
     wa.column_dimensions["H"].width = 18
     wa.column_dimensions["I"].width = 14
 
-    # ---------- Calcul_B : Qout = f(H) simple orifice capped ----------
+    # ---------- Courbe Q=f(H) FHWA HDS-5 (Ø900) ----------
+    # Reuse same hydraulics module as ponceau_fosse_model (inlet + outlet control)
+    import sys
+
+    sys.path.insert(0, str(HERE.parent / "ponceau_fosse_model"))
+    from hydraulics import (  # type: ignore
+        CulvertDitchParams,
+        pipe_Q,
+        pipe_inlet_control_Q,
+        pipe_outlet_control_Q,
+    )
+
+    entrance = "square_edge"  # unknown entrance → conservative Ke=0.5
+    culvert = CulvertDitchParams(
+        D=D_900_M,
+        L=L_900,
+        elev_invert=Z_US_900,
+        elev_invert_ds=Z_DS_900,
+        elev_max=Z_US_900 + 3.0,
+        n_pipe=N_MANNING,
+        entrance=entrance,  # type: ignore[arg-type]
+        TW=0.0,
+        b=1.0,
+        z=1.0,
+    )
+    hw_list = [round(i * 0.05, 2) for i in range(0, 61)]  # 0 → 3.00 m
+    rating_rows: list[tuple[float, float, float, float, float, str]] = []
+    for hw in hw_list:
+        if hw <= 0:
+            rating_rows.append((0.0, Z_US_900, 0.0, 0.0, 0.0, "—"))
+            continue
+        qi = pipe_inlet_control_Q(hw, culvert)
+        qo = pipe_outlet_control_Q(hw, culvert)
+        qg, ctrl = pipe_Q(hw, culvert)
+        rating_rows.append((hw, Z_US_900 + hw, qi, qo, qg, ctrl))
+
+    wq = wb.create_sheet("Courbe_QH_900")
+    wq["A1"] = "Courbe de capacité Ø900 — Q = f(H) (FHWA HDS-5 inlet + outlet)"
+    wq["A1"].font = Font(bold=True, size=12, color="0F5C5C")
+    wq["A2"] = (
+        f"Hypothèses: n={N_MANNING}, entrée={entrance} (Ke={culvert.Ke}, inconnu → conservateur), "
+        f"TW=0 (exutoire libre), L={L_900} m, S0={S0_900:.5f}. "
+        "Q_gouvernant = min(Qinlet, Qoutlet). Sur ce tuyau long, le contrôle outlet domine."
+    )
+    wq.merge_cells("A2:G3")
+    wq["A2"].alignment = Alignment(wrap_text=True, vertical="top")
+
+    wq["A5"] = "Q_plein Manning (réf.)"
+    wq["B5"] = Q_FULL_900
+    wq["B5"].number_format = "0.000"
+    wq["C5"] = "m³/s — section pleine, pente S0 seulement"
+    wq["A6"] = "Entrée (hypothèse)"
+    wq["B6"] = entrance
+    wq["B6"].fill = YELLOW
+    wq["C6"] = "square_edge | beveled | groove_headwall — régénérer le xlsx si changé"
+    wq["A7"] = "TW (m au-dessus radier aval)"
+    wq["B7"] = 0.0
+    wq["B7"].fill = YELLOW
+    wq["C7"] = "0 = libre; si TW connu, régénérer avec build_retention_excel.py"
+
+    hdr_q = ["HW (m)", "WSE (m)", "Qinlet", "Qoutlet", "Q gouvernant", "Contrôle"]
+    for j, h in enumerate(hdr_q, start=1):
+        wq.cell(9, j, h)
+    style_header(wq, 9, 6)
+    first_q = 10
+    for i, (hw, wse, qi, qo, qg, ctrl) in enumerate(rating_rows):
+        r = first_q + i
+        wq.cell(r, 1, hw).number_format = "0.00"
+        wq.cell(r, 2, wse).number_format = "0.00"
+        wq.cell(r, 3, qi).number_format = "0.000"
+        wq.cell(r, 4, qo).number_format = "0.000"
+        wq.cell(r, 5, qg).number_format = "0.000"
+        wq.cell(r, 6, ctrl)
+        for c in range(1, 7):
+            wq.cell(r, c).border = THIN
+        wq.cell(r, 5).fill = GREEN
+    last_q = first_q + len(rating_rows) - 1
+
+    ch_q = LineChart()
+    ch_q.title = "Q gouvernant vs HW (Ø900)"
+    ch_q.y_axis.title = "Q (m³/s)"
+    ch_q.x_axis.title = "HW (m)"
+    ch_q.add_data(Reference(wq, min_col=5, min_row=9, max_row=last_q), titles_from_data=True)
+    ch_q.add_data(Reference(wq, min_col=3, min_row=9, max_row=last_q), titles_from_data=True)
+    ch_q.add_data(Reference(wq, min_col=4, min_row=9, max_row=last_q), titles_from_data=True)
+    ch_q.set_categories(Reference(wq, min_col=1, min_row=first_q, max_row=last_q))
+    wq.add_chart(ch_q, "H5")
+
+    for col, w in zip("ABCDEF", [10, 10, 10, 10, 14, 12]):
+        wq.column_dimensions[col].width = w
+
+    # ---------- Calcul_B : routage avec courbe FHWA ----------
     wb2 = wb.create_sheet("Calcul_B")
-    wb2["A1"] = "Méthode B — Qout = f(H) approximatif (orifice Ø900, plafonné)"
+    wb2["A1"] = "Méthode B — routage avec Qout = f(H) depuis Courbe_QH_900 (FHWA)"
     wb2["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wb2["A2"] = (
-        "Hypothèses: aire de bassin constante (Parametres!B15); "
-        "H = V/Aire; Qorifice = Cd·A·√(2gH) avec A=πD²/4, Cd=0.62; "
-        "Qout = MIN(Qorifice, Qcap) mais au moins le débit qui passe si H>0. "
-        "Si H≈0 et Qin<Qcap, Qout=Qin (pas d'accumulation)."
+        "H = V / Aire_bassin. Qout interpolé sur Courbe_QH_900!E (Q gouvernant). "
+        "Si V≈0, Qout = MIN(Qin, Q_plein). ΔV = (Qin_moy − Qout)·Δt."
     )
-    wb2.merge_cells("A2:J4")
-    wb2["A2"].alignment = Alignment(wrap_text=True, vertical="top")
-
-    wb2["A5"] = "Cd (-)"
-    wb2["B5"] = 0.62
-    wb2["B5"].fill = YELLOW
-    wb2["A6"] = "D_900 (m)"
-    wb2["B6"] = 0.9
-    wb2["B6"].fill = YELLOW
-    wb2["A7"] = "Qcap (m³/s)"
-    wb2["B7"] = "=Parametres!B13"
-    wb2["B7"].fill = YELLOW
-    wb2["A8"] = "Aire (m²)"
-    wb2["B8"] = "=Parametres!B15"
-    wb2["A9"] = "Vmax_B (m³)"
-    wb2["B9"] = "=MAX(I14:I26)"
-    wb2["B9"].fill = GREEN
-    wb2["B9"].number_format = "0.0"
-    wb2["A10"] = "Hmax_B (m)"
-    wb2["B10"] = "=IF(B8>0,B9/B8,0)"
-    wb2["B10"].fill = BLUE
-    wb2["B10"].number_format = "0.00"
-
-    cols_b = [
-        "t (min)",
-        "Qin",
-        "H début (m)",
-        "Qorifice",
-        "Qout",
-        "Δt (s)",
-        "ΔV = (Qin−Qout)·Δt",
-        "V fin (m³)",
-        "V stocké (m³)",
-        "H fin (m)",
-    ]
-    # Actually use simpler columns matching routing
-    cols_b = [
-        "t (min)",
-        "Qin (m³/s)",
-        "H (m)",
-        "Qorifice (m³/s)",
-        "Qout (m³/s)",
-        "Δt (s)",
-        "ΔV (m³)",
-        "V (m³)",
-        "V pour max",
-    ]
-    for j, h in enumerate(cols_b, start=1):
-        wb2.cell(13, j, h)
-    style_header(wb2, 13, len(cols_b))
-
-    # Level-pool routing with formulas:
-    # Row by row: H from previous V; Qout=min(max(orifice,0),Qcap) but if V~0 and Qin<Qcap then Qout=Qin
-    # ΔV=(Qin_avg - Qout)*dt — use Qin at end of interval and Qout from H at start (explicit Euler) for Excel simplicity
-    g = 9.81
-    first_b = 14
-    for i in range(n):
-        r = first_b + i
-        wb2.cell(r, 1, f"=Hydrogramme!A{4+i}").border = THIN
-        wb2.cell(r, 1).number_format = "0.0"
-        wb2.cell(r, 2, f"=Hydrogramme!B{4+i}").border = THIN
-        wb2.cell(r, 2).number_format = "0.000"
-        if i == 0:
-            wb2.cell(r, 3, 0).border = THIN  # H
-            wb2.cell(r, 4, 0).border = THIN  # Qorifice
-            wb2.cell(r, 5, f"=MIN(B{r},$B$7)").border = THIN  # Qout
-            wb2.cell(r, 6, 0).border = THIN
-            wb2.cell(r, 7, 0).border = THIN
-            wb2.cell(r, 8, 0).border = THIN
-            wb2.cell(r, 9, 0).border = THIN
-        else:
-            prev = r - 1
-            # H from previous V
-            wb2.cell(r, 3, f"=IF($B$8>0,H{prev}/$B$8,0)").border = THIN
-            wb2.cell(r, 3).number_format = "0.000"
-            # Orifice: Cd * (pi D^2/4) * sqrt(2gH)
-            wb2.cell(
-                r,
-                4,
-                f'=IF(C{r}<=0,0,$B$5*(PI()*($B$6^2)/4)*SQRT(2*{g}*C{r}))',
-            ).border = THIN
-            wb2.cell(r, 4).number_format = "0.000"
-            # Qout: if no storage and Qin < Qcap → Qin; else min(max(Qorifice, small), Qcap)
-            # Better: Qout = MIN($B$7, IF(H{prev}<=1e-6, MIN(B{r},$B$7), MAX(D{r},0)))
-            wb2.cell(
-                r,
-                5,
-                f'=MIN($B$7,IF(H{prev}<=0.001,MIN(0.5*(B{prev}+B{r}),$B$7),D{r}))',
-            ).border = THIN
-            wb2.cell(r, 5).number_format = "0.000"
-            wb2.cell(r, 6, f"=(A{r}-A{prev})*60").border = THIN
-            wb2.cell(r, 6).number_format = "0.0"
-            # ΔV = (Qin_avg - Qout)*dt
-            wb2.cell(r, 7, f"=(0.5*(B{prev}+B{r})-E{r})*F{r}").border = THIN
-            wb2.cell(r, 7).number_format = "0.0"
-            wb2.cell(r, 8, f"=MAX(0,H{prev}+G{r})").border = THIN
-            wb2.cell(r, 8).number_format = "0.0"
-            wb2.cell(r, 9, f"=H{r}").border = THIN
-            wb2.cell(r, 9).number_format = "0.0"
-            # Fix: column H is V — I used H for V fin in formula referring to H{prev} as V
-            # Rename carefully: col 8 = V, so previous V is H{prev} only if we put V in column H (=8)
-            # I referenced H{prev} meaning column H = V. Good.
-            # But col 3 formula uses H{prev}/Aire — that's V_prev/Aire. Good.
-        for c in range(1, 10):
-            if wb2.cell(r, c).value is not None:
-                wb2.cell(r, c).border = THIN
-
-    # Fix column 3/8 confusion on row 0: col8 is V named poorly in orifice H reference
-    # On i>0, C{r} = H{prev}/Aire where H is column 8 (V). Excel column H = 8. Good.
-    # Qout formula uses H{prev} as V — good.
-
-    # Actually bug: first data row col9 =V for max uses column I =9 as copy of H. MAX(I14:I26) but V is in column H (8).
-    wb2["B9"] = f"=MAX(H{first_b}:H{first_b+n-1})"
-
-    # Fix orifice/Qout for i>0: column 3 should be water depth from V in column 8 of PREVIOUS row
-    # Currently C{r}=H{prev}/$B$8 — H{prev} is previous row column H = V. Correct.
-
-    for col in range(1, 10):
-        wb2.column_dimensions[get_column_letter(col)].width = 14
-    wb2.column_dimensions["A"].width = 12
-
-    # Rewrite Calcul_B more carefully - the Euler scheme references are messy.
-    # Simpler approach for B: precompute in Python a clean table and also put formulas
-    # that are easier. Let me rebuild Calcul_B sheet cleanly.
-    wb.remove(wb2)
-    wb2 = wb.create_sheet("Calcul_B")
-    wb2["A1"] = "Méthode B — routage simplifié Qout = f(H) (orifice Ø900 plafonné à Qcap)"
-    wb2["A1"].font = Font(bold=True, size=12, color="0F5C5C")
-    wb2["A2"] = (
-        "H = V / Aire_bassin.  Qorifice = Cd·(πD²/4)·√(2gH).  "
-        "Qout = MIN(Qcap, Qorifice) si V>0; si V≈0, Qout = MIN(Qin, Qcap).  "
-        "ΔV = (Qin_moyenne − Qout)·Δt.  Ajuster Cd, Aire, Qcap (jaune)."
-    )
-    wb2.merge_cells("A2:I3")
+    wb2.merge_cells("A2:G3")
     wb2["A2"].alignment = Alignment(wrap_text=True)
 
-    wb2["A5"] = "Cd"
-    wb2["B5"] = 0.62
+    wb2["A5"] = "Aire (m²)"
+    wb2["B5"] = "=Parametres!B24"
     wb2["B5"].fill = YELLOW
-    wb2["A6"] = "D (m)"
-    wb2["B6"] = 0.90
+    wb2["A6"] = "Q_plein réf. (m³/s)"
+    wb2["B6"] = "=Parametres!B22"
     wb2["B6"].fill = YELLOW
-    wb2["A7"] = "Qcap (m³/s)"
-    wb2["B7"] = "=Parametres!B22"
-    wb2["B7"].fill = YELLOW
-    wb2["A8"] = "Aire (m²)"
-    wb2["B8"] = "=Parametres!B24"
-    wb2["B8"].fill = YELLOW
-    r0 = 14
-    wb2["A9"] = "Vmax_B (m³)"
-    wb2["B9"] = f"=MAX(G{r0}:G{r0+n-1})"
-    wb2["B9"].fill = GREEN
-    wb2["B9"].number_format = "0.0"
-    wb2["A10"] = "Hmax_B (m)"
-    wb2["B10"] = "=IF(B8>0,B9/B8,0)"
-    wb2["B10"].fill = BLUE
-    wb2["B10"].number_format = "0.00"
+    r0 = 12
+    wb2["A7"] = "Vmax_B (m³)"
+    wb2["B7"] = f"=MAX(G{r0}:G{r0+n-1})"
+    wb2["B7"].fill = GREEN
+    wb2["B7"].number_format = "0.0"
+    wb2["A8"] = "Hmax_B (m)"
+    wb2["B8"] = "=IF(B5>0,B7/B5,0)"
+    wb2["B8"].fill = BLUE
+    wb2["B8"].number_format = "0.00"
 
-    hdr_b = ["t (min)", "Qin", "H (m)", "Qorifice", "Qout", "Δt (s)", "V (m³)"]
+    # Named ranges for interpolation (sheet-local absolute refs)
+    hw_rng = f"Courbe_QH_900!$A${first_q}:$A${last_q}"
+    q_rng = f"Courbe_QH_900!$E${first_q}:$E${last_q}"
+
+    def q_from_h_formula(h_cell: str) -> str:
+        # Linear interp between MATCH(...,1) and next row; clamp at ends
+        return (
+            f'IF({h_cell}<=0,0,'
+            f'IF({h_cell}>=INDEX({hw_rng},ROWS({hw_rng})),INDEX({q_rng},ROWS({q_rng})),'
+            f'LET('
+            f'i,MATCH({h_cell},{hw_rng},1),'
+            f'h1,INDEX({hw_rng},i),h2,INDEX({hw_rng},i+1),'
+            f'q1,INDEX({q_rng},i),q2,INDEX({q_rng},i+1),'
+            f'q1+({h_cell}-h1)/(h2-h1)*(q2-q1))))'
+        )
+
+    # LibreOffice-friendly version without LET (nested INDEX/MATCH)
+    def q_from_h_classic(h_cell: str) -> str:
+        m = f"MATCH({h_cell},{hw_rng},1)"
+        return (
+            f'IF({h_cell}<=0,0,'
+            f'IF({h_cell}>=INDEX({hw_rng},ROWS({hw_rng})),INDEX({q_rng},ROWS({q_rng})),'
+            f'INDEX({q_rng},{m})+'
+            f'({h_cell}-INDEX({hw_rng},{m}))/'
+            f'(INDEX({hw_rng},{m}+1)-INDEX({hw_rng},{m}))*'
+            f'(INDEX({q_rng},{m}+1)-INDEX({q_rng},{m}))))'
+        )
+
+    hdr_b = ["t (min)", "Qin", "H (m)", "Q_courbe", "Qout", "Δt (s)", "V (m³)"]
     for j, h in enumerate(hdr_b, start=1):
-        wb2.cell(13, j, h)
-    style_header(wb2, 13, 7)
+        wb2.cell(11, j, h)
+    style_header(wb2, 11, 7)
 
-    # Pure formula Euler:
     for i in range(n):
         r = r0 + i
         wb2.cell(r, 1, f"=Hydrogramme!A{4+i}")
@@ -559,14 +536,14 @@ def build() -> Path:
         if i == 0:
             wb2.cell(r, 3, 0)
             wb2.cell(r, 4, 0)
-            wb2.cell(r, 5, f"=MIN(B{r},$B$7)")
+            wb2.cell(r, 5, f"=MIN(B{r},$B$6)")
             wb2.cell(r, 6, 0)
             wb2.cell(r, 7, 0)
         else:
             p = r - 1
-            wb2.cell(r, 3, f"=IF($B$8>0,G{p}/$B$8,0)")  # H from previous V
-            wb2.cell(r, 4, f"=IF(C{r}<=0,0,$B$5*(PI()*($B$6^2)/4)*SQRT(2*9.81*C{r}))")
-            wb2.cell(r, 5, f"=IF(G{p}<=0.01,MIN(0.5*(B{p}+B{r}),$B$7),MIN($B$7,D{r}))")
+            wb2.cell(r, 3, f"=IF($B$5>0,G{p}/$B$5,0)")
+            wb2.cell(r, 4, f"={q_from_h_classic(f'C{r}')}")
+            wb2.cell(r, 5, f"=IF(G{p}<=0.01,MIN(0.5*(B{p}+B{r}),$B$6),D{r})")
             wb2.cell(r, 6, f"=(A{r}-A{p})*60")
             wb2.cell(r, 7, f"=MAX(0,G{p}+(0.5*(B{p}+B{r})-E{r})*F{r})")
         for c in range(1, 8):
@@ -580,6 +557,35 @@ def build() -> Path:
     for col, w in zip("ABCDEFG", [10, 10, 10, 12, 10, 10, 12]):
         wb2.column_dimensions[col].width = w
 
+    # ---------- Fichiers liés ----------
+    wf = wb.create_sheet("Fichiers_lies")
+    wf["A1"] = "Où sont les fichiers HY-8 / capacité ?"
+    wf["A1"].font = Font(bold=True, size=13, color="0F5C5C")
+    files_txt = [
+        "",
+        "Ce classeur (rétention Ø900) :",
+        "  engineering/drainage-design/retention_volume/Volume_Retention_Ponceau_900.xlsx",
+        "",
+        "Courbe Q=f(H) FHWA pour CE Ø900 : feuille Courbe_QH_900 (ci-dessus).",
+        "",
+        "Ancien Excel « type HY-8 / inlet-outlet » (autre projet / Ste-Thérèse) :",
+        "  engineering/drainage-design/Ponceau_Capacite_Inlet_Outlet.xlsx",
+        "  Branche git: cursor/culvert-excel-capacity-model-d87f",
+        "",
+        "Modèle composé ponceau Ø1050 + fossé (FHWA + remblai) — PAS le Ø900 de rétention :",
+        "  engineering/drainage-design/ponceau_fosse_model/Ponceau_Fosse_Modele_Hydraulique.xlsx",
+        "  Branche git: cursor/ponceau-fosse-hydraulic-model-d87f",
+        "",
+        "HEC-RAS : pas de projet .ras/.hdf pour ce Ø900. Un DEM Ste-Thérèse est dans",
+        "  engineering/hec-ras-data/ (données topo seulement).",
+        "",
+        "Donc: on n'avait pas perdu un HY-8 pour ce bassin Ø900 — on avait des outils",
+        "similaires pour d'autres sites. La courbe de CE classeur remplace ça pour le Ø900.",
+    ]
+    for i, line in enumerate(files_txt, start=2):
+        wf.cell(i, 1, line)
+    wf.column_dimensions["A"].width = 100
+
     # ---------- Methode ----------
     wm = wb.create_sheet("Methode")
     wm["A1"] = "Méthode — volume de rétention"
@@ -588,21 +594,26 @@ def build() -> Path:
         "",
         "1. Hydrogramme Qin(t) à l'entrée de la zone de rétention.",
         "2. Débit sortant contrôlé par le Ø900 (en série avant le Ø1200).",
-        "3. Capacité Ø900: Manning pleine section, n=0.013:",
-        "   Q = (1/n)·A·R^(2/3)·√S0  avec A=πD²/4, R=D/4, S0=(Zamont−Zaval)/L.",
-        "   → Q_plein ≈ 1.668 m³/s (ancienne valeur bureau 1.77 ≈ même méthode).",
-        "4. Méthode A: Qout = constante = Q_plein (jaune Parametres).",
-        "   ΔV = 0.5 * ((Qin−Qout)_i + (Qin−Qout)_{i+1}) * Δt ; V = max(0, V+ΔV); Vmax = max V.",
-        "5. Inlet vs outlet control: non tranché ici. L/D≈56 → frottement souvent plausible;",
-        "   Q_plein constant reste une 1re estimation prudente pour la rétention.",
-        "6. Méthode B: orifice Q=f(H) plafonné — illustration seulement.",
-        "7. Le Ø1200 (~4.93 m³/s Manning) est aval: n'augmente pas la sortie de la rétention.",
+        "3. Capacité Ø900 — deux niveaux:",
+        "   A) Q_plein Manning (n=0.013) ≈ 1.668 m³/s → Méthode A (constant).",
+        "   B) Courbe Q=f(H) FHWA HDS-5 (inlet + outlet) → feuille Courbe_QH_900 + Calcul_B.",
+        "4. Méthode A: Qout = constante = Q_plein (jaune Parametres). Bon pour 1re estimation.",
+        "5. Méthode B: Qout lu sur la courbe selon H=V/Aire (charge amont).",
+        "6. Sur ce Ø900 (L/D≈56), le calcul FHWA indique surtout un contrôle outlet.",
+        "7. Le Ø1200 est aval: n'augmente pas la sortie de la rétention.",
         "",
-        "Pour une courbe Q=f(H) défendable: HY-8 / HEC-RAS (inlet + outlet control FHWA).",
+        "Fichiers liés / anciens Excel: voir feuille Fichiers_lies.",
     ]
     for i, line in enumerate(lines, start=2):
         wm.cell(i, 1, line)
     wm.column_dimensions["A"].width = 110
+
+    # Link results from Calcul_B on Parametres
+    ws["A47"] = "Vmax_B courbe FHWA (m³)"
+    ws["B47"] = "=Calcul_B!B7"
+    ws["B47"].fill = GREEN
+    ws["B47"].number_format = "0"
+    ws["C47"] = "Routage avec Q=f(H) — dépend de Aire_bassin (B24)"
 
     wb.save(OUT)
     return OUT

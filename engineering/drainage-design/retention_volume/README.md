@@ -4,28 +4,32 @@ Excel pour estimer le **volume de rétention** requis en amont du Ø900 qui cont
 
 ## Hypothèse de capacité
 
-- **n = 0,013**, Manning **pleine section**
-- Géométrie Ø900 : L = 50,65 m, radiers 34,88 → 34,45 → **Q_plein ≈ 1,668 m³/s**
-- Ancienne valeur bureau **1,77 m³/s** : même méthode, léger écart de calcul
-- **Inlet vs outlet control** : non déterminé; Q_plein constant reste une 1re estimation (souvent prudente)
+- **n = 0,013**, Manning **pleine section** → **Q_plein ≈ 1,668 m³/s** (Méthode A)
+- **Courbe Q = f(H)** FHWA HDS-5 inlet + outlet → feuille **Courbe_QH_900** (Méthode B)
+- Entrée inconnue → hypothèse `square_edge` (conservatrice)
+- Sur ce tuyau (L/D≈56), le calcul indique surtout un **contrôle outlet**
 
-## Fichier
+## Fichier principal
 
 `Volume_Retention_Ponceau_900.xlsx`
 
 | Feuille | Contenu |
 |---------|---------|
-| **Parametres** | Géométrie, calcul Manning, Qout (jaune), facteur, aire; notes IC/OC |
-| **Hydrogramme** | Qin(t) + croisements Qin=Qcap |
-| **Calcul_A** | Routage **Qout constant** |
-| **Calcul_B** | Routage orifice Q=f(H) plafonné (illustration) |
+| **Parametres** | Géométrie, Manning, Qout, facteur, aire |
+| **Hydrogramme** | Qin(t) |
+| **Calcul_A** | Routage Qout constant |
+| **Courbe_QH_900** | Table + graphique Q=f(H) FHWA |
+| **Calcul_B** | Routage avec Q lu sur la courbe |
+| **Fichiers_lies** | Où sont les anciens Excel « HY-8 » |
 | **Methode** | Rappels |
 
-## Utilisation
+## Anciens fichiers (autres sites — pas ce Ø900)
 
-1. Ouvrir le `.xlsx`.
-2. Ajuster les cellules **jaunes** (`Qout_cap_900`, facteur, aire). Mettre **1,77** pour retrouver l’ancien calcul.
-3. Lire **Vmax** / **V_dimensionnement** sur `Parametres`.
+| Fichier | Branche / rôle |
+|---------|----------------|
+| `engineering/drainage-design/Ponceau_Capacite_Inlet_Outlet.xlsx` | type HY-8 / HDS-5 (Ste-Thérèse) |
+| `engineering/drainage-design/ponceau_fosse_model/Ponceau_Fosse_Modele_Hydraulique.xlsx` | Ø1050 + fossé (branche `cursor/ponceau-fosse-hydraulic-model-d87f`) |
+| `engineering/hec-ras-data/` | DEM seulement — pas de projet HEC-RAS pour ce bassin |
 
 ## Reconstruction
 
