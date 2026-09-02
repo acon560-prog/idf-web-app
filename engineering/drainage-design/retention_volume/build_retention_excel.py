@@ -15,6 +15,7 @@ Method B (optional): Qout = f(H) rating for Ø900, with simple level-pool
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -25,11 +26,10 @@ from openpyxl.utils import get_column_letter
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "Volume_Retention_Ponceau_900.xlsx"
 
-# Hydrograph (min, m³/s) — includes interpolated Qin=Qcap crossings (~9.37 and ~44.4 min)
-HYDRO = [
+# Measured hydrograph (min, m³/s) — crossings Qin=Qcap inserted at build time
+HYDRO_RAW = [
     (0.0, 0.778),
     (5.0, 1.170),
-    (9.37, 1.770),  # début stockage (Qin = Qcap Ø900)
     (10.0, 1.857),
     (15.0, 3.202),
     (20.0, 6.309),
@@ -38,15 +38,49 @@ HYDRO = [
     (32.5, 3.857),
     (37.5, 2.689),
     (42.5, 1.953),
-    (44.4, 1.770),  # fin accumulation nette (Qin = Qcap)
     (47.5, 1.462),
     (52.5, 1.121),
     (57.5, 0.875),
 ]
 
-QCAP_900 = 1.77
+# Ø900 geometry + Manning (full pipe) — user: n=0.013, Q = capacité pleine section
+N_MANNING = 0.013
+D_900_M = 0.9
+L_900 = 50.65
+Z_US_900 = 34.88
+Z_DS_900 = 34.45
+S0_900 = (Z_US_900 - Z_DS_900) / L_900
+
+
+def q_full_manning(D: float, S0: float, n: float) -> float:
+    A = math.pi * D**2 / 4.0
+    R = D / 4.0
+    return (1.0 / n) * A * (R ** (2.0 / 3.0)) * (S0**0.5)
+
+
+Q_FULL_900 = q_full_manning(D_900_M, S0_900, N_MANNING)  # ≈ 1.668 m³/s
+# Prior office value (~1.77) was same method, slight rounding / S0 difference
+QCAP_900_PRIOR = 1.77
+QCAP_900 = round(Q_FULL_900, 3)  # default used in routing
 QCAP_1200 = 4.93
 QPEAK_IN = 9.60
+
+
+def insert_qcap_crossings(hydro: list[tuple[float, float]], qcap: float) -> list[tuple[float, float]]:
+    """Insert linearly interpolated times where Qin crosses qcap (up and down)."""
+    out: list[tuple[float, float]] = [hydro[0]]
+    for (t0, q0), (t1, q1) in zip(hydro, hydro[1:]):
+        crossed_up = q0 < qcap <= q1
+        crossed_dn = q0 > qcap >= q1
+        if crossed_up or crossed_dn:
+            if abs(q1 - q0) > 1e-12:
+                t_x = t0 + (qcap - q0) / (q1 - q0) * (t1 - t0)
+                out.append((round(t_x, 2), qcap))
+        out.append((t1, q1))
+    return out
+
+
+HYDRO = insert_qcap_crossings(HYDRO_RAW, QCAP_900)
 
 HEADER = Font(bold=True, color="FFFFFF")
 HEADER_FILL = PatternFill("solid", fgColor="0F5C5C")
@@ -108,57 +142,106 @@ def build() -> Path:
     ws.merge_cells("A9:H10")
     ws["A9"].alignment = Alignment(wrap_text=True, vertical="top")
 
-    ws["A12"] = "Entrées de calcul (jaune)"
+    # --- Manning full-pipe capacity check ---
+    ws["A12"] = "Capacité Ø900 — Manning pleine section (n = 0,013)"
     ws["A12"].font = Font(bold=True)
-    ws["A13"] = "Qout_cap_900 (m³/s)"
-    ws["B13"] = QCAP_900
+    ws["A13"] = "n Manning (-)"
+    ws["B13"] = N_MANNING
     ws["B13"].fill = YELLOW
     ws["B13"].border = THIN
-    ws["B13"].number_format = "0.00"
-    ws["C13"] = "Débit sortant constant — Méthode A (capacité Ø900)"
-    ws["A14"] = "Facteur_securite (-)"
-    ws["B14"] = 1.20
-    ws["B14"].fill = YELLOW
-    ws["B14"].border = THIN
+    ws["B13"].number_format = "0.000"
+    ws["C13"] = "Fourni (béton typique ~0,012–0,015)"
+    ws["A14"] = "D (m)"
+    ws["B14"] = D_900_M
     ws["B14"].number_format = "0.00"
-    ws["C14"] = "Marge sur Vmax (ex. 1.20 = +20%)"
-    ws["A15"] = "Aire_bassin_m2"
-    ws["B15"] = 2500
-    ws["B15"].fill = YELLOW
-    ws["B15"].border = THIN
-    ws["B15"].number_format = "0"
-    ws["C15"] = "Aire plan d'eau approximative pour estimer H = V/A (Méthode B / niveau)"
-
-    ws["A17"] = "Résultats (formules — feuille Calcul_A)"
-    ws["A17"].font = Font(bold=True)
-    ws["A18"] = "Vmax (m³)"
-    ws["B18"] = "=Calcul_A!B3"
+    ws["A15"] = "S0 = (Zamont−Zaval)/L"
+    ws["B15"] = S0_900
+    ws["B15"].number_format = "0.00000"
+    ws["C15"] = f"= ({Z_US_900} − {Z_DS_900}) / {L_900}"
+    ws["A16"] = "A = πD²/4 (m²)"
+    ws["B16"] = math.pi * D_900_M**2 / 4
+    ws["B16"].number_format = "0.000"
+    ws["A17"] = "R = D/4 (m)"
+    ws["B17"] = D_900_M / 4
+    ws["B17"].number_format = "0.000"
+    ws["A18"] = "Q_plein = (1/n)·A·R^(2/3)·√S0"
+    ws["B18"] = Q_FULL_900
     ws["B18"].fill = GREEN
-    ws["B18"].number_format = "0"
-    ws["A19"] = "V_dimensionnement = Vmax × facteur (m³)"
-    ws["B19"] = "=B18*B14"
-    ws["B19"].fill = GREEN
-    ws["B19"].number_format = "0"
-    ws["A20"] = "Hmax approx (m) = Vmax / Aire"
-    ws["B20"] = "=IF(B15>0,B18/B15,0)"
-    ws["B20"].fill = BLUE
-    ws["B20"].number_format = "0.00"
-    ws["C20"] = "Estimation grossière si l'aire de bassin est constante"
+    ws["B18"].border = THIN
+    ws["B18"].number_format = "0.000"
+    ws["C18"] = "m³/s — capacité pleine section (hypothèse actuelle)"
+    ws["A19"] = "Q utilisé avant (m³/s)"
+    ws["B19"] = QCAP_900_PRIOR
+    ws["B19"].number_format = "0.00"
+    ws["C19"] = "Ancienne valeur bureau (~6% plus haute; même méthode)"
 
-    ws["A22"] = "Notes"
-    ws["A22"].font = Font(bold=True)
-    notes = [
-        "• Méthode A: Qout fixe = capacité Ø900. Valable comme estimation prudente / enveloppe basse de sortie.",
-        "• Le stockage commence quand Qin dépasse Qout; Vmax est le maximum du volume cumulé (pas (Qp-Qout)×durée).",
-        "• Méthode B (feuille Calcul_B): Qout augmente un peu avec la charge H (orifice plafonné), plus réaliste si disponible.",
-        "• Les capacités 1.77 et 4.93 m³/s sont prises comme données; idéalement remplacer par une courbe Q=f(H) calibrée.",
-        "• Vérifier que le radier amont Ø900 (34.88) est bien le fond de la zone de rétention étudiée.",
+    ws["A21"] = "Entrées de calcul rétention (jaune)"
+    ws["A21"].font = Font(bold=True)
+    ws["A22"] = "Qout_cap_900 (m³/s)"
+    ws["B22"] = QCAP_900
+    ws["B22"].fill = YELLOW
+    ws["B22"].border = THIN
+    ws["B22"].number_format = "0.000"
+    ws["C22"] = "Par défaut = Q_plein Manning. Mettre 1.77 pour retrouver l'ancien calcul."
+    ws["A23"] = "Facteur_securite (-)"
+    ws["B23"] = 1.20
+    ws["B23"].fill = YELLOW
+    ws["B23"].border = THIN
+    ws["B23"].number_format = "0.00"
+    ws["C23"] = "Marge sur Vmax (ex. 1.20 = +20%)"
+    ws["A24"] = "Aire_bassin_m2"
+    ws["B24"] = 2500
+    ws["B24"].fill = YELLOW
+    ws["B24"].border = THIN
+    ws["B24"].number_format = "0"
+    ws["C24"] = "Aire plan d'eau approx. pour H = V/A (Méthode B)"
+
+    ws["A26"] = "Résultats (formules — feuille Calcul_A)"
+    ws["A26"].font = Font(bold=True)
+    ws["A27"] = "Vmax (m³)"
+    ws["B27"] = "=Calcul_A!B3"
+    ws["B27"].fill = GREEN
+    ws["B27"].number_format = "0"
+    ws["A28"] = "V_dimensionnement = Vmax × facteur (m³)"
+    ws["B28"] = "=B27*B23"
+    ws["B28"].fill = GREEN
+    ws["B28"].number_format = "0"
+    ws["A29"] = "Hmax approx (m) = Vmax / Aire"
+    ws["B29"] = "=IF(B24>0,B27/B24,0)"
+    ws["B29"].fill = BLUE
+    ws["B29"].number_format = "0.00"
+    ws["C29"] = "Estimation grossière si l'aire de bassin est constante"
+
+    ws["A31"] = "Inlet control vs outlet control — qu'est-ce que ça veut dire?"
+    ws["A31"].font = Font(bold=True)
+    ic_oc = [
+        "• Inlet control (contrôle à l'entrée): le débit est limité par l'entrée du ponceau (forme d'entrée, HW/D).",
+        "  Le tuyau aval « n'aspire » pas assez pour influencer — Q dépend surtout de la charge amont H, pas de L ni de n.",
+        "• Outlet control (contrôle à la sortie / frottement): le débit dépend de la longueur, de n, de la pente et de la charge",
+        "  (énergie amont → aval). Manning pleine section est une hypothèse de type outlet/frottement à section pleine.",
+        f"• Ici L/D = {L_900/D_900_M:.0f} (tuyau assez long) → le contrôle par frottement (outlet) est souvent plausible,",
+        "  mais sans analyse FHWA/HY-8 on ne peut pas l'affirmer. Pour dimensionner la rétention, Q_plein constant est",
+        "  en général prudent (si la charge monte, le débit réel peut être un peu plus élevé → Vmax un peu plus bas).",
+        "• On n'a pas besoin de trancher IC/OC pour utiliser ce classeur: garder Qout = Q_plein (ou 1.77) suffit pour une 1re estimation.",
     ]
-    for i, line in enumerate(notes, start=23):
+    for i, line in enumerate(ic_oc, start=32):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
-    for col, w in zip("ABCDEFGH", [28, 26, 14, 16, 16, 14, 12, 26]):
+    ws["A41"] = "Notes"
+    ws["A41"].font = Font(bold=True)
+    notes = [
+        "• Méthode A: Qout fixe = Q_plein Manning Ø900 (n=0,013). Pas un jugement IC/OC complet.",
+        "• Le stockage commence quand Qin dépasse Qout; Vmax = max du volume stocké (pas (Qp−Qout)×durée).",
+        "• Méthode B: orifice Q=f(H) plafonné — illustration seulement; HY-8 / HEC-RAS donnerait une vraie courbe.",
+        "• Ø1200 Q_plein ≈ 4,93 m³/s avec le même n: cohérent, mais aval du Ø900 donc non limitant pour la rétention.",
+        "• Vérifier que le radier amont Ø900 (34.88) est bien le fond de la zone de rétention étudiée.",
+    ]
+    for i, line in enumerate(notes, start=42):
+        ws.cell(i, 1, line)
+        ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
+
+    for col, w in zip("ABCDEFGH", [36, 14, 55, 16, 16, 14, 12, 26]):
         ws.column_dimensions[col].width = w
 
     # ---------- Hydrogramme ----------
@@ -178,7 +261,7 @@ def build() -> Path:
         if abs(q - 9.6) < 1e-6:
             note = "Pointe"
             wh.cell(i, 2).fill = ORANGE
-        elif abs(q - QCAP_900) < 1e-9:
+        elif abs(q - QCAP_900) < 1e-6:
             note = "Qin = Qcap (croisement)"
             wh.cell(i, 2).fill = BLUE
         wh.cell(i, 3, note).border = THIN
@@ -208,7 +291,7 @@ def build() -> Path:
     wa["A1"] = "Méthode A — Qout constant = capacité Ø900"
     wa["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wa["A2"] = "Qout (m³/s)"
-    wa["B2"] = "=Parametres!B13"
+    wa["B2"] = "=Parametres!B22"
     wa["B2"].fill = YELLOW
     wa["B2"].number_format = "0.00"
     wa["A3"] = "Vmax (m³)"
@@ -268,10 +351,9 @@ def build() -> Path:
         wa.cell(r, 9, f'=IF(H{r}>0.5,"oui","non")').border = THIN
 
     wa["A5"] = "t début stockage approx (min)"
-    # first time Qin>Qout via match — leave note; formula hard in Excel without helper
-    wa["B5"] = "voir courbe / entre 5 et 10 min (~9.4 min)"
-    wa["A6"] = "t fin stockage approx (min)"
-    wa["B6"] = "entre 42.5 et 47.5 min (~44.4 min)"
+    wa["B5"] = "croisement Qin=Qcap dans Hydrogramme (~8.6 min si Q=1.668)"
+    wa["A6"] = "t fin accumulation nette (min)"
+    wa["B6"] = "croisement descendant (~45.4 min si Q=1.668)"
 
     # Chart storage
     ch2 = LineChart()
@@ -449,10 +531,10 @@ def build() -> Path:
     wb2["B6"] = 0.90
     wb2["B6"].fill = YELLOW
     wb2["A7"] = "Qcap (m³/s)"
-    wb2["B7"] = "=Parametres!B13"
+    wb2["B7"] = "=Parametres!B22"
     wb2["B7"].fill = YELLOW
     wb2["A8"] = "Aire (m²)"
-    wb2["B8"] = "=Parametres!B15"
+    wb2["B8"] = "=Parametres!B24"
     wb2["B8"].fill = YELLOW
     r0 = 14
     wb2["A9"] = "Vmax_B (m³)"
@@ -506,16 +588,17 @@ def build() -> Path:
         "",
         "1. Hydrogramme Qin(t) à l'entrée de la zone de rétention.",
         "2. Débit sortant contrôlé par le Ø900 (en série avant le Ø1200).",
-        "3. Méthode A: Qout = constante = capacité Ø900.",
-        "   Pendant chaque pas Δt:  ΔV = 0.5 * ((Qin−Qout)_i + (Qin−Qout)_{i+1}) * Δt",
-        "   (excès signé: positif = remplissage, négatif = vidange).",
-        "   V(t) = max(0, V(t−Δt) + ΔV).   Vmax = max V(t).",
-        "4. Volume de dimensionnement ≈ Vmax × facteur de sécurité (Parametres).",
-        "5. Méthode B: même bilan, mais Qout dépend de H = V/Aire (orifice plafonné).",
-        "6. Le Ø1200 à 4.93 m³/s est aval: il ne augmente pas la capacité de sortie de la rétention.",
+        "3. Capacité Ø900: Manning pleine section, n=0.013:",
+        "   Q = (1/n)·A·R^(2/3)·√S0  avec A=πD²/4, R=D/4, S0=(Zamont−Zaval)/L.",
+        "   → Q_plein ≈ 1.668 m³/s (ancienne valeur bureau 1.77 ≈ même méthode).",
+        "4. Méthode A: Qout = constante = Q_plein (jaune Parametres).",
+        "   ΔV = 0.5 * ((Qin−Qout)_i + (Qin−Qout)_{i+1}) * Δt ; V = max(0, V+ΔV); Vmax = max V.",
+        "5. Inlet vs outlet control: non tranché ici. L/D≈56 → frottement souvent plausible;",
+        "   Q_plein constant reste une 1re estimation prudente pour la rétention.",
+        "6. Méthode B: orifice Q=f(H) plafonné — illustration seulement.",
+        "7. Le Ø1200 (~4.93 m³/s Manning) est aval: n'augmente pas la sortie de la rétention.",
         "",
-        "Limites: Q=f(H) réelle du ponceau (entrée/sortie, longueur, n) préférable à Qcap constant;",
-        "aire de bassin rarement constante — remplacer par une courbe V(H) de site si disponible.",
+        "Pour une courbe Q=f(H) défendable: HY-8 / HEC-RAS (inlet + outlet control FHWA).",
     ]
     for i, line in enumerate(lines, start=2):
         wm.cell(i, 1, line)

@@ -2,30 +2,33 @@
 
 Excel pour estimer le **volume de rétention** requis en amont du Ø900 qui contrôle la sortie.
 
+## Hypothèse de capacité
+
+- **n = 0,013**, Manning **pleine section**
+- Géométrie Ø900 : L = 50,65 m, radiers 34,88 → 34,45 → **Q_plein ≈ 1,668 m³/s**
+- Ancienne valeur bureau **1,77 m³/s** : même méthode, léger écart de calcul
+- **Inlet vs outlet control** : non déterminé; Q_plein constant reste une 1re estimation (souvent prudente)
+
 ## Fichier
 
 `Volume_Retention_Ponceau_900.xlsx`
 
 | Feuille | Contenu |
 |---------|---------|
-| **Parametres** | Configuration Ø1500 → rétention → Ø900 → Ø1200; Qcap, facteur de sécurité, aire bassin |
-| **Hydrogramme** | Qin(t) + graphique |
-| **Calcul_A** | Routage avec **Qout constant** = capacité Ø900 (1,77 m³/s) |
-| **Calcul_B** | Routage **Qout = f(H)** orifice Ø900 plafonné à Qcap |
-| **Methode** | Rappels de calcul |
+| **Parametres** | Géométrie, calcul Manning, Qout (jaune), facteur, aire; notes IC/OC |
+| **Hydrogramme** | Qin(t) + croisements Qin=Qcap |
+| **Calcul_A** | Routage **Qout constant** |
+| **Calcul_B** | Routage orifice Q=f(H) plafonné (illustration) |
+| **Methode** | Rappels |
 
 ## Utilisation
 
-1. Ouvrir le `.xlsx` (Excel ou LibreOffice).
-2. Ajuster les cellules **jaunes** dans `Parametres` (Qcap, facteur de sécurité, aire).
-3. Lire **Vmax** et **V_dimensionnement** sur `Parametres` / `Calcul_A`.
+1. Ouvrir le `.xlsx`.
+2. Ajuster les cellules **jaunes** (`Qout_cap_900`, facteur, aire). Mettre **1,77** pour retrouver l’ancien calcul.
+3. Lire **Vmax** / **V_dimensionnement** sur `Parametres`.
 
 ## Reconstruction
 
 ```bash
 python3 build_retention_excel.py
 ```
-
-## Résultat indicatif (Qout = 1,77 m³/s)
-
-Avec l’hydrogramme fourni et un routage trapézoïdal : **Vmax ≈ 5 400 m³** (ordre de grandeur cohérent avec ~5 300 m³).
