@@ -36,3 +36,11 @@ Excel pour estimer le **volume de rétention** requis en amont du Ø900 qui cont
 ```bash
 python3 build_retention_excel.py
 ```
+
+## Stage–storage–discharge teaching guide
+
+`Stage_Storage_Discharge_Guide_900.xlsx` — read sheets 1→7 in order. Explains how the same WSE links survey volume V to culvert Q (boss +1.5 m above crown → 37.28 m → 2.4 m³/s).
+
+```bash
+python3 build_stage_storage_guide.py
+```
