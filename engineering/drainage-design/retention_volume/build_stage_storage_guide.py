@@ -39,13 +39,13 @@ THIN = Border(
 # Example inundation areas (m²) — placeholders until survey filled in
 EXAMPLE_AREAS = {
     34.88: 0,
-    35.50: 80,
-    36.00: 180,
-    36.50: 320,
-    37.00: 480,
-    37.28: 600,  # REPLACE with boss delineation area at +1.5 m above crown
-    37.50: 700,
-    39.50: 1032,  # user's polygon — NOT the design link level
+    35.50: 80,    # placeholder — replace if you delineate this contour
+    36.00: 180,   # placeholder
+    36.50: 320,   # placeholder
+    37.00: 480,   # placeholder
+    37.28: 543,   # USER SURVEY — boss stage (+1.5 m above crown)
+    37.50: 700,   # placeholder
+    39.50: 1932,  # USER SURVEY — higher optional stage
 }
 
 
@@ -112,7 +112,16 @@ def build() -> Path:
         "  6_ROUTING_IDEA    — how the hydrograph uses that table over time",
         "  7_CHECKLIST       — what to measure / deliver",
         "",
-        "Yellow cells = you may edit. Green = results. Orange = boss design stage.",
+        "Yellow cells = you may edit. Green = results. Orange = boss design stage.
+        "",
+        "WHAT IS WSE?",
+        "WSE = Water Surface Elevation = the elevation of the free water surface (metres).",
+        "Example: WSE = 37.28 m means the water surface is at elevation 37.28 on the survey.",
+        "",
+        "YOUR MEASURED AREAS (applied in sheet 4)",
+        "  WSE 37.28 m → Area ≈ 543 m²   (boss / +1.5 m above crown stage)",
+        "  WSE 39.50 m → Area ≈ 1932 m²  (optional higher stage)",
+        "  Intermediate WSEs still use placeholder areas until you delineate them.",",
     ]
     for i, line in enumerate(intro, start=2):
         ws.cell(i, 1, line)
@@ -330,7 +339,7 @@ def build() -> Path:
                     if c != 2:
                         w4.cell(r, c).fill = ORANGE
             elif abs(wse - 39.5) < 1e-9:
-                w4.cell(r, 6, "Your 1032 m² example — optional higher stage, not the 2.4 link")
+                w4.cell(r, 6, "Your 1932 m² example — optional higher stage, not the 2.4 link")
             else:
                 w4.cell(r, 6, "Intermediate contour — replace with survey area")
         for c in range(1, 7):
@@ -345,7 +354,7 @@ def build() -> Path:
         "Cell E for the 37.28 m row = total water volume (m³) stored in the landscape when the free surface "
         "is at 37.28 m (starting from empty at invert). "
         "REPLACE the yellow Area at 37.28 with the area your boss delineated (or that you redraw at 37.28). "
-        "Placeholder areas above are FAKE except 39.5→1032 which you measured — they only show the method.",
+        "Areas at 37.28 m (543 m²) and 39.5 m (1932 m²) are YOUR survey values. Other yellow areas are still placeholders until you delineate those contours.",
         "A22:F24",
     )
 
