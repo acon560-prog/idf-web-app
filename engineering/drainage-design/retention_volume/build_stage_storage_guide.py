@@ -284,33 +284,35 @@ def build() -> Path:
 
     # ========== 4. STAGE STORAGE ==========
     w4 = wb.create_sheet("4_STAGE_STORAGE")
-    w4["A1"] = "Stage–storage: V = f(WSE) from survey areas"
+    w4["A1"] = "Cote–stockage : V = f(NSE) à partir des surfaces topographiques"
     w4["A1"].font = TITLE
     wrap(
         w4,
         "A2",
-        "For EACH water level below, draw the inundation polygon on the topo and type the AREA (m²) in yellow. "
-        "Volume between two levels uses the trapezoid rule in plain text: "
-        "V_step = (A_i + A_i+1) / 2 * (WSE_i+1 - WSE_i). "
-        "Cumulative V = sum of steps from the bottom up.",
+        "NSE = niveau de la surface d'eau (Water Surface Elevation, WSE). "
+        "Pour CHAQUE niveau d'eau ci-dessous, dessinez le polygone d'inondation sur le topo et "
+        "inscrivez la SURFACE A (m²) dans les cellules jaunes. "
+        "Le volume entre deux niveaux utilise la règle des trapèzes : "
+        "V_pas = (A_i + A_i+1) / 2 × (NSE_i+1 − NSE_i). "
+        "V cumulatif = somme des V_pas depuis le radier jusqu'au niveau considéré.",
         "A2:H4",
     )
 
-    w4["A6"] = "Plain formula for one step"
+    w4["A6"] = "Formule en clair pour un pas"
     w4["A6"].font = BOLD
-    w4["A7"] = "V_step (m³) = (Area_low + Area_high) / 2  ×  (WSE_high − WSE_low)"
+    w4["A7"] = "V_pas (m³) = (Surface_basse + Surface_haute) / 2  ×  (NSE_haute − NSE_basse)"
     w4["A7"].fill = GREEN
     w4.merge_cells("A7:F7")
-    w4["A8"] = "V_cumulative at a level = sum of all V_step from invert up to that level"
+    w4["A8"] = "V_cumulatif à un niveau = somme de tous les V_pas depuis le radier jusqu'à ce niveau"
     w4.merge_cells("A8:F8")
 
     hdr = [
-        "WSE (m)",
-        "Area A (m²)  ← EDIT",
-        "ΔWSE (m)",
-        "V_step (m³)",
-        "V_cumulative (m³)",
-        "Role",
+        "NSE / WSE (m)",
+        "Surface A (m²)  ← ÉDITER",
+        "ΔNSE (m)",
+        "V_pas (m³)",
+        "V_cumulatif (m³)",
+        "Rôle",
     ]
     for j, h in enumerate(hdr, start=1):
         w4.cell(10, j, h)
@@ -328,7 +330,7 @@ def build() -> Path:
             w4.cell(r, 3, 0)
             w4.cell(r, 4, 0)
             w4.cell(r, 5, 0)
-            w4.cell(r, 6, "Invert — start (area often 0)")
+            w4.cell(r, 6, "Radier — départ (surface souvent 0)")
         else:
             prev = r - 1
             w4.cell(r, 3, f"=A{r}-A{prev}").number_format = "0.00"
@@ -336,45 +338,54 @@ def build() -> Path:
             w4.cell(r, 5, f"=E{prev}+D{r}").number_format = "0.0"
             w4.cell(r, 5).fill = GREEN
             if abs(wse - 37.28) < 1e-9:
-                w4.cell(r, 6, "BOSS LIMIT — replace Area with YOUR delineation at 37.28 m")
+                w4.cell(
+                    r,
+                    6,
+                    "LIMITE PATRON — surface à 37,28 m (votre relevé : 543 m²) ; Qout = 2,4 m³/s",
+                )
                 for c in range(1, 7):
                     if c != 2:
                         w4.cell(r, c).fill = ORANGE
             elif abs(wse - 39.5) < 1e-9:
-                w4.cell(r, 6, "Your 1932 m² example — optional higher stage, not the 2.4 link")
+                w4.cell(
+                    r,
+                    6,
+                    "Votre surface 1932 m² — niveau optionnel plus haut, pas le lien à Q=2,4",
+                )
             else:
-                w4.cell(r, 6, "Intermediate contour — replace with survey area")
+                w4.cell(r, 6, "Courbe intermédiaire — remplacer par la surface du levé")
         for c in range(1, 7):
             w4.cell(r, c).border = THIN
 
     last_v = 10 + len(stages_v)
-    w4["A21"] = "Worked meaning of V at 37.28 m"
+    w4["A21"] = "Signification de V à 37,28 m"
     w4["A21"].font = BOLD
     wrap(
         w4,
         "A22",
-        "Cell E for the 37.28 m row = total water volume (m³) stored in the landscape when the free surface "
-        "is at 37.28 m (starting from empty at invert). "
-        "REPLACE the yellow Area at 37.28 with the area your boss delineated (or that you redraw at 37.28). "
-        "Areas at 37.28 m (543 m²) and 39.5 m (1932 m²) are YOUR survey values. Other yellow areas are still placeholders until you delineate those contours.",
+        "La cellule E de la ligne 37,28 m = volume d'eau total (m³) stocké dans le terrain lorsque "
+        "la surface libre est à 37,28 m (en partant du radier vide). "
+        "Les surfaces à 37,28 m (543 m²) et 39,5 m (1932 m²) sont VOS valeurs de levé. "
+        "Les autres surfaces jaunes sont encore des placeholders jusqu'à ce que vous délimitez ces contours. "
+        "Avec les placeholders actuels, V ≈ 558 m³ à 37,28 m ; ce volume changera si vous corrigez les surfaces intermédiaires.",
         "A22:F24",
     )
 
-    w4["A26"] = "V at boss stage (m³)"
+    w4["A26"] = "V au niveau patron (m³)"
     w4["B26"] = "=E16"  # row 16 = 37.28
     w4["B26"].fill = GREEN
     w4["B26"].number_format = "0"
-    w4["C26"] = "← storage available when Qout = 2.4 m³/s (same WSE)"
+    w4["C26"] = "← volume disponible lorsque Qout = 2,4 m³/s (même NSE)"
 
     chart2 = LineChart()
-    chart2.title = "Stage–storage V(WSE)"
+    chart2.title = "Cote–stockage V(NSE)"
     chart2.y_axis.title = "V (m³)"
-    chart2.x_axis.title = "WSE (m)"
+    chart2.x_axis.title = "NSE / WSE (m)"
     chart2.add_data(Reference(w4, min_col=5, min_row=10, max_row=last_v), titles_from_data=True)
     chart2.set_categories(Reference(w4, min_col=1, min_row=11, max_row=last_v))
     w4.add_chart(chart2, "H6")
 
-    for col, width in zip("ABCDEF", [12, 18, 12, 14, 18, 60]):
+    for col, width in zip("ABCDEF", [14, 22, 12, 14, 18, 70]):
         w4.column_dimensions[col].width = width
 
     # ========== 5. THE LINK ==========
