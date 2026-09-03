@@ -112,7 +112,7 @@ def build() -> Path:
         "  6_ROUTING_IDEA    — how the hydrograph uses that table over time",
         "  7_CHECKLIST       — what to measure / deliver",
         "",
-        "Yellow cells = you may edit. Green = results. Orange = boss design stage.
+        "Yellow cells = you may edit. Green = results. Orange = boss design stage.",
         "",
         "WHAT IS WSE?",
         "WSE = Water Surface Elevation = the elevation of the free water surface (metres).",
@@ -121,7 +121,7 @@ def build() -> Path:
         "YOUR MEASURED AREAS (applied in sheet 4)",
         "  WSE 37.28 m → Area ≈ 543 m²   (boss / +1.5 m above crown stage)",
         "  WSE 39.50 m → Area ≈ 1932 m²  (optional higher stage)",
-        "  Intermediate WSEs still use placeholder areas until you delineate them.",",
+        "  Intermediate WSEs still use placeholder areas until you delineate them.",
     ]
     for i, line in enumerate(intro, start=2):
         ws.cell(i, 1, line)
@@ -131,6 +131,8 @@ def build() -> Path:
             "YOUR SITE NUMBERS (Ø900)",
             "WHY NOT 39.5 m OR 40 m?",
             "SHEETS IN THIS FILE (read in order)",
+            "WHAT IS WSE?",
+            "YOUR MEASURED AREAS (applied in sheet 4)",
         }:
             ws.cell(i, 1).font = BOLD
             ws.cell(i, 1).fill = BLUE
