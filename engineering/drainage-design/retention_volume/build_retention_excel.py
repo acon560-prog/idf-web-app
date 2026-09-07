@@ -157,7 +157,7 @@ def build() -> Path:
     ws["A15"] = "S0 = (Zamont−Zaval)/L"
     ws["B15"] = S0_900
     ws["B15"].number_format = "0.00000"
-    ws["C15"] = f"= ({Z_US_900} − {Z_DS_900}) / {L_900}"
+    ws["C15"] = "=(D6-E6)/F6"  # live formula; ASCII minus only (LibreOffice-safe)
     ws["A16"] = "A = πD²/4 (m²)"
     ws["B16"] = math.pi * D_900_M**2 / 4
     ws["B16"].number_format = "0.000"
