@@ -5,7 +5,7 @@ Excel pour estimer le **volume de rétention** requis en amont du Ø900 qui cont
 ## Hypothèse de capacité
 
 - **n = 0,013**, Manning **pleine section** → **Q_plein ≈ 1,668 m³/s** (Méthode A)
-- **Courbe Q = f(H)** FHWA HDS-5 inlet + outlet → feuille **Courbe_QH_900** (Méthode B)
+- **Courbe Q = f(H)** FHWA HDS-5 → feuille **Courbe_QH_900** en **formules live** (changer n, L, entrée, TW en jaune)
 - Entrée inconnue → hypothèse `square_edge` (conservatrice)
 - Sur ce tuyau (L/D≈56), le calcul indique surtout un **contrôle outlet**
 

@@ -378,96 +378,176 @@ def build() -> Path:
     wa.column_dimensions["H"].width = 18
     wa.column_dimensions["I"].width = 14
 
-    # ---------- Courbe Q=f(H) FHWA HDS-5 (Ø900) ----------
-    # Reuse same hydraulics module as ponceau_fosse_model (inlet + outlet control)
-    import sys
-
-    sys.path.insert(0, str(HERE.parent / "ponceau_fosse_model"))
-    from hydraulics import (  # type: ignore
-        CulvertDitchParams,
-        pipe_Q,
-        pipe_inlet_control_Q,
-        pipe_outlet_control_Q,
-    )
-
-    entrance = "square_edge"  # unknown entrance → conservative Ke=0.5
-    culvert = CulvertDitchParams(
-        D=D_900_M,
-        L=L_900,
-        elev_invert=Z_US_900,
-        elev_invert_ds=Z_DS_900,
-        elev_max=Z_US_900 + 3.0,
-        n_pipe=N_MANNING,
-        entrance=entrance,  # type: ignore[arg-type]
-        TW=0.0,
-        b=1.0,
-        z=1.0,
-    )
-    hw_list = [round(i * 0.05, 2) for i in range(0, 61)]  # 0 → 3.00 m
-    rating_rows: list[tuple[float, float, float, float, float, str]] = []
-    for hw in hw_list:
-        if hw <= 0:
-            rating_rows.append((0.0, Z_US_900, 0.0, 0.0, 0.0, "—"))
-            continue
-        qi = pipe_inlet_control_Q(hw, culvert)
-        qo = pipe_outlet_control_Q(hw, culvert)
-        qg, ctrl = pipe_Q(hw, culvert)
-        rating_rows.append((hw, Z_US_900 + hw, qi, qo, qg, ctrl))
-
+    # ---------- Courbe Q=f(H) FHWA HDS-5 (Ø900) — FORMULES LIVE ----------
     wq = wb.create_sheet("Courbe_QH_900")
-    wq["A1"] = "Courbe de capacité Ø900 — Q = f(H) (FHWA HDS-5 inlet + outlet)"
+    wq["A1"] = "Courbe de capacité Ø900 — Q = f(H) (FHWA HDS-5 inlet + outlet) — FORMULES LIVE"
     wq["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wq["A2"] = (
-        f"Hypothèses: n={N_MANNING}, entrée={entrance} (Ke={culvert.Ke}, inconnu → conservateur), "
-        f"TW=0 (exutoire libre), L={L_900} m, S0={S0_900:.5f}. "
-        "Q_gouvernant = min(Qinlet, Qoutlet). Sur ce tuyau long, le contrôle outlet domine."
+        "Changez les cellules JAUNES (n, D, L, radiers, entrée, TW) : toute la table se recalcule. "
+        "Q_gouvernant = MIN(Qinlet, Qoutlet). Pas besoin de relancer Python."
     )
     wq.merge_cells("A2:G3")
     wq["A2"].alignment = Alignment(wrap_text=True, vertical="top")
 
-    wq["A5"] = "Q_plein Manning (réf.)"
-    wq["B5"] = Q_FULL_900
-    wq["B5"].number_format = "0.000"
-    wq["C5"] = "m³/s — section pleine, pente S0 seulement"
-    wq["A6"] = "Entrée (hypothèse)"
-    wq["B6"] = entrance
-    wq["B6"].fill = YELLOW
-    wq["C6"] = "square_edge | beveled | groove_headwall — régénérer le xlsx si changé"
-    wq["A7"] = "TW (m au-dessus radier aval)"
-    wq["B7"] = 0.0
-    wq["B7"].fill = YELLOW
-    wq["C7"] = "0 = libre; si TW connu, régénérer avec build_retention_excel.py"
+    # --- Editable geometry / hydraulics (yellow) ---
+    wq["A5"] = "Paramètres Ø900 (jaune = éditable)"
+    wq["A5"].font = Font(bold=True)
+    params_q = [
+        (6, "n Manning (-)", N_MANNING, "0.000", "béton typ. 0.012–0.015"),
+        (7, "D (m)", D_900_M, "0.00", ""),
+        (8, "L (m)", L_900, "0.00", ""),
+        (9, "Radier amont Zin (m)", Z_US_900, "0.00", ""),
+        (10, "Radier aval Zout (m)", Z_DS_900, "0.00", ""),
+        (11, "S0 = (Zin-Zout)/L", "=(B9-B10)/B8", "0.00000", "ASCII minus; LibreOffice FR: OK"),
+        (12, "TW (m au-dessus Zout)", 0.0, "0.00", "0 = exutoire libre"),
+        (13, "Entrée (texte exact)", "square_edge", "@", "square_edge | beveled | groove_headwall"),
+    ]
+    for row, label, val, fmt, note in params_q:
+        wq.cell(row, 1, label)
+        cell = wq.cell(row, 2, val)
+        cell.fill = YELLOW
+        cell.border = THIN
+        if fmt != "@":
+            cell.number_format = fmt
+        wq.cell(row, 3, note)
+
+    # Q_plein live
+    wq["A15"] = "Q_plein Manning (réf.)"
+    wq["B15"] = "=(1/B6)*(PI()*B7^2/4)*((B7/4)^(2/3))*SQRT(B11)"
+    wq["B15"].fill = GREEN
+    wq["B15"].number_format = "0.000"
+    wq["C15"] = "m³/s — se met à jour avec n, D, S0"
+
+    # HDS-5 entrance coefficient table + VLOOKUP into K–O
+    wq["E5"] = "Coeffs HDS-5 (table)"
+    wq["E5"].font = Font(bold=True)
+    coeff_hdr = ["entrée", "K", "M", "c", "Y", "Ke"]
+    for j, h in enumerate(coeff_hdr, start=5):
+        wq.cell(6, j, h)
+        wq.cell(6, j).fill = HEADER_FILL
+        wq.cell(6, j).font = HEADER
+    coeffs = [
+        ("square_edge", 0.0098, 2.0, 0.0398, 0.67, 0.5),
+        ("beveled", 0.0018, 2.5, 0.0300, 0.74, 0.2),
+        ("groove_headwall", 0.0078, 2.0, 0.0292, 0.74, 0.2),
+    ]
+    for i, rowv in enumerate(coeffs):
+        for j, v in enumerate(rowv):
+            wq.cell(7 + i, 5 + j, v).border = THIN
+
+    wq["A17"] = "K (lu)"
+    wq["B17"] = '=IFERROR(VLOOKUP(B13,$E$7:$J$9,2,FALSE),0.0098)'
+    wq["A18"] = "M (lu)"
+    wq["B18"] = '=IFERROR(VLOOKUP(B13,$E$7:$J$9,3,FALSE),2)'
+    wq["A19"] = "c (lu)"
+    wq["B19"] = '=IFERROR(VLOOKUP(B13,$E$7:$J$9,4,FALSE),0.0398)'
+    wq["A20"] = "Y (lu)"
+    wq["B20"] = '=IFERROR(VLOOKUP(B13,$E$7:$J$9,5,FALSE),0.67)'
+    wq["A21"] = "Ke (lu)"
+    wq["B21"] = '=IFERROR(VLOOKUP(B13,$E$7:$J$9,6,FALSE),0.5)'
+    for r in range(17, 22):
+        wq.cell(r, 2).fill = BLUE
+        wq.cell(r, 2).number_format = "0.0000"
+
+    # Named-style absolute refs for row formulas
+    D = "$B$7"
+    L = "$B$8"
+    Zin = "$B$9"
+    S0 = "$B$11"
+    TW = "$B$12"
+    n_ref = "$B$6"
+    K = "$B$17"
+    M = "$B$18"
+    c = "$B$19"
+    Y = "$B$20"
+    Ke = "$B$21"
+    KU = "1.811"
+    G = "9.81"
+
+    def f_qinlet(hw: str) -> str:
+        A = f"(PI()*({D}/2)^2)"
+        qun = (
+            f"{KU}*{A}*SQRT({D})"
+            f"*IF({K}*{D}<=0,0,({hw}/({K}*{D}))^(1/{M}))"
+        )
+        qsub = (
+            f"{KU}*{A}*SQRT({D})"
+            f"*SQRT(MAX(0,({hw}/{D}-{Y})/{c}))"
+        )
+        t = f"MIN(1,MAX(0,({hw}/{D}-0.95)/(1.2-0.95)))"
+        return (
+            f"IF({hw}<=0,0,"
+            f"IF({hw}<0.95*{D},{qun},"
+            f"IF({hw}>1.2*{D},{qsub},"
+            f"(1-({t}))*({qun})+({t})*({qsub}))))"
+        )
+
+    def f_qoutlet(hw: str) -> str:
+        ratio = f"MIN(0.999,MAX(1E-6,{hw}/{D}))"
+        theta = f"2*ACOS(1-2*({ratio}))"
+        aseg = f"(({D}/2)^2/2)*(({theta})-SIN({theta}))"
+        pwet = f"({D}/2)*({theta})"
+        rh_p = f"IF(({pwet})<=0,0,({aseg})/({pwet}))"
+        q_part = (
+            f"IF({n_ref}<=0,0,(1/{n_ref})*({aseg})"
+            f"*IF(({rh_p})<=0,0,({rh_p})^(2/3))*SQRT({S0}))"
+        )
+        a_full = f"(PI()*({D}/2)^2)"
+        rh_f = f"{D}/4"
+        hloss = f"{hw}-{TW}+{S0}*{L}"
+        denom = f"(1+{Ke})/(2*{G})+({n_ref}^2)*{L}/(({rh_f})^(4/3))"
+        q_full = f"IF(({hloss})<=0,0,{a_full}*SQRT(({hloss})/({denom})))"
+        return f"IF({hw}<{D},{q_part},{q_full})"
 
     hdr_q = ["HW (m)", "WSE (m)", "Qinlet", "Qoutlet", "Q gouvernant", "Contrôle"]
     for j, h in enumerate(hdr_q, start=1):
-        wq.cell(9, j, h)
-    style_header(wq, 9, 6)
-    first_q = 10
-    for i, (hw, wse, qi, qo, qg, ctrl) in enumerate(rating_rows):
+        wq.cell(23, j, h)
+    style_header(wq, 23, 6)
+
+    first_q = 24
+    n_hw = 61  # 0.00 → 3.00 step 0.05
+    for i in range(n_hw):
         r = first_q + i
-        wq.cell(r, 1, hw).number_format = "0.00"
-        wq.cell(r, 2, wse).number_format = "0.00"
-        wq.cell(r, 3, qi).number_format = "0.000"
-        wq.cell(r, 4, qo).number_format = "0.000"
-        wq.cell(r, 5, qg).number_format = "0.000"
-        wq.cell(r, 6, ctrl)
-        for c in range(1, 7):
-            wq.cell(r, c).border = THIN
+        hw_val = round(i * 0.05, 2)
+        wq.cell(r, 1, hw_val).number_format = "0.00"
+        wq.cell(r, 1).border = THIN
+        hw = f"A{r}"
+        wq.cell(r, 2, f"={Zin}+{hw}").number_format = "0.00"
+        wq.cell(r, 2).border = THIN
+        wq.cell(r, 3, f"={f_qinlet(hw)}").number_format = "0.000"
+        wq.cell(r, 3).border = THIN
+        wq.cell(r, 4, f"={f_qoutlet(hw)}").number_format = "0.000"
+        wq.cell(r, 4).border = THIN
+        wq.cell(r, 5, f"=MIN(C{r},D{r})").number_format = "0.000"
+        wq.cell(r, 5).border = THIN
         wq.cell(r, 5).fill = GREEN
-    last_q = first_q + len(rating_rows) - 1
+        wq.cell(r, 6, f'=IF(A{r}<=0,"—",IF(C{r}<=D{r},"inlet","outlet"))').border = THIN
+    last_q = first_q + n_hw - 1
+
+    # Highlight boss stage HW = 2.40 (1.5 above crown) if present: row 24+48 = 72
+    boss_row = first_q + int(round(2.40 / 0.05))
+    if first_q <= boss_row <= last_q:
+        for c in range(1, 7):
+            if c != 5:
+                wq.cell(boss_row, c).fill = ORANGE
+        wq.cell(boss_row, 5).fill = ORANGE
 
     ch_q = LineChart()
-    ch_q.title = "Q gouvernant vs HW (Ø900)"
+    ch_q.title = "Q gouvernant vs HW (Ø900) — live"
     ch_q.y_axis.title = "Q (m³/s)"
     ch_q.x_axis.title = "HW (m)"
-    ch_q.add_data(Reference(wq, min_col=5, min_row=9, max_row=last_q), titles_from_data=True)
-    ch_q.add_data(Reference(wq, min_col=3, min_row=9, max_row=last_q), titles_from_data=True)
-    ch_q.add_data(Reference(wq, min_col=4, min_row=9, max_row=last_q), titles_from_data=True)
+    ch_q.add_data(Reference(wq, min_col=5, min_row=23, max_row=last_q), titles_from_data=True)
+    ch_q.add_data(Reference(wq, min_col=3, min_row=23, max_row=last_q), titles_from_data=True)
+    ch_q.add_data(Reference(wq, min_col=4, min_row=23, max_row=last_q), titles_from_data=True)
     ch_q.set_categories(Reference(wq, min_col=1, min_row=first_q, max_row=last_q))
-    wq.add_chart(ch_q, "H5")
+    wq.add_chart(ch_q, "L5")
 
-    for col, w in zip("ABCDEF", [10, 10, 10, 10, 14, 12]):
+    for col, w in zip("ABCDEF", [28, 14, 42, 12, 12, 12]):
         wq.column_dimensions[col].width = w
+    wq.column_dimensions["E"].width = 14
+    wq.column_dimensions["J"].width = 8
+
+    first_q, last_q = 24, 84  # live Courbe_QH_900 table rows
 
     # ---------- Calcul_B : routage avec courbe FHWA ----------
     wb2 = wb.create_sheet("Calcul_B")
@@ -475,7 +555,7 @@ def build() -> Path:
     wb2["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wb2["A2"] = (
         "H = V / Aire_bassin. Qout interpolé sur Courbe_QH_900!E (Q gouvernant). "
-        "Si V≈0, Qout = MIN(Qin, Q_plein). ΔV = (Qin_moy − Qout)·Δt."
+        "Si V≈0, Qout = MIN(Qin, Q_plein). ΔV = (Qin_moy - Qout)*Δt. La courbe Courbe_QH_900 est en formules live (changer n/L/entrée/TW)."
     )
     wb2.merge_cells("A2:G3")
     wb2["A2"].alignment = Alignment(wrap_text=True)
