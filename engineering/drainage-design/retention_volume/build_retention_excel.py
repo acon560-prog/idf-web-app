@@ -829,12 +829,16 @@ def build() -> Path:
         wm.cell(i, 1, line)
     wm.column_dimensions["A"].width = 110
 
-    # Link results from Calcul_B on Parametres
-    ws["A47"] = "Vmax_B courbe FHWA (m³)"
-    ws["B47"] = "=Calcul_B!B7"
-    ws["B47"].fill = GREEN
-    ws["B47"].number_format = "0"
-    ws["C47"] = "Routage avec Q=f(H) — dépend de Aire_bassin (B24)"
+    # Link results from Calcul_B on Parametres (below Notes block)
+    ws["A50"] = "Vmax_B courbe FHWA (m³)"
+    ws["B50"] = "=Calcul_B!B7"
+    ws["B50"].fill = GREEN
+    ws["B50"].number_format = "0"
+    ws["C50"] = "Routage avec Q=f(H) — dépend de Aire_bassin (B24)"
+    ws["A51"] = "WSEmax (rappel)"
+    ws["B51"] = "=B30"
+    ws["B51"].fill = GREEN
+    ws["C51"] = "Même valeur que B30 — niveau max depuis levé Stage_Storage"
 
     wb.save(OUT)
     return OUT
