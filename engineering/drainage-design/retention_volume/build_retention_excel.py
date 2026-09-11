@@ -384,7 +384,7 @@ def build() -> Path:
     wq["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wq["A2"] = (
         "Changez les cellules JAUNES (n, D, L, radiers, entrée, TW) : toute la table se recalcule. "
-        "Q_gouvernant = MIN(Qinlet, Qoutlet). Pas besoin de relancer Python."
+        "Q_gouvernant = MIN(Qinlet, Qoutlet) = debit retenu pour le design. Sur ce tuyau long, Q_gouvernant suit Qoutlet (courbe verte). Qinlet (rouge) est seulement la capacite d'entree — souvent plus haute."
     )
     wq.merge_cells("A2:G3")
     wq["A2"].alignment = Alignment(wrap_text=True, vertical="top")
@@ -465,21 +465,25 @@ def build() -> Path:
     G = "9.81"
 
     def f_qinlet(hw: str) -> str:
+        """HDS-5 Form-2 inverse; avoid blend dip (use unsubmerged until 1.2D, then max)."""
         A = f"(PI()*({D}/2)^2)"
         qun = (
             f"{KU}*{A}*SQRT({D})"
             f"*IF({K}*{D}<=0,0,({hw}/({K}*{D}))^(1/{M}))"
         )
+        # unsubmerged Q evaluated at HW=1.2D (switch point) — floor so curve never drops
+        qun_sw = (
+            f"{KU}*{A}*SQRT({D})"
+            f"*IF({K}*{D}<=0,0,((1.2*{D})/({K}*{D}))^(1/{M}))"
+        )
         qsub = (
             f"{KU}*{A}*SQRT({D})"
             f"*SQRT(MAX(0,({hw}/{D}-{Y})/{c}))"
         )
-        t = f"MIN(1,MAX(0,({hw}/{D}-0.95)/(1.2-0.95)))"
         return (
             f"IF({hw}<=0,0,"
-            f"IF({hw}<0.95*{D},{qun},"
-            f"IF({hw}>1.2*{D},{qsub},"
-            f"(1-({t}))*({qun})+({t})*({qsub}))))"
+            f"IF({hw}<=1.2*{D},{qun},"
+            f"MAX({qun_sw},{qsub})))"
         )
 
     def f_qoutlet(hw: str) -> str:
