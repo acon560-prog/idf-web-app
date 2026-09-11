@@ -63,24 +63,13 @@ Q_FULL_900 = q_full_manning(D_900_M, S0_900, N_MANNING)  # ≈ 1.668 m³/s
 QCAP_900_PRIOR = 1.77
 QCAP_900 = round(Q_FULL_900, 3)  # default used in routing
 QCAP_1200 = 4.93
-QPEAK_IN = 9.60
+QPEAK_REF = 9.60  # original peak used to define dimensionless shape
+QPEAK_IN = QPEAK_REF
 
-
-def insert_qcap_crossings(hydro: list[tuple[float, float]], qcap: float) -> list[tuple[float, float]]:
-    """Insert linearly interpolated times where Qin crosses qcap (up and down)."""
-    out: list[tuple[float, float]] = [hydro[0]]
-    for (t0, q0), (t1, q1) in zip(hydro, hydro[1:]):
-        crossed_up = q0 < qcap <= q1
-        crossed_dn = q0 > qcap >= q1
-        if crossed_up or crossed_dn:
-            if abs(q1 - q0) > 1e-12:
-                t_x = t0 + (qcap - q0) / (q1 - q0) * (t1 - t0)
-                out.append((round(t_x, 2), qcap))
-        out.append((t1, q1))
-    return out
-
-
-HYDRO = insert_qcap_crossings(HYDRO_RAW, QCAP_900)
+# Dimensionless shape q*(t) = Q(t)/QPEAK_REF from the project hydrograph
+HYDRO_SHAPE = [(t, q / QPEAK_REF) for t, q in HYDRO_RAW]
+# Workbook / routing rows follow the raw times (shape scaled by editable Qpointe)
+HYDRO = list(HYDRO_RAW)
 
 HEADER = Font(bold=True, color="FFFFFF")
 HEADER_FILL = PatternFill("solid", fgColor="0F5C5C")
@@ -244,46 +233,72 @@ def build() -> Path:
     for col, w in zip("ABCDEFGH", [36, 14, 55, 16, 16, 14, 12, 26]):
         ws.column_dimensions[col].width = w
 
-    # ---------- Hydrogramme ----------
+    # ---------- Hydrogramme (shape × editable Qpointe) ----------
     wh = wb.create_sheet("Hydrogramme")
-    wh["A1"] = "Hydrogramme d'entrée (point Ø1500 / entrée rétention)"
+    wh["A1"] = "Hydrogramme d'entrée (point Ø1500 / entrée rétention) — FORMULES LIVE"
     wh["A1"].font = Font(bold=True, size=12, color="0F5C5C")
-    headers = ["t (min)", "Qin (m³/s)", "Remarque"]
+    wh["A2"] = (
+        "Qin(t) = ratio(t) × Qpointe. Changez Qpointe (jaune B4) : toute la colonne Qin et Calcul_A/B se mettent à jour. "
+        "Les ratios viennent de votre hydrogramme d'origine (pointe 9,6). "
+        "À t=0, ratio≈0,081 → Qin=0,778 si Qpointe=9,6 (débit de départ du projet, pas zéro)."
+    )
+    wh.merge_cells("A2:F3")
+    wh["A2"].alignment = Alignment(wrap_text=True, vertical="top")
+
+    wh["A4"] = "Qpointe (m³/s) ← ÉDITER"
+    wh["B4"] = QPEAK_REF
+    wh["B4"].fill = YELLOW
+    wh["B4"].border = THIN
+    wh["B4"].number_format = "0.000"
+    wh["C4"] = "Ex. 9.6 = pointe projet / capacité Ø1500"
+    wh["A5"] = "t pointe (min)"
+    wh["B5"] = 22.5
+    wh["B5"].fill = YELLOW
+    wh["B5"].number_format = "0.0"
+    wh["C5"] = "Forme temporelle inchangée si vous changez seulement Qpointe"
+
+    headers = ["t (min)", "ratio Q/Qp_ref", "Qin (m³/s)", "Remarque"]
     for j, h in enumerate(headers, start=1):
-        wh.cell(3, j, h)
-    style_header(wh, 3, 3)
-    for i, (t, q) in enumerate(HYDRO, start=4):
-        wh.cell(i, 1, t).border = THIN
-        wh.cell(i, 1).number_format = "0.0"
-        wh.cell(i, 2, q).border = THIN
-        wh.cell(i, 2).number_format = "0.000"
+        wh.cell(7, j, h)
+    style_header(wh, 7, 4)
+
+    for i, (t, ratio) in enumerate(HYDRO_SHAPE):
+        r = 8 + i
+        wh.cell(r, 1, t).border = THIN
+        wh.cell(r, 1).number_format = "0.0"
+        wh.cell(r, 2, round(ratio, 6)).border = THIN
+        wh.cell(r, 2).number_format = "0.000"
+        wh.cell(r, 2).fill = BLUE
+        wh.cell(r, 3, f"=B{r}*$B$4").border = THIN
+        wh.cell(r, 3).number_format = "0.000"
         note = ""
-        if abs(q - 9.6) < 1e-6:
-            note = "Pointe"
-            wh.cell(i, 2).fill = ORANGE
-        elif abs(q - QCAP_900) < 1e-6:
-            note = "Qin = Qcap (croisement)"
-            wh.cell(i, 2).fill = BLUE
-        wh.cell(i, 3, note).border = THIN
-    last_h = 3 + len(HYDRO)
+        if abs(t - 22.5) < 1e-9:
+            note = "Pointe (ratio = 1)"
+            wh.cell(r, 3).fill = ORANGE
+        elif i == 0:
+            note = "Départ: ≈0.081 × Qpointe (0.778 si Qp=9.6)"
+        wh.cell(r, 4, note).border = THIN
+    last_h = 7 + len(HYDRO_SHAPE)
     sum_row = last_h + 2
-    wh.cell(sum_row, 1, "Qpointe (m³/s)")
-    wh.cell(sum_row, 2, f"=MAX(B4:B{last_h})")
+    wh.cell(sum_row, 1, "Qin max (contrôle)")
+    wh.cell(sum_row, 2, f"=MAX(C8:C{last_h})")
     wh.cell(sum_row, 2).fill = GREEN
-    wh.cell(sum_row + 1, 1, "t pointe (min)")
-    wh.cell(sum_row + 1, 2, 22.5)
-    wh.cell(sum_row + 1, 2).number_format = "0.0"
+    wh.cell(sum_row, 2).number_format = "0.000"
+    wh.cell(sum_row, 3, "doit égaler Qpointe")
+    wh.cell(sum_row + 1, 1, "Qcap Ø900 (réf.)")
+    wh.cell(sum_row + 1, 2, "=Parametres!B22")
+    wh.cell(sum_row + 1, 2).number_format = "0.000"
 
     chart = LineChart()
-    chart.title = "Hydrogramme Qin"
+    chart.title = "Hydrogramme Qin (scalé par Qpointe)"
     chart.style = 10
     chart.y_axis.title = "Q (m³/s)"
     chart.x_axis.title = "t (min)"
-    chart.add_data(Reference(wh, min_col=2, min_row=3, max_row=last_h), titles_from_data=True)
-    chart.set_categories(Reference(wh, min_col=1, min_row=4, max_row=last_h))
+    chart.add_data(Reference(wh, min_col=3, min_row=7, max_row=last_h), titles_from_data=True)
+    chart.set_categories(Reference(wh, min_col=1, min_row=8, max_row=last_h))
     chart.shape = 4
-    wh.add_chart(chart, "E3")
-    for col, w in zip("ABC", [12, 14, 16]):
+    wh.add_chart(chart, "F7")
+    for col, w in zip("ABCD", [12, 16, 14, 48]):
         wh.column_dimensions[col].width = w
 
     # ---------- Calcul_A : constant Qout ----------
@@ -320,14 +335,13 @@ def build() -> Path:
 
     for i, (t, q) in enumerate(HYDRO):
         r = first + i
-        # t, Qin from hydro sheet
-        wa.cell(r, 1, f"=Hydrogramme!A{4+i}").border = THIN
+        wh_row = 8 + i
+        wa.cell(r, 1, f"=Hydrogramme!A{wh_row}").border = THIN
         wa.cell(r, 1).number_format = "0.0"
-        wa.cell(r, 2, f"=Hydrogramme!B{4+i}").border = THIN
+        wa.cell(r, 2, f"=Hydrogramme!C{wh_row}").border = THIN
         wa.cell(r, 2).number_format = "0.000"
         wa.cell(r, 3, "=$B$2").border = THIN
         wa.cell(r, 3).number_format = "0.00"
-        # Signed excess: positive = filling, negative = draining (V floored at 0)
         wa.cell(r, 4, f"=B{r}-C{r}").border = THIN
         wa.cell(r, 4).number_format = "0.000"
         if i == 0:
@@ -341,19 +355,17 @@ def build() -> Path:
             wa.cell(r, 5).number_format = "0.0"
             wa.cell(r, 6, f"=0.5*(B{prev}+B{r})*E{r}").border = THIN
             wa.cell(r, 6).number_format = "0.0"
-            # Outflow volume consistent with capacity when storing; when empty, limited by Qin
             wa.cell(r, 7, f"=F{r}-(H{r}-H{prev})").border = THIN
             wa.cell(r, 7).number_format = "0.0"
-            # Level-pool with constant Qout: V = max(0, V + trap(Qin−Qout)·Δt)
             wa.cell(r, 8, f"=MAX(0,H{prev}+0.5*(D{prev}+D{r})*E{r})").border = THIN
             wa.cell(r, 8).number_format = "0.0"
         wa.cell(r, 8).fill = GREEN
         wa.cell(r, 9, f'=IF(H{r}>0.5,"oui","non")').border = THIN
 
     wa["A5"] = "t début stockage approx (min)"
-    wa["B5"] = "croisement Qin=Qcap dans Hydrogramme (~8.6 min si Q=1.668)"
+    wa["B5"] = "quand Qin dépasse Qout (dépend de Qpointe et Qcap)"
     wa["A6"] = "t fin accumulation nette (min)"
-    wa["B6"] = "croisement descendant (~45.4 min si Q=1.668)"
+    wa["B6"] = "quand Qin redescend sous Qout"
 
     # Chart storage
     ch2 = LineChart()
@@ -615,8 +627,8 @@ def build() -> Path:
 
     for i in range(n):
         r = r0 + i
-        wb2.cell(r, 1, f"=Hydrogramme!A{4+i}")
-        wb2.cell(r, 2, f"=Hydrogramme!B{4+i}")
+        wb2.cell(r, 1, f"=Hydrogramme!A{8+i}")
+        wb2.cell(r, 2, f"=Hydrogramme!C{8+i}")
         if i == 0:
             wb2.cell(r, 3, 0)
             wb2.cell(r, 4, 0)
