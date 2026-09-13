@@ -15,12 +15,14 @@ Excel pour estimer le **volume de rétention** requis en amont du Ø900 qui cont
 
 | Feuille | Contenu |
 |---------|---------|
-| **Parametres** | Géométrie, Qout, aire + **résultats A et B** (Vmax, WSEmax) |
+| **Parametres** | Géométrie, Qout, aire, fossé C + **résultats A/B/C** |
 | **Hydrogramme** | Qin(t) |
 | **Calcul_A** | Routage Qout constant |
 | **Courbe_QH_900** | Table + graphique Q=f(H) FHWA |
-| **Calcul_B** | Routage avec Q lu sur la courbe |
-| **Stage_Storage** | Surfaces levé → V(WSE) → lecture WSEmax |
+| **Calcul_B** | Routage pipe seul Q=f(H) |
+| **Compose_900** | Q_900 + Q_overflow; V_pond + V_ditch |
+| **Calcul_C** | Routage composé (crest = crown, trapèze) |
+| **Stage_Storage** | Surfaces levé → V(WSE) → lecture WSEmax A/B |
 | **Fichiers_lies** | Où sont les anciens Excel « HY-8 » |
 | **Methode** | Rappels |
 
