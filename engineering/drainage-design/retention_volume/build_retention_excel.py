@@ -185,45 +185,87 @@ def build() -> Path:
     ws["B24"].number_format = "0"
     ws["C24"] = "Aire plan d'eau approx. pour H = V/A (Méthode B)"
 
-    ws["A26"] = "Résultats (formules — feuille Calcul_A)"
+    def wse_from_v(cell_ref: str) -> str:
+        """Interpolate V → WSE on Stage_Storage V_cumul (E11:E18) → WSE (A11:A18)."""
+        return (
+            f'=IF({cell_ref}<=Stage_Storage!E11,Stage_Storage!A11,'
+            f'IF({cell_ref}>=Stage_Storage!E18,"Hors table (>=39.5 m — étendre levé)",'
+            f'INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1))'
+            f'+({cell_ref}-INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)))'
+            f'/(INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)+1)'
+            f'-INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)))'
+            f'*(INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)+1)'
+            f'-INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)))))'
+        )
+
+    ws["A26"] = "Résultats Méthode A — Qout constant (feuille Calcul_A)"
     ws["A26"].font = Font(bold=True)
-    ws["A27"] = "Vmax (m³)"
+    ws["A27"] = "Vmax_A (m³)"
     ws["B27"] = "=Calcul_A!B3"
     ws["B27"].fill = GREEN
     ws["B27"].number_format = "0"
-    ws["A28"] = "V_dimensionnement = Vmax × facteur (m³)"
+    ws["C27"] = "Volume max stocké avec Qout fixe (Parametres B22)"
+    ws["A28"] = "V_dimensionnement_A = Vmax_A × facteur (m³)"
     ws["B28"] = "=B27*B23"
     ws["B28"].fill = GREEN
     ws["B28"].number_format = "0"
-    ws["A29"] = "Hmax approx (m) = Vmax / Aire"
+    ws["A29"] = "Hmax approx_A (m) = Vmax_A / Aire"
     ws["B29"] = "=IF(B24>0,B27/B24,0)"
     ws["B29"].fill = BLUE
     ws["B29"].number_format = "0.00"
-    ws["C29"] = "Estimation grossière si l'aire de bassin est constante"
+    ws["C29"] = "Estimation grossière si l'aire de bassin est constante (pas le levé)"
 
-    ws["A30"] = "WSEmax depuis levé (m) — feuille Stage_Storage"
-    # Interpolate Vmax (B27) on Stage_Storage V_cumul (E11:E18) → WSE (A11:A18)
-    ws["B30"] = (
-        '=IF(B27<=Stage_Storage!E11,Stage_Storage!A11,'
-        'IF(B27>=Stage_Storage!E18,"Hors table (>=39.5 m — étendre levé)",'
-        'INDEX(Stage_Storage!$A$11:$A$18,MATCH(B27,Stage_Storage!$E$11:$E$18,1))'
-        '+(B27-INDEX(Stage_Storage!$E$11:$E$18,MATCH(B27,Stage_Storage!$E$11:$E$18,1)))'
-        '/(INDEX(Stage_Storage!$E$11:$E$18,MATCH(B27,Stage_Storage!$E$11:$E$18,1)+1)'
-        '-INDEX(Stage_Storage!$E$11:$E$18,MATCH(B27,Stage_Storage!$E$11:$E$18,1)))'
-        '*(INDEX(Stage_Storage!$A$11:$A$18,MATCH(B27,Stage_Storage!$E$11:$E$18,1)+1)'
-        '-INDEX(Stage_Storage!$A$11:$A$18,MATCH(B27,Stage_Storage!$E$11:$E$18,1)))))'
-    )
+    ws["A30"] = "WSEmax_A depuis levé (m) — feuille Stage_Storage"
+    ws["B30"] = wse_from_v("B27")
     ws["B30"].fill = GREEN
     ws["B30"].number_format = "0.00"
-    ws["C30"] = "Niveau d'eau max lu sur courbe volume–cote du levé (recommandé)"
-    ws["A31"] = "HW max = WSEmax − radier Ø900 (m)"
+    ws["C30"] = (
+        "Cote d'eau max pour le Vmax_A: on lit sur Stage_Storage quelle WSE "
+        "donne ce volume (courbe volume–cote du levé)"
+    )
+    ws["A31"] = "HW max_A = WSEmax_A − radier Ø900 (m)"
     ws["B31"] = '=IF(ISNUMBER(B30),B30-34.88,"")'
     ws["B31"].fill = GREEN
     ws["B31"].number_format = "0.00"
     ws["C31"] = "Comparer à 2.40 m (limite patron = +1.5 m au-dessus du crown)"
 
-    ws["A33"] = "Inlet control vs outlet control — qu'est-ce que ça veut dire?"
+    ws["A33"] = "Résultats Méthode B — Qout = f(H) FHWA (feuille Calcul_B)"
     ws["A33"].font = Font(bold=True)
+    ws["A34"] = "Vmax_B (m³)"
+    ws["B34"] = "=Calcul_B!B7"
+    ws["B34"].fill = GREEN
+    ws["B34"].number_format = "0"
+    ws["C34"] = "Volume max stocké avec Q lu sur Courbe_QH_900 (dépend de Aire B24)"
+    ws["A35"] = "V_dimensionnement_B = Vmax_B × facteur (m³)"
+    ws["B35"] = "=B34*B23"
+    ws["B35"].fill = GREEN
+    ws["B35"].number_format = "0"
+    ws["A36"] = "WSEmax_B depuis levé (m) — feuille Stage_Storage"
+    ws["B36"] = wse_from_v("B34")
+    ws["B36"].fill = GREEN
+    ws["B36"].number_format = "0.00"
+    ws["C36"] = "Même lecture volume→cote que B30, mais avec Vmax_B au lieu de Vmax_A"
+    ws["A37"] = "HW max_B = WSEmax_B − radier Ø900 (m)"
+    ws["B37"] = '=IF(ISNUMBER(B36),B36-34.88,"")'
+    ws["B37"].fill = GREEN
+    ws["B37"].number_format = "0.00"
+    ws["C37"] = "Comparer à 2.40 m (limite patron)"
+
+    ws["A39"] = "Comment lire WSEmax (A ou B)"
+    ws["A39"].font = Font(bold=True)
+    wse_help = [
+        "1) Calcul_A (ou B) donne un volume max stocké Vmax pendant l'orage.",
+        "2) La feuille Stage_Storage convertit vos surfaces de levé en courbe: volume cumulé ↔ cote d'eau (WSE).",
+        "3) WSEmax = la cote sur cette courbe qui correspond à ce Vmax (interpolation).",
+        "   Exemple: si Vmax_A ≈ volume entre 37.28 m et 39.5 m sur le levé → WSEmax_A ≈ 38.75 m.",
+        "4) Ce n'est PAS une cote saisie à la main: c'est Vmax lu sur le levé. Hmax≈V/Aire (B29) est plus grossier.",
+    ]
+    for i, line in enumerate(wse_help, start=40):
+        ws.cell(i, 1, line)
+        ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
+
+    ws["A46"] = "Inlet control vs outlet control — qu'est-ce que ça veut dire?"
+    ws["A46"].font = Font(bold=True)
     ic_oc = [
         "• Inlet control (contrôle à l'entrée): le débit est limité par l'entrée du ponceau (forme d'entrée, HW/D).",
         "  Le tuyau aval « n'aspire » pas assez pour influencer — Q dépend surtout de la charge amont H, pas de L ni de n.",
@@ -234,21 +276,21 @@ def build() -> Path:
         "  en général prudent (si la charge monte, le débit réel peut être un peu plus élevé → Vmax un peu plus bas).",
         "• On n'a pas besoin de trancher IC/OC pour utiliser ce classeur: garder Qout = Q_plein (ou 1.77) suffit pour une 1re estimation.",
     ]
-    for i, line in enumerate(ic_oc, start=34):
+    for i, line in enumerate(ic_oc, start=47):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
-    ws["A43"] = "Notes"
-    ws["A43"].font = Font(bold=True)
+    ws["A56"] = "Notes"
+    ws["A56"].font = Font(bold=True)
     notes = [
         "• Méthode A: Qout fixe = Q_plein Manning Ø900 (n=0,013). Pas un jugement IC/OC complet.",
         "• Le stockage commence quand Qin dépasse Qout; Vmax = max du volume stocké (pas (Qp−Qout)×durée).",
-        "• Méthode B: Qout = f(H) depuis feuille Courbe_QH_900 (FHWA inlet+outlet).",
+        "• Méthode B: Qout = f(H) depuis feuille Courbe_QH_900 (FHWA inlet+outlet) — résultats en B34–B37.",
         "• Voir feuille Fichiers_lies pour les anciens Excel HY-8 / ponceau+fossé.",
         "• Vérifier que le radier amont Ø900 (34.88) est bien le fond de la zone de rétention étudiée.",
-        "• Niveau max (WSEmax): feuille Stage_Storage + case Parametres!B30 (Vmax → cote du levé).",
+        "• WSEmax_A = B30 (depuis Vmax_A); WSEmax_B = B36 (depuis Vmax_B); les deux lisent Stage_Storage.",
     ]
-    for i, line in enumerate(notes, start=44):
+    for i, line in enumerate(notes, start=57):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
@@ -681,9 +723,9 @@ def build() -> Path:
     wss["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wss["A2"] = (
         "PROCÉDURE (dans CE fichier): "
-        "1) Routage → Vmax sur Parametres (Calcul_A ou B). "
+        "1) Routage → Vmax_A / Vmax_B sur Parametres (Calcul_A et Calcul_B). "
         "2) Cette feuille calcule V cumulé vs NSE/WSE à partir des surfaces du levé (jaune). "
-        "3) Parametres!B30 interpolates Vmax → WSEmax. "
+        "3) Parametres!B30 = WSEmax_A (depuis Vmax_A); B36 = WSEmax_B (depuis Vmax_B). "
         "Remplacez les surfaces jaunes par vos polygones; 543 m² @ 37.28 et 1932 m² @ 39.5 sont vos mesures."
     )
     wss.merge_cells("A2:G4")
@@ -742,28 +784,36 @@ def build() -> Path:
                 if c != 2:
                     wss.cell(r, c).fill = ORANGE
 
-    wss["A21"] = "Vmax (depuis Calcul_A)"
+    wss["A21"] = "Vmax_A (Calcul_A)"
     wss["B21"] = "=Parametres!B27"
     wss["B21"].fill = GREEN
     wss["B21"].number_format = "0"
-    wss["A22"] = "WSEmax correspondant (m)"
+    wss["A22"] = "WSEmax_A (m)"
     wss["B22"] = "=Parametres!B30"
     wss["B22"].fill = GREEN
-    wss["A23"] = "V disponible à 37.28 m (m³)"
-    wss["B23"] = "=E16"
-    wss["B23"].fill = BLUE
+    wss["A23"] = "Vmax_B (Calcul_B)"
+    wss["B23"] = "=Parametres!B34"
+    wss["B23"].fill = GREEN
     wss["B23"].number_format = "0"
-    wss["C23"] = "Si Vmax > cette valeur → le niveau dépasse la limite patron"
+    wss["A24"] = "WSEmax_B (m)"
+    wss["B24"] = "=Parametres!B36"
+    wss["B24"].fill = GREEN
+    wss["A25"] = "V disponible à 37.28 m (m³)"
+    wss["B25"] = "=E16"
+    wss["B25"].fill = BLUE
+    wss["B25"].number_format = "0"
+    wss["C25"] = "Si Vmax_A ou Vmax_B > cette valeur → le niveau dépasse la limite patron"
 
-    wss["A25"] = "Comment lire le résultat"
-    wss["A25"].font = Font(bold=True)
-    wss["A26"] = (
-        "Exemple: si Vmax = 5609 m³ et V(37.28)≈558 m³, alors WSEmax est au-dessus de 37.28 m "
+    wss["A27"] = "Comment lire le résultat"
+    wss["A27"].font = Font(bold=True)
+    wss["A28"] = (
+        "Exemple: si Vmax_A = 5609 m³ et V(37.28)≈558 m³, alors WSEmax_A est au-dessus de 37.28 m "
         "(la table ira vers 39.5 m ou 'Hors table'). "
-        "Affinez en entrant les vraies surfaces aux cotes intermédiaires (jaune)."
+        "Affinez en entrant les vraies surfaces aux cotes intermédiaires (jaune). "
+        "Parametres montre WSEmax_A (B30) et WSEmax_B (B36) séparément."
     )
-    wss.merge_cells("A26:F28")
-    wss["A26"].alignment = Alignment(wrap_text=True)
+    wss.merge_cells("A28:F30")
+    wss["A28"].alignment = Alignment(wrap_text=True)
 
     ch = LineChart()
     ch.title = "V cumulé vs WSE (levé)"
@@ -821,24 +871,13 @@ def build() -> Path:
         "6. Sur ce Ø900 (L/D≈56), le calcul FHWA indique surtout un contrôle outlet.",
         "7. Le Ø1200 est aval: n'augmente pas la sortie de la rétention.",
         "",
-        "8. Niveau d'eau max: Stage_Storage (surfaces levé) + Parametres!B30 = WSEmax.",
+        "8. Niveau d'eau max: Stage_Storage + Parametres!B30 (WSEmax_A) et B36 (WSEmax_B).",
         "",
         "Fichiers liés / anciens Excel: voir feuille Fichiers_lies.",
     ]
     for i, line in enumerate(lines, start=2):
         wm.cell(i, 1, line)
     wm.column_dimensions["A"].width = 110
-
-    # Link results from Calcul_B on Parametres (below Notes block)
-    ws["A50"] = "Vmax_B courbe FHWA (m³)"
-    ws["B50"] = "=Calcul_B!B7"
-    ws["B50"].fill = GREEN
-    ws["B50"].number_format = "0"
-    ws["C50"] = "Routage avec Q=f(H) — dépend de Aire_bassin (B24)"
-    ws["A51"] = "WSEmax (rappel)"
-    ws["B51"] = "=B30"
-    ws["B51"].fill = GREEN
-    ws["C51"] = "Même valeur que B30 — niveau max depuis levé Stage_Storage"
 
     wb.save(OUT)
     return OUT
