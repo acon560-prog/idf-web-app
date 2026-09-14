@@ -75,7 +75,7 @@ CROWN_900 = Z_US_900 + D_900_M  # 35.78 m = crest
 OVERFLOW_B = 2.0  # m bottom width at crown
 OVERFLOW_N = 0.035
 OVERFLOW_Z = 2.0  # H:V side slope (z=2 → 2H:1V)
-OVERFLOW_S = 0.085
+OVERFLOW_S = 0.0085  # ≈ pipe bed slope (user correction; was 0.085 by mistake)
 OVERFLOW_L = 50.1  # m length for V_ditch and channel reach
 
 # Dimensionless shape q*(t) = Q(t)/QPEAK_REF from the project hydrograph
@@ -154,23 +154,28 @@ def build() -> Path:
     ws["C13"] = "Fourni (béton typique ~0,012–0,015)"
     ws["A14"] = "D (m)"
     ws["B14"] = D_900_M
+    ws["B14"].fill = YELLOW
+    ws["B14"].border = THIN
     ws["B14"].number_format = "0.00"
-    ws["A15"] = "S0 = (Zamont−Zaval)/L"
-    ws["B15"] = S0_900
+    ws["A15"] = "S0 = (Zamont-Zaval)/L"
+    ws["B15"] = "=(D6-E6)/F6"
+    ws["B15"].fill = BLUE
     ws["B15"].number_format = "0.00000"
-    ws["C15"] = "=(D6-E6)/F6"  # live formula; ASCII minus only (LibreOffice-safe)
+    ws["C15"] = "Formule live depuis tableau géométrie Ø900"
     ws["A16"] = "A = πD²/4 (m²)"
-    ws["B16"] = math.pi * D_900_M**2 / 4
+    ws["B16"] = "=PI()*B14^2/4"
+    ws["B16"].fill = BLUE
     ws["B16"].number_format = "0.000"
     ws["A17"] = "R = D/4 (m)"
-    ws["B17"] = D_900_M / 4
+    ws["B17"] = "=B14/4"
+    ws["B17"].fill = BLUE
     ws["B17"].number_format = "0.000"
     ws["A18"] = "Q_plein = (1/n)·A·R^(2/3)·√S0"
-    ws["B18"] = Q_FULL_900
+    ws["B18"] = "=(1/B13)*B16*(B17^(2/3))*SQRT(B15)"
     ws["B18"].fill = GREEN
     ws["B18"].border = THIN
     ws["B18"].number_format = "0.000"
-    ws["C18"] = "m³/s — capacité pleine section (hypothèse actuelle)"
+    ws["C18"] = "m³/s — formule live (changez n ou géométrie → Q se met à jour)"
     ws["A19"] = "Q utilisé avant (m³/s)"
     ws["B19"] = QCAP_900_PRIOR
     ws["B19"].number_format = "0.00"
@@ -179,11 +184,11 @@ def build() -> Path:
     ws["A21"] = "Entrées de calcul rétention (jaune)"
     ws["A21"].font = Font(bold=True)
     ws["A22"] = "Qout_cap_900 (m³/s)"
-    ws["B22"] = QCAP_900
+    ws["B22"] = "=B18"
     ws["B22"].fill = YELLOW
     ws["B22"].border = THIN
     ws["B22"].number_format = "0.000"
-    ws["C22"] = "Par défaut = Q_plein Manning. Mettre 1.77 pour retrouver l'ancien calcul."
+    ws["C22"] = "Par défaut = Q_plein (B18). Écraser par 1.77 si besoin (ancien calcul)."
     ws["A23"] = "Facteur_securite (-)"
     ws["B23"] = 1.20
     ws["B23"].fill = YELLOW
@@ -225,7 +230,8 @@ def build() -> Path:
     ws["B31"] = OVERFLOW_S
     ws["B31"].fill = YELLOW
     ws["B31"].border = THIN
-    ws["B31"].number_format = "0.000"
+    ws["B31"].number_format = "0.0000"
+    ws["C31"] = "≈0.0085 (corrigé; pente type lit Ø900 — pas 0.085)"
     ws["A32"] = "L fossé (m)"
     ws["B32"] = OVERFLOW_L
     ws["B32"].fill = YELLOW
