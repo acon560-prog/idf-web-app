@@ -1,4 +1,32 @@
-# Volume de rétention — ponceau Ø900
+# Volume de rétention
+
+## Nouveau (sans Ø900) — fichier principal actuel
+
+`Volume_Retention_Sans_900.xlsx` — le client **élimine le Ø900** pour agrandir le bassin.
+
+```
+Ø1500 (in) → bassin agrandi → Ø1200 (contrôle) [+ overflow optionnel sur crest]
+```
+
+| Feuille | Contenu |
+|---------|---------|
+| **Parametres** | Géométrie Ø1200, crest/fossé, résultats A/B/C (jaune = entrées) |
+| **Hydrogramme** | Qin(t) live |
+| **Calcul_A** | Qout = Q_plein Ø1200 constant |
+| **Courbe_QH_1200** | Q=f(H) FHWA live + graphique |
+| **Calcul_B** | Routage pipe Ø1200 |
+| **Stage_Storage** | Surfaces levé (aires plus grandes à éditer) |
+| **Compose_1200** | Q_1200 + Q_overflow; V_pond + V_ditch |
+| **Calcul_C** | Routage composé |
+| **Methode** | Hypothèses |
+
+```bash
+python3 build_retention_no_900_excel.py
+```
+
+---
+
+# Ancien — ponceau Ø900 (conservé pour comparaison)
 
 Excel pour estimer le **volume de rétention** requis en amont du Ø900 qui contrôle la sortie.
 
