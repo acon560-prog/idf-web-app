@@ -200,7 +200,7 @@ def build() -> Path:
     def wse_from_v(cell: str) -> str:
         return (
             f'=IF({cell}<=Stage_Storage!E11,Stage_Storage!A11,'
-            f'IF({cell}>=Stage_Storage!E18,"Hors table — etendre leve",'
+            f'IF({cell}>=Stage_Storage!E18,"Hors table (>=40.0 m — etendre leve)",'
             f'INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell},Stage_Storage!$E$11:$E$18,1))'
             f'+({cell}-INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell},Stage_Storage!$E$11:$E$18,1)))'
             f'/(INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell},Stage_Storage!$E$11:$E$18,1)+1)'
@@ -562,7 +562,9 @@ def build() -> Path:
     wss["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wss["A2"] = (
         "V_pas = 0.5*(A_bas+A_haut)*dWSE. Remplacez les aires par votre nouveau leve "
-        "(plus d'aire attendue sans emprise Ø900). 37.28 m = ancienne limite patron."
+        "(plus d'aire attendue sans emprise Ø900). "
+        "Surfaces jaunes synchronisees avec votre copie locale (sept. 2026). "
+        "37.28 m = cote cle / limite patron."
     )
     wss.merge_cells("A2:F3")
     wss["A2"].alignment = Alignment(wrap_text=True)
@@ -573,16 +575,16 @@ def build() -> Path:
         wss.cell(10, j, h)
     style_header(wss, 10, 6)
 
-    # Slightly larger placeholder areas than old Ø900 pond (illustrative)
+    # Synced with user's local Stage_Storage edits (do not overwrite casually)
     stages = [
         (Z_POND, 0, "Fond bassin"),
         (35.50, 120, "Placeholder — remplacer"),
-        (36.00, 280, "Placeholder — remplacer"),
+        (36.01, 419, "Placeholder — remplacer"),
         (36.50, 480, "Placeholder — remplacer"),
         (37.00, 720, "Placeholder — remplacer"),
-        (37.28, 850, "Limite patron (ex) — a recalibrer"),
-        (37.50, 1100, "Placeholder — remplacer"),
-        (39.50, 2800, "Placeholder haut — remplacer"),
+        (37.28, 2198, "Limite patron / cote cle"),
+        (37.40, 1516, "Placeholder — remplacer"),
+        (40.00, 3746, "Placeholder haut — remplacer"),
     ]
     for i, (wse, area, role) in enumerate(stages):
         r = 11 + i
@@ -700,7 +702,7 @@ def build() -> Path:
         wc.cell(12, j, h)
     style_header(wc, 12, 10)
 
-    wse0, wse1, step = Z_POND, 39.50, 0.10
+    wse0, wse1, step = Z_POND, 40.00, 0.10
     n_comp = int(round((wse1 - wse0) / step)) + 1
     c0 = 13
     for i in range(n_comp):
