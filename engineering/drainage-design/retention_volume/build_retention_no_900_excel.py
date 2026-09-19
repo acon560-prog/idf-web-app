@@ -582,7 +582,7 @@ def build() -> Path:
         (36.01, 419, "Placeholder — remplacer"),
         (36.50, 480, "Placeholder — remplacer"),
         (37.00, 720, "Placeholder — remplacer"),
-        (37.28, 2198, "Limite patron / cote cle"),
+        (37.28, 2198, ""),  # Role left empty (user erased "Limite patron / cote cle")
         (37.40, 1516, "Placeholder — remplacer"),
         (40.00, 3746, "Placeholder haut — remplacer"),
     ]
