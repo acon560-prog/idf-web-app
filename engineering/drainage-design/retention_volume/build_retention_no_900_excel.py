@@ -563,8 +563,8 @@ def build() -> Path:
     wss["A2"] = (
         "V_pas = 0.5*(A_bas+A_haut)*dWSE. Remplacez les aires par votre nouveau leve "
         "(plus d'aire attendue sans emprise Ø900). "
-        "Surfaces jaunes synchronisees avec votre copie locale (sept. 2026). "
-        "37.28 m = cote cle / limite patron."
+        "Surfaces jaunes synchronisees avec votre copie locale. "
+        "Ligne 37.28 m: Role laisse vide (comme votre fichier local)."
     )
     wss.merge_cells("A2:F3")
     wss["A2"].alignment = Alignment(wrap_text=True)
@@ -582,7 +582,7 @@ def build() -> Path:
         (36.01, 419, "Placeholder — remplacer"),
         (36.50, 480, "Placeholder — remplacer"),
         (37.00, 720, "Placeholder — remplacer"),
-        (37.28, 2198, ""),  # Role left empty (user erased "Limite patron / cote cle")
+        (37.28, 2198, None),  # Role must stay blank
         (37.40, 1516, "Placeholder — remplacer"),
         (40.00, 3746, "Placeholder haut — remplacer"),
     ]
@@ -601,7 +601,7 @@ def build() -> Path:
             wss.cell(r, 4, f"=0.5*(B{prev}+B{r})*C{r}").number_format = "0.0"
             wss.cell(r, 5, f"=E{prev}+D{r}").number_format = "0.0"
             wss.cell(r, 5).fill = GREEN
-        wss.cell(r, 6, role)
+        wss.cell(r, 6, "" if role is None else role)
         for c in range(1, 7):
             wss.cell(r, c).border = THIN
         if abs(wse - 37.28) < 1e-9:
