@@ -1,6 +1,24 @@
 # Volume de rétention
 
-## Nouveau (sans Ø900) — fichier principal actuel
+## FILE 1 — Composite Ø1200 + fosse trapèze (nouveau)
+
+`Retention_1200_File1_Composite.xlsx` — **Idée 1 seule** (fichier séparé).
+
+```
+Qin → bassin amont Ø1200 → Qout = Q_1200(WSE) + Q_overflow_trapèze(WSE ≥ crest)
+```
+
+Résultats: WSEmax, Vmax, Q_1200 / Q_overflow / Q_down à la pointe.
+
+```bash
+python3 build_retention_file1_composite.py
+```
+
+Fichiers suivants (pas encore): File 2 comparaison · File 3 séries temporelles · File 4 sensibilité crest.
+
+---
+
+## Nouveau (sans Ø900) — classeur général
 
 `Volume_Retention_Sans_900.xlsx` — le client **élimine le Ø900** pour agrandir le bassin.
 
