@@ -156,52 +156,70 @@ def build() -> Path:
     ws["B28"].border = THIN
     ws["B28"].number_format = "0.00"
 
-    # Results from Calcul
+    # Results from Calcul — hold volume vs overflow volume
     ws["A30"] = "RESULTATS FILE 1 (Calcul_Composite)"
     ws["A30"].font = Font(bold=True, size=12, color="0F5C5C")
-    ws["A31"] = "Vmax (m3) = max(V_pond + V_ditch)"
+
+    ws["A31"] = "V_hold = Vmax (m3) — a retenir a l'entree Ø1200"
     ws["B31"] = "=Calcul_Composite!B7"
     ws["B31"].fill = GREEN
+    ws["B31"].border = THIN
     ws["B31"].number_format = "0.0"
-    ws["A32"] = "V_dimensionnement = Vmax × facteur"
+    ws["C31"] = "Volume max stocke dans le bassin (ce qu'il faut retenir)"
+
+    ws["A32"] = "V_dimensionnement = V_hold × facteur"
     ws["B32"] = "=B31*B28"
     ws["B32"].fill = GREEN
     ws["B32"].number_format = "0.0"
-    ws["A33"] = "WSEmax (m)"
-    ws["B33"] = "=Calcul_Composite!B8"
+
+    ws["A33"] = "V_overflow (m3) — volume qui a debordé par la fosse"
+    ws["B33"] = "=Calcul_Composite!B13"
     ws["B33"].fill = GREEN
-    ws["B33"].number_format = "0.00"
-    ws["C33"] = "Niveau max amont Ø1200"
-    ws["A34"] = "Overflow atteint?"
-    ws["B34"] = '=IF(B33>B21,"OUI — WSE > crest","NON — pipe seul")'
-    ws["B34"].fill = ORANGE
-    ws["A35"] = "Q_1200 a la pointe de Qout (m3/s)"
-    ws["B35"] = "=Calcul_Composite!B10"
-    ws["B35"].fill = GREEN
-    ws["B35"].number_format = "0.000"
-    ws["A36"] = "Q_overflow a la pointe de Qout (m3/s)"
-    ws["B36"] = "=Calcul_Composite!B11"
+    ws["B33"].border = THIN
+    ws["B33"].number_format = "0.0"
+    ws["C33"] = "Σ Q_overflow × dt — PAS le volume a retenir (part parti a l'aval)"
+
+    ws["A34"] = "WSEmax (m)"
+    ws["B34"] = "=Calcul_Composite!B8"
+    ws["B34"].fill = GREEN
+    ws["B34"].number_format = "0.00"
+    ws["C34"] = "Niveau max amont Ø1200"
+
+    ws["A35"] = "Overflow atteint?"
+    ws["B35"] = '=IF(B34>B21,"OUI — WSE > crest","NON — pipe seul")'
+    ws["B35"].fill = ORANGE
+
+    ws["A36"] = "Q_1200 a la pointe de Qout (m3/s)"
+    ws["B36"] = "=Calcul_Composite!B10"
     ws["B36"].fill = GREEN
     ws["B36"].number_format = "0.000"
-    ws["A37"] = "Q_down max = Q_1200 + Q_overflow (m3/s)"
-    ws["B37"] = "=Calcul_Composite!B9"
-    ws["B37"].fill = GREEN
-    ws["B37"].border = THIN
-    ws["B37"].number_format = "0.000"
-    ws["C37"] = "Pointe vue a l'aval"
-    ws["A38"] = "HW max = WSEmax − Zin (m)"
-    ws["B38"] = '=IF(ISNUMBER(B33),B33-B12,"")'
-    ws["B38"].fill = GREEN
-    ws["B38"].number_format = "0.00"
 
-    ws["A40"] = "Message cle"
-    ws["A40"].font = Font(bold=True)
-    ws["A41"] = (
-        "Si overflow OUI: l'aval recoit la somme pipe + fosse. "
-        "WSEmax est le niveau dans le bassin amont du Ø1200 (eau retenue a l'entree)."
+    ws["A37"] = "Q_overflow a la pointe de Qout (m3/s)"
+    ws["B37"] = "=Calcul_Composite!B11"
+    ws["B37"].fill = GREEN
+    ws["B37"].number_format = "0.000"
+
+    ws["A38"] = "Q_down max = Q_1200 + Q_overflow (m3/s)"
+    ws["B38"] = "=Calcul_Composite!B9"
+    ws["B38"].fill = GREEN
+    ws["B38"].border = THIN
+    ws["B38"].number_format = "0.000"
+    ws["C38"] = "Pointe vue a l'aval"
+
+    ws["A39"] = "HW max = WSEmax − Zin (m)"
+    ws["B39"] = '=IF(ISNUMBER(B34),B34-B12,"")'
+    ws["B39"].fill = GREEN
+    ws["B39"].number_format = "0.00"
+
+    ws["A41"] = "Message cle"
+    ws["A41"].font = Font(bold=True)
+    ws["A42"] = (
+        "V_hold (B31) = volume a retenir a l'entree du Ø1200. "
+        "V_overflow (B33) = volume qui est parti par la fosse (pas a stocker). "
+        "Si overflow OUI: l'aval recoit pipe + fosse."
     )
-    ws.merge_cells("A41:F42")
-    ws["A41"].alignment = Alignment(wrap_text=True)
+    ws.merge_cells("A42:F43")
+    ws["A42"].alignment = Alignment(wrap_text=True)
 
     for col, w in zip("ABCDEF", [42, 14, 40, 12, 12, 12]):
         ws.column_dimensions[col].width = w
@@ -286,12 +304,15 @@ def build() -> Path:
                 if c != 2:
                     wss.cell(r, c).fill = ORANGE
 
-    wss["A21"] = "Vmax / WSEmax (FILE 1)"
+    wss["A21"] = "V_hold / WSEmax (FILE 1)"
     wss["B21"] = "=Parametres!B31"
-    wss["C21"] = "=Parametres!B33"
-    wss["A22"] = "V @ 37.28 m"
-    wss["B22"] = "=E16"
+    wss["C21"] = "=Parametres!B34"
+    wss["A22"] = "V_overflow (m3)"
+    wss["B22"] = "=Parametres!B33"
     wss["B22"].fill = BLUE
+    wss["A23"] = "V @ 37.28 m"
+    wss["B23"] = "=E16"
+    wss["B23"].fill = BLUE
 
     ch_s = LineChart()
     ch_s.title = "V cumul vs WSE"
@@ -569,11 +590,12 @@ def build() -> Path:
             f'(INDEX({y_rng},{m}+1)-INDEX({y_rng},{m}))))'
         )
 
-    r0c = 14
-    wc2["A7"] = "Vmax (m3)"
+    r0c = 15
+    wc2["A7"] = "V_hold = Vmax (m3)"
     wc2["B7"] = f"=MAX(F{r0c}:F{r0c+n-1})"
     wc2["B7"].fill = GREEN
     wc2["B7"].number_format = "0.0"
+    wc2["C7"] = "Volume a retenir a l'entree Ø1200"
     wc2["A8"] = "WSEmax (m)"
     wc2["B8"] = f"=MAX(C{r0c}:C{r0c+n-1})"
     wc2["B8"].fill = GREEN
@@ -582,7 +604,6 @@ def build() -> Path:
     wc2["B9"] = f"=MAX(D{r0c}:D{r0c+n-1})"
     wc2["B9"].fill = GREEN
     wc2["B9"].number_format = "0.000"
-    # At timestep of max Qout, report split — approximate via MATCH on Qout column
     wc2["A10"] = "Q_1200 at Q_down max (m3/s)"
     wc2["B10"] = (
         f'=IFERROR(INDEX(G{r0c}:G{r0c+n-1},MATCH(B9,D{r0c}:D{r0c+n-1},0)),0)'
@@ -597,12 +618,18 @@ def build() -> Path:
     wc2["B11"].number_format = "0.000"
     wc2["A12"] = "Overflow?"
     wc2["B12"] = '=IF(B8>$B$5,"oui","non")'
+    wc2["A13"] = "V_overflow (m3) = Σ Q_overflow × dt"
+    wc2["B13"] = f"=SUMPRODUCT(H{r0c}:H{r0c+n-1},E{r0c}:E{r0c+n-1})"
+    wc2["B13"].fill = GREEN
+    wc2["B13"].border = THIN
+    wc2["B13"].number_format = "0.0"
+    wc2["C13"] = "Volume cumule parti par la fosse (pas a stocker)"
 
     for j, h in enumerate(
         ["t", "Qin", "WSE", "Qout", "dt", "V", "Q_1200", "Q_overflow", "Overflow?"], 1
     ):
-        wc2.cell(13, j, h)
-    hdr(wc2, 13, 9)
+        wc2.cell(14, j, h)
+    hdr(wc2, 14, 9)
 
     for i in range(n):
         r = r0c + i
@@ -639,16 +666,16 @@ def build() -> Path:
 
     ch_cc = LineChart()
     ch_cc.title = "FILE 1 — WSE(t) et Qout(t)"
-    ch_cc.add_data(Reference(wc2, min_col=3, min_row=13, max_row=r0c + n - 1), titles_from_data=True)
-    ch_cc.add_data(Reference(wc2, min_col=4, min_row=13, max_row=r0c + n - 1), titles_from_data=True)
+    ch_cc.add_data(Reference(wc2, min_col=3, min_row=14, max_row=r0c + n - 1), titles_from_data=True)
+    ch_cc.add_data(Reference(wc2, min_col=4, min_row=14, max_row=r0c + n - 1), titles_from_data=True)
     ch_cc.set_categories(Reference(wc2, min_col=1, min_row=r0c, max_row=r0c + n - 1))
     wc2.add_chart(ch_cc, "K3")
 
     ch_split = LineChart()
     ch_split.title = "Split aval: Q_1200 vs Q_overflow"
-    ch_split.add_data(Reference(wc2, min_col=7, min_row=13, max_row=r0c + n - 1), titles_from_data=True)
-    ch_split.add_data(Reference(wc2, min_col=8, min_row=13, max_row=r0c + n - 1), titles_from_data=True)
-    ch_split.add_data(Reference(wc2, min_col=4, min_row=13, max_row=r0c + n - 1), titles_from_data=True)
+    ch_split.add_data(Reference(wc2, min_col=7, min_row=14, max_row=r0c + n - 1), titles_from_data=True)
+    ch_split.add_data(Reference(wc2, min_col=8, min_row=14, max_row=r0c + n - 1), titles_from_data=True)
+    ch_split.add_data(Reference(wc2, min_col=4, min_row=14, max_row=r0c + n - 1), titles_from_data=True)
     ch_split.set_categories(Reference(wc2, min_col=1, min_row=r0c, max_row=r0c + n - 1))
     wc2.add_chart(ch_split, "K18")
 
@@ -671,9 +698,13 @@ def build() -> Path:
             "V(WSE) = V_pond(Stage_Storage) + V_ditch (A_trapèze × L)",
             "",
             "Resultats cles (Parametres):",
+            "  • V_hold (B31) = volume a RETENIR a l'entree du Ø1200 (m3)",
+            "  • V_overflow (B33) = volume qui a DEBORDE par la fosse (m3) = Σ Q_overflow×dt",
             "  • WSEmax = niveau max retenu a l'entree du Ø1200",
             "  • Q_down max = pointe aval = pipe + overflow",
             "  • Split Q_1200 / Q_overflow a cette pointe",
+            "",
+            "Important: V_hold ≠ V_overflow. V_hold = a stocker; V_overflow = parti a l'aval via fosse.",
             "",
             "Fichiers suivants (separes, pas encore dans ce classeur):",
             "  File 2 = comparaison pipe-only vs composite",
