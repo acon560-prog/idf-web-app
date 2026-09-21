@@ -1,8 +1,8 @@
 # Volume de rétention
 
-## FILE 1 — Composite Ø1200 + fosse trapèze (nouveau)
+## FILE 1 — Composite Ø1200 + fosse trapèze
 
-`Retention_1200_File1_Composite.xlsx` — **Idée 1 seule** (fichier séparé).
+`Retention_1200_File1_Composite.xlsx` — **Idée 1** (fichier séparé).
 
 ```
 Qin → bassin amont Ø1200 → Qout = Q_1200(WSE) + Q_overflow_trapèze(WSE ≥ crest)
@@ -14,7 +14,24 @@ Résultats: WSEmax, Vmax, Q_1200 / Q_overflow / Q_down à la pointe.
 python3 build_retention_file1_composite.py
 ```
 
-Fichiers suivants (pas encore): File 2 comparaison · File 3 séries temporelles · File 4 sensibilité crest.
+## FILES 2–5 — Comparaison, stress, séries, crest
+
+Même bassin / orage / Stage_Storage. Reconstruction commune:
+
+```bash
+python3 build_retention_files_2_to_5.py
+```
+
+| Fichier | Idée | Contenu |
+|---------|------|---------|
+| `Retention_1200_File2_Compare.xlsx` | 2 | Pipe seul vs composite (V_hold, WSEmax, Q_down) |
+| `Retention_1200_File3_Stress.xlsx` | 3 | Pipe 100% / 50% / bloqué ± overflow |
+| `Retention_1200_File4_TimeSeries.xlsx` | 4 | Qin, Q_1200, Q_overflow, Q_down, WSE vs temps |
+| `Retention_1200_File5_CrestSensitivity.xlsx` | 5 | Sensibilité au crest (plusieurs cotes) |
+
+Jaune = entrées · vert = résultats. Après édition: relancer le script.
+
+Helpers partagés: `retention_common.py` (routage level-pool + FHWA Ø1200 + overflow trapèze).
 
 ---
 
