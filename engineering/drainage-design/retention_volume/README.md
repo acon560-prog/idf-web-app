@@ -14,9 +14,9 @@ Résultats: WSEmax, Vmax, Q_1200 / Q_overflow / Q_down à la pointe.
 python3 build_retention_file1_composite.py
 ```
 
-## FILES 2–5 — Comparaison, stress, séries, crest
+## FILES 2–5 — Comparaison, stress, séries, crest (formules Excel live)
 
-Même bassin / orage / Stage_Storage. Reconstruction commune:
+Même bassin / orage / Stage_Storage. **Toutes les cellules de calcul sont des formules Excel** (plus de valeurs figées Python). Jaune = entrées → Excel recalcule immédiatement.
 
 ```bash
 python3 build_retention_files_2_to_5.py
@@ -29,9 +29,9 @@ python3 build_retention_files_2_to_5.py
 | `Retention_1200_File4_TimeSeries.xlsx` | 4 | Qin, Q_1200, Q_overflow, Q_down, WSE vs temps |
 | `Retention_1200_File5_CrestSensitivity.xlsx` | 5 | Sensibilité au crest (plusieurs cotes) |
 
-Jaune = entrées · vert = résultats. Après édition: relancer le script.
+Feuilles types: Parametres · Hydrogramme · Stage_Storage · Courbe_QH_1200 · Compose_* · Calcul_* · Methode.
 
-Helpers partagés: `retention_common.py` (routage level-pool + FHWA Ø1200 + overflow trapèze).
+Helpers: `retention_excel_live.py` (écrit les formules). `retention_common.py` = twin Python optionnel pour tests.
 
 ---
 
