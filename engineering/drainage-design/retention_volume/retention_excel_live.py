@@ -323,12 +323,15 @@ def add_compose(
     with_overflow: bool = True,
     first_q: int = 20,
     last_q: int = 80,
+    q_cap_formula: str | None = None,
 ) -> tuple[Worksheet, int, int]:
     wc = wb.create_sheet(title)
     mode = "composite" if with_overflow else "pipe seul"
+    if q_cap_formula:
+        mode += " + plafond Q"
     wc["A1"] = f"{title} — Q_1200 + Q_overflow; V_pond + V_ditch ({mode})"
     wc["A1"].font = Font(bold=True, size=12, color="0F5C5C")
-    wc["A2"] = "Colonnes = formules Excel. Crest / facteur pipe en jaune."
+    wc["A2"] = "Colonnes = formules Excel. Crest / facteur pipe / plafond Q en jaune."
     wc.merge_cells("A2:K2")
 
     for r, lab, ref in [
@@ -340,13 +343,16 @@ def add_compose(
         (9, "L", "=Parametres!B26"),
         (10, "Zin", "=Parametres!B12"),
         (11, "Facteur_pipe", pipe_factor_formula),
+        (12, "Q_cap (m3/s)", q_cap_formula if q_cap_formula else "1E9"),
     ]:
         wc.cell(r, 1, lab)
         cell = wc.cell(r, 2, ref)
         cell.fill = FILL_YELLOW
         cell.border = THIN
+        if r == 12:
+            cell.number_format = "0.000"
 
-    Crest, b_ref, n_ov, z_ref, S_ov, L_ov, Zin_c, fac = (
+    Crest, b_ref, n_ov, z_ref, S_ov, L_ov, Zin_c, fac, qcap = (
         "$B$4",
         "$B$5",
         "$B$6",
@@ -355,6 +361,7 @@ def add_compose(
         "$B$9",
         "$B$10",
         "$B$11",
+        "$B$12",
     )
     ss_wse = "Stage_Storage!$A$11:$A$18"
     ss_v = "Stage_Storage!$E$11:$E$18"
@@ -380,8 +387,10 @@ def add_compose(
             f"(INDEX({hw_rng},{m}+1)-INDEX({hw_rng},{m}))*"
             f"(INDEX({q_rng},{m}+1)-INDEX({q_rng},{m}))))"
         )
-        return f"({fac})*({base})"
+        # Cap at Q_cap (B12); default 1E9 = no practical cap
+        return f"MIN({qcap},({fac})*({base}))"
 
+    header_row = 14
     for j, h in enumerate(
         [
             "WSE",
@@ -397,12 +406,12 @@ def add_compose(
         ],
         1,
     ):
-        wc.cell(12, j, h)
-    hdr(wc, 12, 10)
+        wc.cell(header_row, j, h)
+    hdr(wc, header_row, 10)
 
     wse0, wse1, step = Z_POND, 40.00, 0.10
     n_comp = int(round((wse1 - wse0) / step)) + 1
-    c0 = 13
+    c0 = header_row + 1
     for i in range(n_comp):
         r = c0 + i
         wse_val = round(wse0 + i * step, 2)

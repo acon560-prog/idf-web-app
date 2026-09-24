@@ -93,50 +93,145 @@ def build_file2() -> Path:
         c_last=clc,
     )
 
+    # Trial: pipe capped at Q_plein (no pressurized boost above Manning full)
+    _, c0p, clp = xl.add_compose(
+        wb,
+        "Compose_QpleinCap",
+        crest_formula="=Parametres!B21",
+        pipe_factor_formula="1",
+        with_overflow=False,
+        first_q=first_q,
+        last_q=last_q,
+        q_cap_formula="=Parametres!B17",
+    )
+    xl.add_calcul(
+        wb,
+        "Calcul_QpleinCap",
+        compose_name="Compose_QpleinCap",
+        c0=c0p,
+        c_last=clp,
+    )
+
     # Summary comparison with live links
     ws["A30"] = "RESULTATS — comparaison (liens formules)"
     ws["A30"].font = Font(bold=True, size=12, color="0F5C5C")
-    xl.hdr(ws, 31, 4)
-    for j, h in enumerate(["Indicateur", "Cas A — pipe seul", "Cas C — composite", "Ecart C−A"], 1):
+    xl.hdr(ws, 31, 5)
+    for j, h in enumerate(
+        [
+            "Indicateur",
+            "Cas A — pipe FHWA",
+            "Cas C — composite",
+            "Essai — Q ≤ Q_plein",
+            "Ecart Essai−A",
+        ],
+        1,
+    ):
         ws.cell(31, j, h)
     rows = [
-        (32, "V_hold (m3)", "=Calcul_PipeSeul!B7", "=Calcul_Composite!B7"),
-        (33, "V_dim = V_hold × facteur", "=B32*B28", "=C32*B28"),
-        (34, "WSEmax (m)", "=Calcul_PipeSeul!B8", "=Calcul_Composite!B8"),
-        (35, "Q_down max (m3/s)", "=Calcul_PipeSeul!B9", "=Calcul_Composite!B9"),
-        (36, "Q_1200 a la pointe", "=Calcul_PipeSeul!B10", "=Calcul_Composite!B10"),
-        (37, "Q_overflow a la pointe", "=Calcul_PipeSeul!B11", "=Calcul_Composite!B11"),
-        (38, "V_overflow (m3)", "=Calcul_PipeSeul!B13", "=Calcul_Composite!B13"),
+        (
+            32,
+            "V_hold (m3)",
+            "=Calcul_PipeSeul!B7",
+            "=Calcul_Composite!B7",
+            "=Calcul_QpleinCap!B7",
+        ),
+        (
+            33,
+            "V_dim = V_hold × facteur",
+            "=B32*B28",
+            "=C32*B28",
+            "=D32*B28",
+        ),
+        (
+            34,
+            "WSEmax (m)",
+            "=Calcul_PipeSeul!B8",
+            "=Calcul_Composite!B8",
+            "=Calcul_QpleinCap!B8",
+        ),
+        (
+            35,
+            "Q_down max (m3/s)",
+            "=Calcul_PipeSeul!B9",
+            "=Calcul_Composite!B9",
+            "=Calcul_QpleinCap!B9",
+        ),
+        (
+            36,
+            "Q_1200 a la pointe",
+            "=Calcul_PipeSeul!B10",
+            "=Calcul_Composite!B10",
+            "=Calcul_QpleinCap!B10",
+        ),
+        (
+            37,
+            "Q_overflow a la pointe",
+            "=Calcul_PipeSeul!B11",
+            "=Calcul_Composite!B11",
+            "=Calcul_QpleinCap!B11",
+        ),
+        (
+            38,
+            "V_overflow (m3)",
+            "=Calcul_PipeSeul!B13",
+            "=Calcul_Composite!B13",
+            "=Calcul_QpleinCap!B13",
+        ),
+        (
+            39,
+            "Overflow? (WSEmax>crest)",
+            "=Calcul_PipeSeul!B12",
+            "=Calcul_Composite!B12",
+            "=Calcul_QpleinCap!B12",
+        ),
     ]
-    for r, lab, a, c in rows:
+    for r, lab, a, c, d in rows:
         ws.cell(r, 1, lab)
-        xl.set_green(ws, r, 2, a, "0.000" if "Q_" in lab or "WSE" in lab else "0.0")
-        xl.set_green(ws, r, 3, c, "0.000" if "Q_" in lab or "WSE" in lab else "0.0")
-        xl.set_blue(ws, r, 4, f"=C{r}-B{r}", "0.000" if "Q_" in lab or "WSE" in lab else "0.0")
+        fmt = "0.000" if ("Q_" in lab or "WSE" in lab) else "0.0"
+        if "Overflow" in lab:
+            xl.set_green(ws, r, 2, a)
+            xl.set_green(ws, r, 3, c)
+            xl.set_green(ws, r, 4, d)
+            ws.cell(r, 5, "")
+        else:
+            xl.set_green(ws, r, 2, a, fmt)
+            xl.set_green(ws, r, 3, c, fmt)
+            xl.set_green(ws, r, 4, d, fmt)
+            xl.set_blue(ws, r, 5, f"=D{r}-B{r}", fmt)
 
-    ws["A40"] = "Lecture"
-    ws["A40"].font = Font(bold=True)
-    ws["A41"] = (
-        "Si C a WSEmax plus bas et Q_down plus haut: overflow protege l'amont "
-        "mais augmente la pointe aval. Editez jaune (Qpointe Hydrogramme!B4, Crest B21) "
-        "— Excel recalcule sans Python."
+    ws["A41"] = "Essai Q ≤ Q_plein"
+    ws["A41"].font = Font(bold=True)
+    ws["A42"] = (
+        "Colonne D: Q_1200 plafonne a Parametres!B17 (Q_plein Manning ≈ 4.93 m3/s). "
+        "Pas d'effet de charge au-dessus du plein. Comparer WSEmax (D34) au Crest (B21). "
+        "Si D34 ≥ B21 → avec ce plafond, le niveau depasse le crest (overflow structure)."
     )
-    ws.merge_cells("A41:F42")
-    ws["A41"].alignment = Alignment(wrap_text=True)
+    ws.merge_cells("A42:F43")
+    ws["A42"].alignment = Alignment(wrap_text=True)
+
+    ws["A45"] = "Lecture"
+    ws["A45"].font = Font(bold=True)
+    ws["A46"] = (
+        "Cas A = FHWA libre (Q peut > Q_plein). Essai = Q borne a Q_plein. "
+        "Editez jaune (Qpointe Hydrogramme!B4, Crest B21, Q_plein B17) — Excel recalcule."
+    )
+    ws.merge_cells("A46:F47")
+    ws["A46"].alignment = Alignment(wrap_text=True)
 
     xl.write_methode(
         wb,
         "FILE 2 — Methode (formules Excel)",
         [
-            "Idee 2: comparer deux sorties pour le meme bassin / orage.",
-            "  A) Qout = Q_1200 seulement (Compose_PipeSeul)",
+            "Idee 2: comparer sorties pour le meme bassin / orage.",
+            "  A) Qout = Q_1200 FHWA (Compose_PipeSeul)",
             "  C) Qout = Q_1200 + Q_overflow (Compose_Composite)",
+            "  Essai) Qout = MIN(Q_FHWA, Q_plein) — pas de boost presse (Compose_QpleinCap)",
             "",
             "Toutes les cellules de resultat sont des formules (=Calcul_…!B7 etc.).",
             "V_hold = volume max stocke. V_overflow = Σ Q_overflow × dt.",
             "",
             "Editez jaune puis laissez Excel recalculer (pas besoin de relancer Python).",
-            "Regenerer le fichier vide: python3 build_retention_files_2_to_5.py",
+            "Regenerer: python3 build_retention_files_2_to_5.py",
         ],
     )
     wb.save(path)
