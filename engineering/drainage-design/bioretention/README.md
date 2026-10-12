@@ -4,7 +4,7 @@ Work product (Excel) to **pre-size a bioretention cell** and produce boss/client
 
 - **Vcap** — capture / water-quality volume  
 - **Af** — required filter surface area  
-- **tp** — surface ponding drawdown time  
+- **t_vid** — governing drawdown time (depends on underdrain flag B21)  
 - Layer storage breakdown + Rd scenarios (15 / 25 / 40 mm)  
 - Method note + CSA W200-oriented checklist (reminders only)
 
@@ -14,13 +14,22 @@ Work product (Excel) to **pre-size a bioretention cell** and produce boss/client
 
 | Sheet | Role |
 |-------|------|
-| **Parametres** | Yellow inputs → green Af, Vcap, tp |
-| **Couches** | Storage by layer for Af |
+| **Parametres** | Yellow inputs → green Af, Vcap, t_vid (B21 switches formulas) |
+| **Couches** | Storage by layer for Af (gravel credited only if B21=1) |
 | **Scenarios** | Same catchment, different Rd |
 | **Methode** | Formulas & assumptions |
 | **Checklist** | Design reminders |
 
 Yellow = inputs · green = results. Edit yellow → Excel recalculates (no Python needed).
+
+## Underdrain switch (B21)
+
+| B21 | ds | t_vid | SWMM Drain coeff |
+|-----|----|-------|------------------|
+| **1** | dp + dm·nm + df·nf + **dr·nr** | dp / (f'/1000) | > 0 |
+| **0** | dp + dm·nm + df·nf (**no gravel credit**) | (dp + df·nf) / (f'/1000) | = 0 |
+
+Af = Vcap / ds → larger Af when B21=0 (smaller ds).
 
 ## Rebuild
 
@@ -33,9 +42,11 @@ python3 build_bioretention_excel.py
 
 ```text
 Vcap = η × C × (Rd/1000) × Ad
-ds   = dp + dm·nm + df·nf + dr·nr
+B21=1: ds = dp + dm·nm + df·nf + dr·nr
+B21=0: ds = dp + dm·nm + df·nf
 Af   = Vcap / ds
-tp   = dp / (f'/1000)     # f' in mm/h
+B21=1: t_vid = dp / (f'/1000)
+B21=0: t_vid = (dp + df·nf) / (f'/1000)     # f' in mm/h
 ```
 
 ## Product positioning
