@@ -238,9 +238,13 @@ def build() -> Path:
     ws["B32"].border = THIN
     ws["B32"].number_format = "0.0"
     ws["C32"] = "Longueur pour V_ditch = A × L et Manning"
-    ws["A33"] = "Qout_C"
-    ws["B33"] = "Q_900(WSE)+Q_overflow(WSE)"
-    ws["C33"] = "V_C = V_pond(levé) + V_ditch — feuilles Compose_900 + Calcul_C"
+    # Two separate Method C ideas — do not mix Q and V on the same row
+    ws["A33"] = "Qout_C (débit sortie)"
+    ws["B33"] = "Q_900(WSE) + Q_overflow(WSE)"
+    ws["C33"] = "Débit = pipe + fossé (Compose_900). Ceci n'est PAS un volume."
+    ws["A34"] = "Stockage_C (volume)"
+    ws["B34"] = "V_pond(levé) + V_ditch"
+    ws["C34"] = "Volume = bassin (levé) + fossé — Compose_900 + Calcul_C"
 
     def wse_from_v(cell_ref: str) -> str:
         """Interpolate V → WSE on Stage_Storage V_cumul (E11:E18) → WSE (A11:A18)."""
