@@ -195,12 +195,15 @@ def build() -> Path:
     ws["B23"].border = THIN
     ws["B23"].number_format = "0.00"
     ws["C23"] = "Marge sur Vmax (ex. 1.20 = +20%)"
-    ws["A24"] = "Aire_bassin_m2"
+    ws["A24"] = "Aire_constante_B (m²) — PAS le levé"
     ws["B24"] = 2500
     ws["B24"].fill = YELLOW
     ws["B24"].border = THIN
     ws["B24"].number_format = "0"
-    ws["C24"] = "Aire plan d'eau approx. pour H = V/A (Méthode B seulement)"
+    ws["C24"] = (
+        "Raccourci Méthode B seulement: H≈V/B24 pour lire Q=f(H). "
+        "Ce n'est PAS un 2e bassin. Le vrai étang = feuille Stage_Storage (surfaces vs WSE)."
+    )
 
     ws["A26"] = "Débordement Méthode C — fossé trapèze au-dessus du crown (jaune)"
     ws["A26"].font = Font(bold=True)
@@ -250,7 +253,7 @@ def build() -> Path:
         """Interpolate V → WSE on Stage_Storage V_cumul (E11:E18) → WSE (A11:A18)."""
         return (
             f'=IF({cell_ref}<=Stage_Storage!E11,Stage_Storage!A11,'
-            f'IF({cell_ref}>=Stage_Storage!E18,"Hors table (>=39.5 m — étendre levé)",'
+            f'IF({cell_ref}>=Stage_Storage!E18,"Hors table (>=40.0 m — étendre levé)",'
             f'INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1))'
             f'+({cell_ref}-INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)))'
             f'/(INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)+1)'
@@ -715,8 +718,10 @@ def build() -> Path:
     wb2["A1"] = "Méthode B — routage avec Qout = f(H) depuis Courbe_QH_900 (FHWA)"
     wb2["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wb2["A2"] = (
-        "H = V / Aire_bassin. Qout interpolé sur Courbe_QH_900!E (Q gouvernant). "
-        "Si V≈0, Qout = MIN(Qin, Q_plein). ΔV = (Qin_moy - Qout)*Δt. La courbe Courbe_QH_900 est en formules live (changer n/L/entrée/TW)."
+        "H = V / Aire_constante (Parametres!B24) — raccourci, PAS le levé Stage_Storage. "
+        "Qout interpolé sur Courbe_QH_900!E (Q gouvernant). "
+        "Si V≈0, Qout = MIN(Qin, Q_plein). ΔV = (Qin_moy - Qout)*Δt. "
+        "Après routage, WSEmax_B réel est lu sur Stage_Storage via Vmax_B (Parametres B45)."
     )
     wb2.merge_cells("A2:G3")
     wb2["A2"].alignment = Alignment(wrap_text=True)
@@ -1039,10 +1044,11 @@ def build() -> Path:
     wss["A2"] = (
         "PROCÉDURE (dans CE fichier): "
         "1) Routage → Vmax_A / Vmax_B / Vmax_C sur Parametres. "
-        "2) Cette feuille = V_pond vs WSE (levé seul). "
-        "3) Parametres!B39 = WSEmax_A; B45 = WSEmax_B (levé). "
-        "4) Méthode C: V_pond + V_ditch et WSEmax_C sont sur Compose_900 / Calcul_C (B51). "
-        "Remplacez les surfaces jaunes; 543 m² @ 37.28 et 1932 m² @ 39.5 sont vos mesures."
+        "2) Cette feuille = V_pond vs WSE (levé topographique — le vrai bassin). "
+        "3) Parametres!B39 = WSEmax_A; B45 = WSEmax_B (lus sur CE tableau). "
+        "4) Méthode C: V_pond + V_ditch et WSEmax_C sur Compose_900 / Calcul_C (B51). "
+        "5) Parametres!B24 (2500 m²) n'est PAS ici: c'est seulement le raccourci H=V/A de Méthode B. "
+        "Surfaces ci-dessous = votre levé (pas des placeholders)."
     )
     wss.merge_cells("A2:G4")
     wss["A2"].alignment = Alignment(wrap_text=True, vertical="top")
@@ -1067,15 +1073,16 @@ def build() -> Path:
         wss.cell(10, j, h)
     style_header(wss, 10, 6)
 
+    # User survey (levé) — real water-surface areas vs WSE
     stages = [
-        (34.88, 0, "Radier Ø900 — départ"),
-        (35.50, 80, "Placeholder — remplacer par levé"),
-        (36.00, 180, "Placeholder — remplacer par levé"),
-        (36.50, 320, "Placeholder — remplacer par levé"),
-        (37.00, 480, "Placeholder — remplacer par levé"),
-        (37.28, 543, "LIMITE PATRON (+1.5 m crown) — votre levé"),
-        (37.50, 700, "Placeholder — remplacer par levé"),
-        (39.50, 1932, "Votre levé 1932 m² — niveau optionnel plus haut"),
+        (34.88, 0, "Fond bassin / radier Ø900"),
+        (35.50, 120, "Levé"),
+        (36.01, 419, "Levé"),
+        (36.50, 480, "Levé"),
+        (37.00, 720, "Levé"),
+        (37.28, 2198, "LIMITE PATRON (+1.5 m crown) — levé"),
+        (37.40, 1516, "Levé (A↓ vs 37.28 — vérifier si voulu)"),
+        (40.00, 3746, "Levé — sommet table"),
     ]
     for i, (wse, area, role) in enumerate(stages):
         r = 11 + i
@@ -1129,10 +1136,11 @@ def build() -> Path:
     wss["A28"] = "Comment lire le résultat"
     wss["A28"].font = Font(bold=True)
     wss["A29"] = (
-        "Exemple: si Vmax_A = 5609 m³ et V(37.28)≈558 m³, alors WSEmax_A est au-dessus de 37.28 m "
-        "(la table ira vers 39.5 m ou 'Hors table'). "
-        "Affinez en entrant les vraies surfaces aux cotes intermédiaires (jaune). "
-        "Méthode C: voir Parametres B49–B52 et Calcul_C (fossé inclus)."
+        "Exemple: si Vmax_A > V_cumul @ 37.28 (colonne E, ligne orange), alors WSEmax_A > 37.28 m "
+        "(la table monte vers 37.40 / 40.00 ou 'Hors table'). "
+        "Jaune = surfaces du levé (éditables). "
+        "Méthode C: Parametres B49–B52 et Calcul_C (fossé inclus). "
+        "Note: A(37.40)=1516 < A(37.28)=2198 — inhabituel; confirmer sur plan."
     )
     wss.merge_cells("A29:F31")
     wss["A29"].alignment = Alignment(wrap_text=True)
