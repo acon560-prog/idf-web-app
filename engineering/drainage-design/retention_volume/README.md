@@ -25,6 +25,8 @@ python3 build_retention_excel.py
 
 WSE et Surface **jaunes (éditables)** — corriger depuis AutoCAD.
 
+**Méthode C — interrupteur Parametres!B25:** `0` = volume = levé seul (recommandé si le fossé est déjà dans SS_Amont); `1` = ajoute aussi V_ditch trapèze. Q_overflow (b,z,L,n,S) reste actif dans les deux cas.
+
 ```bash
 python3 build_retention_two_zone_excel.py
 ```

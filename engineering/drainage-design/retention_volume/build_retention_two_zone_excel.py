@@ -317,6 +317,16 @@ def build() -> Path:
         "Ce n'est PAS un 2e bassin. Levé Zone 1 = feuille SS_Amont; Zone 2 = SS_Aval."
     )
 
+    ws["A25"] = "Inclure V_ditch trapèze? (1=oui, 0=levé seul)"
+    ws["B25"] = 0
+    ws["B25"].fill = YELLOW
+    ws["B25"].border = THIN
+    ws["B25"].number_format = "0"
+    ws["C25"] = (
+        "0 = recommandé si SS_Amont contient déjà le fossé (V=levé seul; Q_overflow garde b,z,L,n,S). "
+        "1 = ajoute V_ditch = A_trapèze × L (ancien mode — risque de double volume)."
+    )
+
     ws["A26"] = "Débordement Méthode C — fossé trapèze au-dessus du crown (jaune)"
     ws["A26"].font = Font(bold=True)
     ws["A27"] = "Crest = crown Ø900 (m)"
@@ -352,14 +362,14 @@ def build() -> Path:
     ws["B32"].fill = YELLOW
     ws["B32"].border = THIN
     ws["B32"].number_format = "0.0"
-    ws["C32"] = "Longueur pour V_ditch = A × L et Manning"
+    ws["C32"] = "L pour Manning Q_overflow (et V_ditch seulement si B25=1)"
     # Two separate Method C ideas — do not mix Q and V on the same row
     ws["A33"] = "Qout_C (débit sortie)"
     ws["B33"] = "Q_900(WSE) + Q_overflow(WSE)"
     ws["C33"] = "Débit = pipe + fossé (Compose_900). Ceci n'est PAS un volume."
     ws["A34"] = "Stockage_C (volume)"
-    ws["B34"] = "V_pond(levé) + V_ditch"
-    ws["C34"] = "Volume = bassin (levé) + fossé — Compose_900 + Calcul_C"
+    ws["B34"] = '=IF(B25=1,"V_pond(levé)+V_ditch","V_pond(levé) seul")'
+    ws["C34"] = "Piloté par B25 — pas de double comptage si le fossé est déjà dans SS_Amont"
 
     def wse_from_v(cell_ref: str, sheet: str = "SS_Amont") -> str:
         """Interpolate V → WSE on zone stage-storage V_cumul (E11:E18) → WSE (A11:A18)."""
@@ -428,11 +438,11 @@ def build() -> Path:
 
     ws["A48"] = "Résultats Méthode C — Ø900 + fossé trapèze (Compose_900 + Calcul_C)"
     ws["A48"].font = Font(bold=True)
-    ws["A49"] = "Vmax_C (m³) = max(V_pond + V_ditch)"
+    ws["A49"] = 'Vmax_C (m³) = max(V_total)'
     ws["B49"] = "=Calcul_C!B7"
     ws["B49"].fill = GREEN
     ws["B49"].number_format = "0"
-    ws["C49"] = "Stockage total routé (levé + fossé)"
+    ws["C49"] = '=IF(B25=1,"V_pond+V_ditch (B25=1)","V_pond seul — levé SS_Amont (B25=0)")'
     ws["A50"] = "V_dimensionnement_C = Vmax_C × facteur (m³)"
     ws["B50"] = "=B49*B23"
     ws["B50"].fill = GREEN
@@ -470,7 +480,7 @@ def build() -> Path:
     ws["A59"].font = Font(bold=True)
     wse_help = [
         "1) Zone 1 (Ø1500→Ø900): A/B → Vmax puis WSEmax sur SS_Amont. Zone 2: SS_Aval + Calcul_Aval_A (B55–B57).",
-        "2) C (Zone 1): Qout = Q_900(WSE)+Q_overflow; V = V_pond(SS_Amont)+V_ditch; WSEmax_C = Calcul_C.",
+        "2) C (Zone 1): Qout = Q_900+Q_overflow; V = SS_Amont (+V_ditch si B25=1); WSEmax_C = Calcul_C.",
         "3) Crest = crown = 35.78 m → au-dessus, le fossé trapèze ajoute débit et volume (Zone 1).",
         "4) Ne pas additionner Zone 1+2 dans un seul routage. Éditer WSE/Surface jaunes dans SS_Amont et SS_Aval.",
     ]
@@ -499,7 +509,7 @@ def build() -> Path:
     notes = [
         "• Méthode A: Qout fixe = Q_plein Manning Ø900 (n=0,013).",
         "• Méthode B: Qout = f(H) pipe seul (Courbe_QH_900) — résultats B43–B46.",
-        "• Méthode C: Qout = Q_900 + Q_overflow; V = V_pond + V_ditch — Compose_900 + Calcul_C (B49–B52).",
+        "• Méthode C: Qout = Q_900 + Q_overflow; V_ditch via B25 (0=levé seul) — Compose_900 + Calcul_C (B49–B52).",
         "• Zone 2: SS_Aval + Calcul_Aval_A — résultats B55–B57.",
         "• SS_Amont / SS_Aval: WSE et Surface en jaune — corriger depuis AutoCAD; ΔWSE et V_pas se recalculent.",
         "• Vérifier que le radier amont Ø900 (34.88) est bien le fond de Zone 1.",
@@ -939,8 +949,9 @@ def build() -> Path:
     wc["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wc["A2"] = (
         "Qout = Q_900(WSE) + Q_overflow(WSE). "
-        "V_total = V_pond(SS_Amont) + V_ditch. "
-        "Overflow: trapèze au-dessus du crown, Manning. Paramètres jaunes = Parametres!B27–B32."
+        "V_total = V_pond(SS_Amont) + (B25)*V_ditch. "
+        "Qout = Q_900 + Q_overflow (trapèze Manning) toujours. "
+        "B25=0 → pas de volume trapèze (levé seul). Paramètres = Parametres!B25–B32."
     )
     wc.merge_cells("A2:L3")
     wc["A2"].alignment = Alignment(wrap_text=True, vertical="top")
@@ -955,6 +966,7 @@ def build() -> Path:
         (10, "S fossé", "=Parametres!B31", "0.000"),
         (11, "L fossé (m)", "=Parametres!B32", "0.0"),
         (12, "Zin Ø900 (m)", f"={Z_US_900}", "0.00"),
+        (13, "Inclure V_ditch (0/1)", "=Parametres!B25", "0"),
     ]
     for row, label, val, fmt in c_params:
         wc.cell(row, 1, label)
@@ -970,6 +982,7 @@ def build() -> Path:
     S_ov = "$B$10"
     L_ov = "$B$11"
     Zin_c = "$B$12"
+    v_ditch_on = "$B$13"  # Parametres!B25
 
     # SS_Amont WSE→V_pond (Zone 1 only)
     ss_wse = "SS_Amont!$A$11:$A$18"
@@ -1036,9 +1049,10 @@ def build() -> Path:
         # A = (b + z*y)*y
         wc.cell(r, 4, f"=IF({y}<=0,0,({b_ref}+{z_ref}*{y})*{y})").number_format = "0.000"
         A = f"D{r}"
-        wc.cell(r, 5, f"={A}*{L_ov}").number_format = "0.0"
+        # V_ditch credited only if switch B25/B13 = 1 (else 0 — levé seul)
+        wc.cell(r, 5, f"=IF({v_ditch_on}=1,{A}*{L_ov},0)").number_format = "0.0"
         wc.cell(r, 6, f"={v_pond_from_wse(wse)}").number_format = "0.0"
-        wc.cell(r, 7, f"=E{r}+F{r}").number_format = "0.0"
+        wc.cell(r, 7, f"=F{r}+E{r}").number_format = "0.0"
         wc.cell(r, 7).fill = GREEN
         hw = f"B{r}"
         wc.cell(r, 8, f"={q900_from_hw(hw)}").number_format = "0.000"
@@ -1080,11 +1094,12 @@ def build() -> Path:
 
     # ---------- Calcul_C : routage V_total + Qout composé ----------
     wc2 = wb.create_sheet("Calcul_C")
-    wc2["A1"] = "Méthode C — routage avec Qout composé + V = V_pond + V_ditch"
+    wc2["A1"] = "Méthode C — routage Qout composé; V = V_total (B25 pilote V_ditch)"
     wc2["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wc2["A2"] = (
         "À chaque pas: WSE lu sur Compose_900!V_total → Qout sur Compose_900. "
-        "ΔV = (Qin_moy − Qout)×Δt. Si V≈0, Qout = MIN(Qin, Q_plein)."
+        "V_total = V_pond + V_ditch seulement si Parametres!B25=1; sinon V=levé SS_Amont. "
+        "Q_overflow reste actif (b,z,L,n,S). ΔV = (Qin_moy − Qout)×Δt."
     )
     wc2.merge_cells("A2:H3")
     wc2["A2"].alignment = Alignment(wrap_text=True)
@@ -1199,7 +1214,7 @@ def build() -> Path:
     wsa["B26"].fill = GREEN
     wsa["B26"].number_format = "0"
     wsa["C26"] = "=Parametres!B51"
-    wsa["D26"] = "Vmax_C inclut V_ditch"
+    wsa["D26"] = '=IF(Parametres!B25=1,"Vmax_C inclut V_ditch","Vmax_C = levé seul (B25=0)")'
 
     add_stage_storage_sheet(
         wb,
@@ -1374,7 +1389,7 @@ def build() -> Path:
         "3. Capacité Ø900 — trois niveaux:",
         "   A) Q_plein Manning (n=0.013) ≈ 1.668 m³/s → Méthode A (constant).",
         "   B) Courbe Q=f(H) FHWA HDS-5 (inlet + outlet) → feuille Courbe_QH_900 + Calcul_B.",
-        "   C) Qout = Q_900(WSE) + Q_overflow(WSE); V = V_pond + V_ditch → Compose_900 + Calcul_C.",
+        "   C) Qout = Q_900 + Q_overflow; V = V_pond (+ V_ditch si B25=1) → Compose_900 + Calcul_C.",
         "4. Méthode A: Qout = constante = Q_plein (jaune Parametres). Bon pour 1re estimation.",
         "5. Méthode B: Qout lu sur la courbe selon H=V/Aire (charge amont), pipe seul.",
         "6. Méthode C: crest = crown; fossé trapèze (b,n,z,S,L) au-dessus; stockage levé + fossé.",
