@@ -105,6 +105,113 @@ def style_header(ws, row: int, ncols: int) -> None:
         cell.border = THIN
 
 
+# Zone 1 = Ø1500 → Ø900 (amont). Zone 2 = Ø900 → Ø1200 (aval).
+# WSE + Surface are yellow editable — correct from AutoCAD as needed.
+STAGES_AMONT = [
+    (34.88, 0, "Fond Zone 1 / radier amont Ø900"),
+    (35.50, 56, "Levé Zone 1 — éditer si AutoCAD diffère"),
+    (36.01, 210, "Levé Zone 1"),
+    (36.50, 380, "Levé Zone 1"),
+    (37.00, 400, "Levé Zone 1"),
+    (37.28, 500, "LIMITE PATRON Zone 1 (+1.5 m crown)"),
+    (37.40, 860, "Levé Zone 1"),
+    (40.00, 2100, "Sommet table Zone 1"),
+]
+STAGES_AVAL = [
+    (34.88, 0, "Fond Zone 2 (même grille WSE — éditer)"),
+    (35.50, 60, "Levé Zone 2 — éditer si AutoCAD diffère"),
+    (36.01, 219, "Levé Zone 2"),
+    (36.50, 150, "Levé Zone 2 (A↓ — vérifier plan)"),
+    (37.00, 340, "Levé Zone 2"),
+    (37.28, 1700, "Levé Zone 2 @ limite patron"),
+    (37.40, 1460, "Levé Zone 2 (A↓ — vérifier plan)"),
+    (40.00, 1632, "Sommet table Zone 2"),
+]
+
+
+def add_stage_storage_sheet(
+    wb: Workbook,
+    title: str,
+    heading: str,
+    blurb: str,
+    stages: list[tuple[float, float, str]],
+    chart_title: str,
+) -> None:
+    """Editable WSE + Surface (yellow); ΔWSE / V_pas / V_cumul are live formulas."""
+    wss = wb.create_sheet(title)
+    wss["A1"] = heading
+    wss["A1"].font = Font(bold=True, size=12, color="0F5C5C")
+    wss["A2"] = blurb
+    wss.merge_cells("A2:G4")
+    wss["A2"].alignment = Alignment(wrap_text=True, vertical="top")
+
+    wss["A6"] = "Formule d'un pas (aires moyennes)"
+    wss["A6"].font = Font(bold=True)
+    wss["A7"] = "V_pas (m³) = (A_basse + A_haute) / 2 × (WSE_haute − WSE_basse)"
+    wss["A7"].fill = GREEN
+    wss.merge_cells("A7:F7")
+    wss["A8"] = "V_cumulatif = somme des V_pas depuis le fond de zone. Jaune = éditer (AutoCAD)."
+    wss.merge_cells("A8:F8")
+
+    hdr = [
+        "WSE / NSE (m) ← ÉDITER",
+        "Surface A (m²) ← ÉDITER",
+        "ΔWSE (m)",
+        "V_pas (m³)",
+        "V_cumulatif (m³)",
+        "Rôle",
+    ]
+    for j, h in enumerate(hdr, start=1):
+        wss.cell(10, j, h)
+    style_header(wss, 10, 6)
+
+    for i, (wse, area, role) in enumerate(stages):
+        r = 11 + i
+        wss.cell(r, 1, wse).number_format = "0.00"
+        wss.cell(r, 1).fill = YELLOW
+        wss.cell(r, 2, area).fill = YELLOW
+        wss.cell(r, 2).number_format = "0"
+        if i == 0:
+            wss.cell(r, 3, 0)
+            wss.cell(r, 4, 0)
+            wss.cell(r, 5, 0)
+        else:
+            prev = r - 1
+            wss.cell(r, 3, f"=A{r}-A{prev}").number_format = "0.00"
+            wss.cell(r, 4, f"=0.5*(B{prev}+B{r})*C{r}").number_format = "0.0"
+            wss.cell(r, 5, f"=E{prev}+D{r}").number_format = "0.0"
+            wss.cell(r, 5).fill = GREEN
+        wss.cell(r, 6, role)
+        for c in range(1, 7):
+            wss.cell(r, c).border = THIN
+        if abs(wse - 37.28) < 1e-9:
+            for c in range(1, 7):
+                if c not in (1, 2):
+                    wss.cell(r, c).fill = ORANGE
+
+    last = 10 + len(stages)
+    wss["A21"] = "V @ 37.28 m (m³)"
+    wss["B21"] = "=E16"
+    wss["B21"].fill = BLUE
+    wss["B21"].number_format = "0.0"
+    wss["C21"] = "Ligne orange — limite patron typique"
+    wss["A22"] = "V @ sommet table (m³)"
+    wss["B22"] = f"=E{last}"
+    wss["B22"].fill = BLUE
+    wss["B22"].number_format = "0.0"
+
+    ch = LineChart()
+    ch.title = chart_title
+    ch.y_axis.title = "V (m³)"
+    ch.x_axis.title = "WSE (m)"
+    ch.add_data(Reference(wss, min_col=5, min_row=10, max_row=last), titles_from_data=True)
+    ch.set_categories(Reference(wss, min_col=1, min_row=11, max_row=last))
+    wss.add_chart(ch, "H6")
+
+    for col, w in zip("ABCDEF", [20, 22, 12, 12, 16, 48]):
+        wss.column_dimensions[col].width = w
+
+
 def build() -> Path:
     wb = Workbook()
 
@@ -202,7 +309,7 @@ def build() -> Path:
     ws["B24"].number_format = "0"
     ws["C24"] = (
         "Raccourci Méthode B seulement: H≈V/B24 pour lire Q=f(H). "
-        "Ce n'est PAS un 2e bassin. Le vrai étang = feuille Stage_Storage (surfaces vs WSE)."
+        "Ce n'est PAS un 2e bassin. Levé Zone 1 = feuille SS_Amont; Zone 2 = SS_Aval."
     )
 
     ws["A26"] = "Débordement Méthode C — fossé trapèze au-dessus du crown (jaune)"
@@ -249,17 +356,17 @@ def build() -> Path:
     ws["B34"] = "V_pond(levé) + V_ditch"
     ws["C34"] = "Volume = bassin (levé) + fossé — Compose_900 + Calcul_C"
 
-    def wse_from_v(cell_ref: str) -> str:
-        """Interpolate V → WSE on Stage_Storage V_cumul (E11:E18) → WSE (A11:A18)."""
+    def wse_from_v(cell_ref: str, sheet: str = "SS_Amont") -> str:
+        """Interpolate V → WSE on zone stage-storage V_cumul (E11:E18) → WSE (A11:A18)."""
         return (
-            f'=IF({cell_ref}<=Stage_Storage!E11,Stage_Storage!A11,'
-            f'IF({cell_ref}>=Stage_Storage!E18,"Hors table (>=40.0 m — étendre levé)",'
-            f'INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1))'
-            f'+({cell_ref}-INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)))'
-            f'/(INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)+1)'
-            f'-INDEX(Stage_Storage!$E$11:$E$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)))'
-            f'*(INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)+1)'
-            f'-INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell_ref},Stage_Storage!$E$11:$E$18,1)))))'
+            f'=IF({cell_ref}<={sheet}!E11,{sheet}!A11,'
+            f'IF({cell_ref}>={sheet}!E18,"Hors table (>=40.0 m — étendre levé)",'
+            f'INDEX({sheet}!$A$11:$A$18,MATCH({cell_ref},{sheet}!$E$11:$E$18,1))'
+            f'+({cell_ref}-INDEX({sheet}!$E$11:$E$18,MATCH({cell_ref},{sheet}!$E$11:$E$18,1)))'
+            f'/(INDEX({sheet}!$E$11:$E$18,MATCH({cell_ref},{sheet}!$E$11:$E$18,1)+1)'
+            f'-INDEX({sheet}!$E$11:$E$18,MATCH({cell_ref},{sheet}!$E$11:$E$18,1)))'
+            f'*(INDEX({sheet}!$A$11:$A$18,MATCH({cell_ref},{sheet}!$E$11:$E$18,1)+1)'
+            f'-INDEX({sheet}!$A$11:$A$18,MATCH({cell_ref},{sheet}!$E$11:$E$18,1)))))'
         )
 
     ws["A35"] = "Résultats Méthode A — Qout constant (feuille Calcul_A)"
@@ -279,13 +386,12 @@ def build() -> Path:
     ws["B38"].number_format = "0.00"
     ws["C38"] = "Estimation grossière si l'aire de bassin est constante (pas le levé)"
 
-    ws["A39"] = "WSEmax_A depuis levé (m) — feuille Stage_Storage"
-    ws["B39"] = wse_from_v("B36")
+    ws["A39"] = "WSEmax_A depuis levé Zone 1 (m) — SS_Amont"
+    ws["B39"] = wse_from_v("B36", "SS_Amont")
     ws["B39"].fill = GREEN
     ws["B39"].number_format = "0.00"
     ws["C39"] = (
-        "Cote d'eau max pour le Vmax_A: on lit sur Stage_Storage quelle WSE "
-        "donne ce volume (courbe volume–cote du levé)"
+        "Cote d'eau max pour Vmax_A: lecture sur SS_Amont (Ø1500→Ø900), pas Zone 2"
     )
     ws["A40"] = "HW max_A = WSEmax_A − radier Ø900 (m)"
     ws["B40"] = '=IF(ISNUMBER(B39),B39-34.88,"")'
@@ -304,11 +410,11 @@ def build() -> Path:
     ws["B44"] = "=B43*B23"
     ws["B44"].fill = GREEN
     ws["B44"].number_format = "0"
-    ws["A45"] = "WSEmax_B depuis levé (m) — feuille Stage_Storage"
-    ws["B45"] = wse_from_v("B43")
+    ws["A45"] = "WSEmax_B depuis levé Zone 1 (m) — SS_Amont"
+    ws["B45"] = wse_from_v("B43", "SS_Amont")
     ws["B45"].fill = GREEN
     ws["B45"].number_format = "0.00"
-    ws["C45"] = "Même lecture volume→cote que B39, mais avec Vmax_B"
+    ws["C45"] = "Même lecture volume→cote que B39 (SS_Amont), avec Vmax_B"
     ws["A46"] = "HW max_B = WSEmax_B − radier Ø900 (m)"
     ws["B46"] = '=IF(ISNUMBER(B45),B45-34.88,"")'
     ws["B46"].fill = GREEN
@@ -337,20 +443,38 @@ def build() -> Path:
     ws["B52"].number_format = "0.00"
     ws["C52"] = "Comparer à 2.40 m (limite patron); overflow actif si WSE>crest"
 
-    ws["A54"] = "Comment lire WSEmax (A / B / C)"
+    ws["A54"] = "Résultats Zone 2 — Ø900 → Ø1200 (SS_Aval + Calcul_Aval_A)"
     ws["A54"].font = Font(bold=True)
+    ws["A55"] = "V @ 37.28 m Zone 2 (m³) — SS_Aval"
+    ws["B55"] = "=SS_Aval!B21"
+    ws["B55"].fill = BLUE
+    ws["B55"].number_format = "0"
+    ws["C55"] = "Volume levé Zone 2 à la cote patron"
+    ws["A56"] = "Vmax_Aval_A (m³)"
+    ws["B56"] = "=Calcul_Aval_A!B6"
+    ws["B56"].fill = GREEN
+    ws["B56"].number_format = "0"
+    ws["C56"] = "Routage Aval: Qin≈Qcap Ø900; Qout=Q_plein Ø1200"
+    ws["A57"] = "WSEmax_Aval_A (m) — SS_Aval"
+    ws["B57"] = "=Calcul_Aval_A!B7"
+    ws["B57"].fill = GREEN
+    ws["B57"].number_format = "0.00"
+    ws["C57"] = "Lecture volume→cote sur levé Zone 2"
+
+    ws["A59"] = "Comment lire WSEmax (zones + méthodes)"
+    ws["A59"].font = Font(bold=True)
     wse_help = [
-        "1) A et B: Vmax = volume pondé; WSEmax lu sur Stage_Storage (levé seul).",
-        "2) C: Qout = Q_900(WSE) + Q_overflow(WSE); V = V_pond + V_ditch; WSEmax_C vient de Calcul_C.",
-        "3) Crest = crown = 35.78 m → au-dessus, le fossé trapèze (b, n, z, S, L) ajoute débit et volume.",
-        "4) Ne pas comparer Vmax_C à V_pond seul sans retirer V_ditch; comparer plutôt les WSEmax.",
+        "1) Zone 1 (Ø1500→Ø900): A/B → Vmax puis WSEmax sur SS_Amont. Zone 2: SS_Aval + Calcul_Aval_A (B55–B57).",
+        "2) C (Zone 1): Qout = Q_900(WSE)+Q_overflow; V = V_pond(SS_Amont)+V_ditch; WSEmax_C = Calcul_C.",
+        "3) Crest = crown = 35.78 m → au-dessus, le fossé trapèze ajoute débit et volume (Zone 1).",
+        "4) Ne pas additionner Zone 1+2 dans un seul routage. Éditer WSE/Surface jaunes dans SS_Amont et SS_Aval.",
     ]
-    for i, line in enumerate(wse_help, start=55):
+    for i, line in enumerate(wse_help, start=60):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
-    ws["A60"] = "Inlet control vs outlet control — qu'est-ce que ça veut dire?"
-    ws["A60"].font = Font(bold=True)
+    ws["A65"] = "Inlet control vs outlet control — qu'est-ce que ça veut dire?"
+    ws["A65"].font = Font(bold=True)
     ic_oc = [
         "• Inlet control (contrôle à l'entrée): le débit est limité par l'entrée du ponceau (forme d'entrée, HW/D).",
         "  Le tuyau aval « n'aspire » pas assez pour influencer — Q dépend surtout de la charge amont H, pas de L ni de n.",
@@ -361,20 +485,21 @@ def build() -> Path:
         "  en général prudent (si la charge monte, le débit réel peut être un peu plus élevé → Vmax un peu plus bas).",
         "• On n'a pas besoin de trancher IC/OC pour utiliser ce classeur: garder Qout = Q_plein (ou 1.77) suffit pour une 1re estimation.",
     ]
-    for i, line in enumerate(ic_oc, start=61):
+    for i, line in enumerate(ic_oc, start=66):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
-    ws["A70"] = "Notes"
-    ws["A70"].font = Font(bold=True)
+    ws["A75"] = "Notes"
+    ws["A75"].font = Font(bold=True)
     notes = [
         "• Méthode A: Qout fixe = Q_plein Manning Ø900 (n=0,013).",
         "• Méthode B: Qout = f(H) pipe seul (Courbe_QH_900) — résultats B43–B46.",
         "• Méthode C: Qout = Q_900 + Q_overflow; V = V_pond + V_ditch — Compose_900 + Calcul_C (B49–B52).",
-        "• Le stockage commence quand Qin dépasse Qout; Vmax = max du volume stocké.",
-        "• Vérifier que le radier amont Ø900 (34.88) est bien le fond de la zone de rétention étudiée.",
+        "• Zone 2: SS_Aval + Calcul_Aval_A — résultats B55–B57.",
+        "• SS_Amont / SS_Aval: WSE et Surface en jaune — corriger depuis AutoCAD; ΔWSE et V_pas se recalculent.",
+        "• Vérifier que le radier amont Ø900 (34.88) est bien le fond de Zone 1.",
     ]
-    for i, line in enumerate(notes, start=71):
+    for i, line in enumerate(notes, start=76):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
@@ -718,10 +843,10 @@ def build() -> Path:
     wb2["A1"] = "Méthode B — routage avec Qout = f(H) depuis Courbe_QH_900 (FHWA)"
     wb2["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wb2["A2"] = (
-        "H = V / Aire_constante (Parametres!B24) — raccourci, PAS le levé Stage_Storage. "
+        "H = V / Aire_constante (Parametres!B24) — raccourci, PAS le levé SS_Amont. "
         "Qout interpolé sur Courbe_QH_900!E (Q gouvernant). "
         "Si V≈0, Qout = MIN(Qin, Q_plein). ΔV = (Qin_moy - Qout)*Δt. "
-        "Après routage, WSEmax_B réel est lu sur Stage_Storage via Vmax_B (Parametres B45)."
+        "Après routage, WSEmax_B réel est lu sur SS_Amont via Vmax_B (Parametres B45)."
     )
     wb2.merge_cells("A2:G3")
     wb2["A2"].alignment = Alignment(wrap_text=True)
@@ -809,7 +934,7 @@ def build() -> Path:
     wc["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wc["A2"] = (
         "Qout = Q_900(WSE) + Q_overflow(WSE). "
-        "V_total = V_pond(Stage_Storage) + V_ditch. "
+        "V_total = V_pond(SS_Amont) + V_ditch. "
         "Overflow: trapèze au-dessus du crown, Manning. Paramètres jaunes = Parametres!B27–B32."
     )
     wc.merge_cells("A2:L3")
@@ -841,9 +966,9 @@ def build() -> Path:
     L_ov = "$B$11"
     Zin_c = "$B$12"
 
-    # Stage_Storage WSE→V_pond
-    ss_wse = "Stage_Storage!$A$11:$A$18"
-    ss_v = "Stage_Storage!$E$11:$E$18"
+    # SS_Amont WSE→V_pond (Zone 1 only)
+    ss_wse = "SS_Amont!$A$11:$A$18"
+    ss_v = "SS_Amont!$E$11:$E$18"
     # Courbe_QH HW→Q
     hw_rng = f"Courbe_QH_900!$A${first_q}:$A${last_q}"
     q_rng = f"Courbe_QH_900!$E${first_q}:$E${last_q}"
@@ -1037,124 +1162,172 @@ def build() -> Path:
     for col, w in zip("ABCDEFG", [10, 10, 10, 10, 10, 14, 12]):
         wc2.column_dimensions[col].width = w
 
-    # ---------- Stage_Storage (levé → V(WSE) → WSEmax) ----------
-    wss = wb.create_sheet("Stage_Storage")
-    wss["A1"] = "Stage–storage du levé — V = f(WSE) → lire le niveau max"
-    wss["A1"].font = Font(bold=True, size=12, color="0F5C5C")
-    wss["A2"] = (
-        "PROCÉDURE (dans CE fichier): "
-        "1) Routage → Vmax_A / Vmax_B / Vmax_C sur Parametres. "
-        "2) Cette feuille = V_pond vs WSE (levé topographique — le vrai bassin). "
-        "3) Parametres!B39 = WSEmax_A; B45 = WSEmax_B (lus sur CE tableau). "
-        "4) Méthode C: V_pond + V_ditch et WSEmax_C sur Compose_900 / Calcul_C (B51). "
-        "5) Parametres!B24 (2500 m²) n'est PAS ici: c'est seulement le raccourci H=V/A de Méthode B. "
-        "Surfaces ci-dessous = votre levé (pas des placeholders)."
+    # ---------- Stage-storage Zone 1 / Zone 2 (WSE + A editables) ----------
+    add_stage_storage_sheet(
+        wb,
+        "SS_Amont",
+        "Zone 1 — Stage–storage Ø1500 → Ø900 (amont)",
+        (
+            "Jaune = WSE et Surface éditables (corriger depuis AutoCAD). "
+            "ΔWSE, V_pas, V_cumul = formules live (aires moyennes). "
+            "Cette feuille alimente WSEmax_A/B et V_pond Méthode C. "
+            "Parametres!B24 (2500 m²) n'est PAS ici — raccourci Méthode B seulement. "
+            "Ne pas y mettre les surfaces de Zone 2."
+        ),
+        STAGES_AMONT,
+        "Zone 1 — V cumulé vs WSE",
     )
-    wss.merge_cells("A2:G4")
-    wss["A2"].alignment = Alignment(wrap_text=True, vertical="top")
+    # Link Amont results summary onto SS_Amont
+    wsa = wb["SS_Amont"]
+    wsa["A24"] = "Vmax_A / WSEmax_A (Parametres)"
+    wsa["B24"] = "=Parametres!B36"
+    wsa["B24"].fill = GREEN
+    wsa["B24"].number_format = "0"
+    wsa["C24"] = "=Parametres!B39"
+    wsa["A25"] = "Vmax_B / WSEmax_B (Parametres)"
+    wsa["B25"] = "=Parametres!B43"
+    wsa["B25"].fill = GREEN
+    wsa["B25"].number_format = "0"
+    wsa["C25"] = "=Parametres!B45"
+    wsa["A26"] = "Vmax_C / WSEmax_C (Parametres)"
+    wsa["B26"] = "=Parametres!B49"
+    wsa["B26"].fill = GREEN
+    wsa["B26"].number_format = "0"
+    wsa["C26"] = "=Parametres!B51"
+    wsa["D26"] = "Vmax_C inclut V_ditch"
 
-    wss["A6"] = "Formule d'un pas"
-    wss["A6"].font = Font(bold=True)
-    wss["A7"] = "V_pas (m³) = (A_basse + A_haute) / 2 × (WSE_haute − WSE_basse)"
-    wss["A7"].fill = GREEN
-    wss.merge_cells("A7:F7")
-    wss["A8"] = "V_cumulatif = somme des V_pas depuis le radier"
-    wss.merge_cells("A8:F8")
+    add_stage_storage_sheet(
+        wb,
+        "SS_Aval",
+        "Zone 2 — Stage–storage Ø900 → Ø1200 (aval)",
+        (
+            "Jaune = WSE et Surface éditables (corriger depuis AutoCAD). "
+            "ΔWSE, V_pas, V_cumul = formules live. "
+            "Qin de cette zone = débit sortant du Ø900 (voir Calcul_Aval_A). "
+            "Sortie contrôlée par Ø1200 (Q_plein ≈ 4.93 m³/s). "
+            "Ne pas y mettre les surfaces de Zone 1."
+        ),
+        STAGES_AVAL,
+        "Zone 2 — V cumulé vs WSE",
+    )
+    wsv = wb["SS_Aval"]
+    wsv["A24"] = "Vmax_Aval_A / WSEmax (Parametres)"
+    wsv["B24"] = "=Parametres!B56"
+    wsv["B24"].fill = GREEN
+    wsv["B24"].number_format = "0"
+    wsv["C24"] = "=Parametres!B57"
 
-    hdr = [
-        "WSE / NSE (m)",
-        "Surface A (m²) ← ÉDITER",
-        "ΔWSE (m)",
-        "V_pas (m³)",
-        "V_cumulatif (m³)",
-        "Rôle",
+    # Index sheet (keeps familiar name + side-by-side check)
+    wix = wb.create_sheet("Stage_Storage")
+    wix["A1"] = "Index levé — Zone 1 (SS_Amont) + Zone 2 (SS_Aval)"
+    wix["A1"].font = Font(bold=True, size=12, color="0F5C5C")
+    wix["A2"] = (
+        "Éditez les surfaces dans SS_Amont et SS_Aval (pas ici). "
+        "Ce tableau compare A1+A2 vs total pour détecter un double comptage. "
+        "GIS export = option pour sortir des polygones d'eau depuis AutoCAD/Civil 3D; "
+        "vous n'en avez pas besoin si vous tapez les aires à la main depuis le plan."
+    )
+    wix.merge_cells("A2:H3")
+    wix["A2"].alignment = Alignment(wrap_text=True, vertical="top")
+    for j, h in enumerate(
+        ["WSE (m)", "A_Zone1 (m²)", "A_Zone2 (m²)", "A1+A2 (m²)", "V1 (m³)", "V2 (m³)", "V1+V2 (m³)"],
+        start=1,
+    ):
+        wix.cell(5, j, h)
+    style_header(wix, 5, 7)
+    for i in range(8):
+        r = 6 + i
+        src = 11 + i
+        wix.cell(r, 1, f"=SS_Amont!A{src}").number_format = "0.00"
+        wix.cell(r, 2, f"=SS_Amont!B{src}").number_format = "0"
+        wix.cell(r, 3, f"=SS_Aval!B{src}").number_format = "0"
+        wix.cell(r, 4, f"=B{r}+C{r}").number_format = "0"
+        wix.cell(r, 4).fill = BLUE
+        wix.cell(r, 5, f"=SS_Amont!E{src}").number_format = "0.0"
+        wix.cell(r, 6, f"=SS_Aval!E{src}").number_format = "0.0"
+        wix.cell(r, 7, f"=E{r}+F{r}").number_format = "0.0"
+        wix.cell(r, 7).fill = GREEN
+        for c in range(1, 8):
+            wix.cell(r, c).border = THIN
+    for col, w in zip("ABCDEFG", [12, 14, 14, 14, 12, 12, 12]):
+        wix.column_dimensions[col].width = w
+
+    # ---------- Calcul_Aval_A : Zone 2, Qout = Q_plein Ø1200 ----------
+    wav = wb.create_sheet("Calcul_Aval_A")
+    wav["A1"] = "Zone 2 — Méthode A: Qin = sortie Ø900; Qout = Q_plein Ø1200"
+    wav["A1"].font = Font(bold=True, size=12, color="0F5C5C")
+    wav["A2"] = (
+        "Qin_aval ≈ débit livré par le Ø900 (Calcul_A colonne C = Qcap Ø900 quand le bassin amont stocke). "
+        "Qout_aval = Parametres capacité Ø1200. Stockage sur SS_Aval. "
+        "Souvent Vmax_Aval faible si Q_1200 ≫ Q_900."
+    )
+    wav.merge_cells("A2:I3")
+    wav["A2"].alignment = Alignment(wrap_text=True)
+    wav["A5"] = "Qout_Aval (m³/s)"
+    wav["B5"] = f"={QCAP_1200}"
+    wav["B5"].fill = YELLOW
+    wav["B5"].number_format = "0.00"
+    wav["C5"] = "Par défaut Q_plein Ø1200 — éditable"
+    wav["A6"] = "Vmax_Aval_A (m³)"
+    n_h = len(HYDRO)
+    first_a = 8
+    last_a = first_a + n_h - 1
+    # Aval routing table starts at row 10
+    first_av = 10
+    last_av = first_av + n_h - 1
+    wav["B6"] = f"=MAX(H{first_av}:H{last_av})"
+    wav["B6"].fill = GREEN
+    wav["B6"].number_format = "0.0"
+    wav["A7"] = "WSEmax_Aval (m)"
+    wav["B7"] = wse_from_v("B6", "SS_Aval")
+    wav["B7"].fill = GREEN
+    wav["B7"].number_format = "0.00"
+
+    cols_av = [
+        "t (min)",
+        "Qin_aval (m³/s)",
+        "Qout_aval (m³/s)",
+        "Qin−Qout",
+        "Δt (s)",
+        "ΔVin (m³)",
+        "ΔVout (m³)",
+        "V stocké (m³)",
+        "Stockage?",
     ]
-    for j, h in enumerate(hdr, start=1):
-        wss.cell(10, j, h)
-    style_header(wss, 10, 6)
+    for j, h in enumerate(cols_av, start=1):
+        wav.cell(9, j, h)
+    style_header(wav, 9, len(cols_av))
 
-    # User survey (levé) — real water-surface areas vs WSE
-    stages = [
-        (34.88, 0, "Fond bassin / radier Ø900"),
-        (35.50, 120, "Levé"),
-        (36.01, 419, "Levé"),
-        (36.50, 480, "Levé"),
-        (37.00, 720, "Levé"),
-        (37.28, 2198, "LIMITE PATRON (+1.5 m crown) — levé"),
-        (37.40, 1516, "Levé (A↓ vs 37.28 — vérifier si voulu)"),
-        (40.00, 3746, "Levé — sommet table"),
-    ]
-    for i, (wse, area, role) in enumerate(stages):
-        r = 11 + i
-        wss.cell(r, 1, wse).number_format = "0.00"
-        wss.cell(r, 2, area).fill = YELLOW
-        wss.cell(r, 2).number_format = "0"
+    for i in range(n_h):
+        r = first_av + i
+        ca = first_a + i  # Calcul_A row
+        wav.cell(r, 1, f"=Calcul_A!A{ca}").border = THIN
+        wav.cell(r, 1).number_format = "0.0"
+        # Delivered to Zone 2 ≈ Ø900 outlet used in Calcul_A (constant Qcap while routing)
+        wav.cell(r, 2, f"=Calcul_A!C{ca}").border = THIN
+        wav.cell(r, 2).number_format = "0.000"
+        wav.cell(r, 3, "=$B$5").border = THIN
+        wav.cell(r, 3).number_format = "0.00"
+        wav.cell(r, 4, f"=B{r}-C{r}").border = THIN
+        wav.cell(r, 4).number_format = "0.000"
         if i == 0:
-            wss.cell(r, 3, 0)
-            wss.cell(r, 4, 0)
-            wss.cell(r, 5, 0)
+            for c in (5, 6, 7, 8):
+                wav.cell(r, c, 0).border = THIN
         else:
             prev = r - 1
-            wss.cell(r, 3, f"=A{r}-A{prev}").number_format = "0.00"
-            wss.cell(r, 4, f"=0.5*(B{prev}+B{r})*C{r}").number_format = "0.0"
-            wss.cell(r, 5, f"=E{prev}+D{r}").number_format = "0.0"
-            wss.cell(r, 5).fill = GREEN
-        wss.cell(r, 6, role)
-        for c in range(1, 7):
-            wss.cell(r, c).border = THIN
-        if abs(wse - 37.28) < 1e-9:
-            for c in range(1, 7):
-                if c != 2:
-                    wss.cell(r, c).fill = ORANGE
+            wav.cell(r, 5, f"=(A{r}-A{prev})*60").border = THIN
+            wav.cell(r, 5).number_format = "0.0"
+            wav.cell(r, 6, f"=0.5*(B{prev}+B{r})*E{r}").border = THIN
+            wav.cell(r, 6).number_format = "0.0"
+            wav.cell(r, 7, f"=F{r}-(H{r}-H{prev})").border = THIN
+            wav.cell(r, 7).number_format = "0.0"
+            wav.cell(r, 8, f"=MAX(0,H{prev}+0.5*(D{prev}+D{r})*E{r})").border = THIN
+            wav.cell(r, 8).number_format = "0.0"
+        wav.cell(r, 8).fill = GREEN
+        wav.cell(r, 9, f'=IF(H{r}>0.5,"oui","non")').border = THIN
 
-    wss["A21"] = "Vmax_A (Calcul_A)"
-    wss["B21"] = "=Parametres!B36"
-    wss["B21"].fill = GREEN
-    wss["B21"].number_format = "0"
-    wss["A22"] = "WSEmax_A (m)"
-    wss["B22"] = "=Parametres!B39"
-    wss["B22"].fill = GREEN
-    wss["A23"] = "Vmax_B (Calcul_B)"
-    wss["B23"] = "=Parametres!B43"
-    wss["B23"].fill = GREEN
-    wss["B23"].number_format = "0"
-    wss["A24"] = "WSEmax_B (m)"
-    wss["B24"] = "=Parametres!B45"
-    wss["B24"].fill = GREEN
-    wss["A25"] = "Vmax_C / WSEmax_C"
-    wss["B25"] = "=Parametres!B49"
-    wss["B25"].fill = GREEN
-    wss["B25"].number_format = "0"
-    wss["C25"] = '=Parametres!B51'
-    wss["D25"] = "Vmax_C inclut V_ditch — WSEmax_C = Parametres B51"
-    wss["A26"] = "V disponible à 37.28 m (m³)"
-    wss["B26"] = "=E16"
-    wss["B26"].fill = BLUE
-    wss["B26"].number_format = "0"
-    wss["C26"] = "Si Vmax_A ou Vmax_B > cette valeur → le niveau dépasse la limite patron"
-
-    wss["A28"] = "Comment lire le résultat"
-    wss["A28"].font = Font(bold=True)
-    wss["A29"] = (
-        "Exemple: si Vmax_A > V_cumul @ 37.28 (colonne E, ligne orange), alors WSEmax_A > 37.28 m "
-        "(la table monte vers 37.40 / 40.00 ou 'Hors table'). "
-        "Jaune = surfaces du levé (éditables). "
-        "Méthode C: Parametres B49–B52 et Calcul_C (fossé inclus). "
-        "Note: A(37.40)=1516 < A(37.28)=2198 — inhabituel; confirmer sur plan."
-    )
-    wss.merge_cells("A29:F31")
-    wss["A29"].alignment = Alignment(wrap_text=True)
-
-    ch = LineChart()
-    ch.title = "V cumulé vs WSE (levé)"
-    ch.y_axis.title = "V (m³)"
-    ch.x_axis.title = "WSE (m)"
-    ch.add_data(Reference(wss, min_col=5, min_row=10, max_row=18), titles_from_data=True)
-    ch.set_categories(Reference(wss, min_col=1, min_row=11, max_row=18))
-    wss.add_chart(ch, "H6")
-
-    for col, w in zip("ABCDEF", [14, 22, 12, 12, 16, 55]):
-        wss.column_dimensions[col].width = w
+    for col in range(1, 10):
+        wav.column_dimensions[get_column_letter(col)].width = 14 if col > 1 else 12
 
     # ---------- Fichiers liés ----------
     wf = wb.create_sheet("Fichiers_lies")
@@ -1203,7 +1376,7 @@ def build() -> Path:
         "7. Sur ce Ø900 (L/D≈56), le calcul FHWA indique surtout un contrôle outlet.",
         "8. Le Ø1200 est aval: n'augmente pas la sortie de la rétention.",
         "",
-        "9. Niveau d'eau max: A/B via Stage_Storage; C via Calcul_C (Parametres B39 / B45 / B51).",
+        "9. Niveau d'eau max Zone 1: A/B via SS_Amont; C via Calcul_C. Zone 2: SS_Aval + Calcul_Aval_A (B55–B57).",
         "",
         "Fichiers liés / anciens Excel: voir feuille Fichiers_lies.",
     ]
