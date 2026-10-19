@@ -52,8 +52,21 @@ S0_1200 = (Z_US_1200 - Z_DS_1200) / L_1200
 Z_POND = 34.88
 
 # Optional berm / overflow channel above a crest (not a Ø900 crown)
-CREST_DEFAULT = 37.28  # former boss limit — editable
+CREST_DEFAULT = 37.40  # city max WSE (was 37.28 study); editable
 OV_B, OV_N, OV_Z, OV_S, OV_L = 2.0, 0.035, 2.0, 0.0085, 50.1
+
+# Combined levé Zone1+Zone2 (Ø900 removed → one pond). Editable yellow in Excel.
+# WSE, A_Z1, A_Z2 → A_total = A_Z1+A_Z2
+STAGES_COMBINED = [
+    (34.88, 0 + 0, "Fond bassin"),
+    (35.50, 56 + 60, "Levé Z1+Z2 — éditer si AutoCAD diffère"),
+    (36.01, 210 + 219, "Levé Z1+Z2"),
+    (36.50, 380 + 150, "Levé Z1+Z2"),
+    (37.00, 400 + 340, "Levé Z1+Z2"),
+    (37.28, 500 + 1700, "Ancien seuil étude (+1.5 m) — référence"),
+    (37.40, 860 + 1460, "LIMITE VILLE (WSE max + freeboard 0.6 m)"),
+    (40.00, 2100 + 1632, "Sommet table"),
+]
 
 
 def q_full_manning(D: float, S0: float, n: float) -> float:
@@ -96,9 +109,10 @@ def build() -> Path:
     ws["A1"].font = Font(bold=True, size=14, color="0F5C5C")
     ws.merge_cells("A1:F1")
     ws["A2"] = (
-        "Hypotheses: le Ø900 est elimine; plus d'aire de retention. "
+        "Hypotheses: le Ø900 est elimine; un seul bassin (surfaces = Zone1+Zone2 du leve). "
         "Entree = hydrogramme (Ø1500). Sortie = Ø1200. "
-        "Option: fossé/berme au-dessus d'une cote crest. Cellules JAUNES = entrees."
+        "Limite ville WSE = 37.40 m (B27). B25=0 → volume = leve seul (pas de V_ditch). "
+        "Cellules JAUNES = entrees. Aluminium ondule: augmenter n (ex. 0.024) sur Courbe_QH_1200."
     )
     ws.merge_cells("A2:F3")
     ws["A2"].alignment = Alignment(wrap_text=True, vertical="top")
@@ -113,7 +127,7 @@ def build() -> Path:
     ws["A9"] = "Ø1200 — geometrie et Manning (jaune)"
     ws["A9"].font = Font(bold=True)
     rows1200 = [
-        (10, "n Manning (-)", N_MANNING, "0.000"),
+        (10, "n Manning (-)", N_MANNING, "0.000"),  # beton ~0.013; alu ondule ~0.022–0.025
         (11, "D (m)", D_1200, "0.00"),
         (12, "L (m)", L_1200, "0.00"),
         (13, "Radier amont Zin (m)", Z_US_1200, "0.00"),
@@ -125,6 +139,7 @@ def build() -> Path:
         c.fill = YELLOW
         c.border = THIN
         c.number_format = fmt
+    ws["C10"] = "beton ~0.013; aluminium ondule typ. 0.022–0.025 (changer aussi Courbe_QH_1200)"
     ws["A15"] = "S0 = (Zin-Zout)/L"
     ws["B15"] = "=(B13-B14)/B12"
     ws["B15"].fill = BLUE
@@ -165,11 +180,21 @@ def build() -> Path:
     ws["B23"].border = THIN
     ws["B23"].number_format = "0.00"
     ws["A24"] = "Aire_plan_eau_m2 (approx Methode B)"
-    ws["B24"] = 4000
+    ws["B24"] = 2320
     ws["B24"].fill = YELLOW
     ws["B24"].border = THIN
     ws["B24"].number_format = "0"
-    ws["C24"] = "Plus grande qu'avant (plus d'aire retention) — affiner avec le leve"
+    ws["C24"] = "Raccourci Methode B seulement (H=V/A). Ex. A@37.40≈2320 — PAS un 2e bassin"
+
+    ws["A25"] = "Inclure V_ditch trapeze? (1=oui, 0=leve seul)"
+    ws["B25"] = 0
+    ws["B25"].fill = YELLOW
+    ws["B25"].border = THIN
+    ws["B25"].number_format = "0"
+    ws["C25"] = (
+        "0 = recommande si Stage_Storage contient deja le fosse (V=leve seul; Q_overflow garde b,z,L). "
+        "1 = ajoute V_ditch = A_trapeze x L (risque double volume)."
+    )
 
     # Overflow optional
     ws["A26"] = "Overflow optionnel — fosse/berme au-dessus d'un crest (jaune)"
@@ -179,7 +204,7 @@ def build() -> Path:
     ws["B27"].fill = YELLOW
     ws["B27"].border = THIN
     ws["B27"].number_format = "0.00"
-    ws["C27"] = "Si WSE < crest → Q_overflow = 0"
+    ws["C27"] = "Limite ville = 37.40 m par defaut. Si WSE < crest → Q_overflow = 0"
     for r, lab, val, fmt in [
         (28, "b fond (m)", OV_B, "0.00"),
         (29, "n fosse (-)", OV_N, "0.000"),
@@ -195,7 +220,7 @@ def build() -> Path:
     ws["C31"] = "Pente fosse (pas 0.085)"
     ws["A33"] = "Qout compose"
     ws["B33"] = "Q_1200(WSE) + Q_overflow(WSE)"
-    ws["C33"] = "V = V_pond + V_ditch — Compose_1200 + Calcul_C"
+    ws["C33"] = '=IF(B25=1,"V=V_pond+V_ditch","V=V_pond (leve seul, B25=0)") — Compose_1200 + Calcul_C'
 
     def wse_from_v(cell: str) -> str:
         return (
@@ -250,9 +275,9 @@ def build() -> Path:
     ws["B45"].number_format = "0.00"
 
     # Results C
-    ws["A47"] = "Resultats Methode C — Ø1200 + overflow (Calcul_C)"
+    ws["A47"] = "Resultats Methode C — Ø1200 + Q_overflow (V via B25)"
     ws["A47"].font = Font(bold=True)
-    ws["A48"] = "Vmax_C (m3) = max(V_pond+V_ditch)"
+    ws["A48"] = "Vmax_C (m3) = max(V_total)"
     ws["B48"] = "=Calcul_C!B7"
     ws["B48"].fill = GREEN
     ws["B48"].number_format = "0"
@@ -274,9 +299,10 @@ def build() -> Path:
     ws["A53"].font = Font(bold=True)
     notes = [
         "• Sans Ø900: le goulot est le Ø1200 (Q_plein ~4.9 m3/s vs ~1.7 avant) → moins de stockage force, plus de pointe aval.",
-        "• Plus d'aire de bassin: augmenter les surfaces jaunes sur Stage_Storage (et/ou Aire B24).",
-        "• Methode A: 1re estimation. B: rating FHWA pipe. C: pipe + fosse si WSE depasse le crest.",
-        "• Verifier la capacite/vitesse aval avec Qout(t) de Calcul_B ou C (pointe plus haute qu'avec Ø900).",
+        "• Stage_Storage = Z1+Z2 (sans Ø900). Editer jaune; limite ville 37.40 m (B27 / ligne orange).",
+        "• B25=0: V Methode C = leve seul. B25=1: +V_ditch trapeze. Q_overflow toujours actif si WSE>crest.",
+        "• Methode A: 1re estimation. B: FHWA pipe (Aire B24). C: pipe + Q_overflow.",
+        "• Verifier pointe aval (Ø1200 livre plus que l'ancien Ø900).",
     ]
     for i, line in enumerate(notes, start=54):
         ws.cell(i, 1, line)
@@ -558,13 +584,13 @@ def build() -> Path:
 
     # ========== Stage_Storage ==========
     wss = wb.create_sheet("Stage_Storage")
-    wss["A1"] = "Stage–storage du leve (bassin AGRANDI sans Ø900) — editer surfaces jaunes"
+    wss["A1"] = "Stage–storage COMBINE (Zone1+Zone2) — bassin SANS Ø900 — editer jaune"
     wss["A1"].font = Font(bold=True, size=12, color="0F5C5C")
     wss["A2"] = (
-        "V_pas = 0.5*(A_bas+A_haut)*dWSE. Remplacez les aires par votre nouveau leve "
-        "(plus d'aire attendue sans emprise Ø900). "
-        "Surfaces jaunes synchronisees avec votre copie locale. "
-        "Ligne 37.28 m: Role laisse vide (comme votre fichier local)."
+        "V_pas = 0.5*(A_bas+A_haut)*dWSE. Aires = somme Z1+Z2 du leve deux zones "
+        "(scenario sans ponceau Ø900 intermediaire). "
+        "Jaune = WSE et Surface editables (AutoCAD). "
+        "Orange = 37.40 m limite ville. Ancien seuil etude 37.28 reste dans la table."
     )
     wss.merge_cells("A2:F3")
     wss["A2"].alignment = Alignment(wrap_text=True)
@@ -575,17 +601,7 @@ def build() -> Path:
         wss.cell(10, j, h)
     style_header(wss, 10, 6)
 
-    # Synced with user's local Stage_Storage edits (do not overwrite casually)
-    stages = [
-        (Z_POND, 0, "Fond bassin"),
-        (35.50, 120, "Placeholder — remplacer"),
-        (36.01, 419, "Placeholder — remplacer"),
-        (36.50, 480, "Placeholder — remplacer"),
-        (37.00, 720, "Placeholder — remplacer"),
-        (37.28, 2198, None),  # Role must stay blank
-        (37.40, 1516, "Placeholder — remplacer"),
-        (40.00, 3746, "Placeholder haut — remplacer"),
-    ]
+    stages = list(STAGES_COMBINED)
     for i, (wse, area, role) in enumerate(stages):
         r = 11 + i
         wss.cell(r, 1, wse).number_format = "0.00"
@@ -604,7 +620,7 @@ def build() -> Path:
         wss.cell(r, 6, "" if role is None else role)
         for c in range(1, 7):
             wss.cell(r, c).border = THIN
-        if abs(wse - 37.28) < 1e-9:
+        if abs(wse - 37.40) < 1e-9 or abs(wse - 37.28) < 1e-9:
             for c in range(1, 7):
                 if c != 2:
                     wss.cell(r, c).fill = ORANGE
@@ -615,9 +631,14 @@ def build() -> Path:
     wss["A22"] = "Vmax_B / WSEmax_B"
     wss["B22"] = "=Parametres!B42"
     wss["C22"] = "=Parametres!B44"
-    wss["A23"] = "V @ 37.28 m"
+    wss["A23"] = "V @ 37.28 m (ancien seuil)"
     wss["B23"] = "=E16"
     wss["B23"].fill = BLUE
+    wss["A24"] = "V @ 37.40 m (limite ville)"
+    wss["B24"] = "=E17"
+    wss["B24"].fill = GREEN
+    wss["B24"].number_format = "0.0"
+    wss["C24"] = "Comparer a Vmax Methode C"
 
     ch_s = LineChart()
     ch_s.title = "V cumul vs WSE (leve)"
@@ -631,9 +652,9 @@ def build() -> Path:
 
     # ========== Compose_1200 ==========
     wc = wb.create_sheet("Compose_1200")
-    wc["A1"] = "Methode C — Q_1200 + Q_overflow; V_pond + V_ditch"
+    wc["A1"] = "Methode C — Q_1200 + Q_overflow; V = V_pond (+ V_ditch si B25=1)"
     wc["A1"].font = Font(bold=True, size=12, color="0F5C5C")
-    wc["A2"] = "Lie a Parametres (crest, b, n, z, S, L). Overflow si WSE >= crest."
+    wc["A2"] = "Lie a Parametres B25–B32. Q_overflow si WSE>=crest. B25=0 → V_ditch=0 (leve seul)."
     wc.merge_cells("A2:K2")
 
     for r, lab, ref in [
@@ -644,13 +665,14 @@ def build() -> Path:
         (8, "S", "=Parametres!B31"),
         (9, "L", "=Parametres!B32"),
         (10, "Zin", "=Parametres!B13"),
+        (11, "Inclure V_ditch", "=Parametres!B25"),
     ]:
         wc.cell(r, 1, lab)
         cell = wc.cell(r, 2, ref)
         cell.fill = YELLOW
         cell.border = THIN
 
-    Crest, b_ref, n_ov, z_ref, S_ov, L_ov, Zin_c = (
+    Crest, b_ref, n_ov, z_ref, S_ov, L_ov, Zin_c, v_ditch_on = (
         "$B$4",
         "$B$5",
         "$B$6",
@@ -658,6 +680,7 @@ def build() -> Path:
         "$B$8",
         "$B$9",
         "$B$10",
+        "$B$11",
     )
     ss_wse = "Stage_Storage!$A$11:$A$18"
     ss_v = "Stage_Storage!$E$11:$E$18"
@@ -715,9 +738,9 @@ def build() -> Path:
         y = f"C{r}"
         wc.cell(r, 4, f"=IF({y}<=0,0,({b_ref}+{z_ref}*{y})*{y})").number_format = "0.000"
         A = f"D{r}"
-        wc.cell(r, 5, f"={A}*{L_ov}").number_format = "0.0"
+        wc.cell(r, 5, f"=IF({v_ditch_on}=1,{A}*{L_ov},0)").number_format = "0.0"
         wc.cell(r, 6, f"={v_pond(wse)}").number_format = "0.0"
-        wc.cell(r, 7, f"=E{r}+F{r}").number_format = "0.0"
+        wc.cell(r, 7, f"=F{r}+E{r}").number_format = "0.0"
         wc.cell(r, 7).fill = GREEN
         hw = f"B{r}"
         wc.cell(r, 8, f"={q1200_hw(hw)}").number_format = "0.000"
@@ -748,7 +771,7 @@ def build() -> Path:
     wc2 = wb.create_sheet("Calcul_C")
     wc2["A1"] = "Methode C — routage V_total + Qout compose (sans Ø900)"
     wc2["A1"].font = Font(bold=True, size=12, color="0F5C5C")
-    wc2["A2"] = "WSE depuis V_total (Compose_1200); Qout = Q_1200 + Q_overflow."
+    wc2["A2"] = "WSE depuis V_total (Compose_1200; B25 pilote V_ditch). Qout = Q_1200 + Q_overflow."
     wc2.merge_cells("A2:G2")
     wc2["A4"] = "Q_plein ref"
     wc2["B4"] = "=Parametres!B22"
@@ -835,12 +858,12 @@ def build() -> Path:
     wm["A1"].font = Font(bold=True, size=13)
     lines = [
         "",
-        "1. Le Ø900 est elimine: plus de controle etroit; le bassin peut etre agrandi (Stage_Storage).",
+        "1. Le Ø900 est elimine: controle = Ø1200; Stage_Storage = aires Z1+Z2 (leve combine).",
         "2. Entree: hydrogramme (pointe editable Hydrogramme!B4), typiquement via Ø1500.",
         "3. Sortie: Ø1200 = nouvel ouvrage de controle.",
         "   A) Qout = Q_plein Manning (formule Parametres!B18).",
         "   B) Qout = f(H) FHWA sur Courbe_QH_1200.",
-        "   C) Qout = Q_1200 + overflow trapèze au-dessus du crest (berme/fosse).",
+        "   C) Qout = Q_1200 + Q_overflow; V = leve (+ V_ditch si Parametres B25=1).",
         "4. Effet attendu vs ancien Ø900: Qout plus grand → Vmax plus petit, pointe aval plus forte.",
         "5. Editez les jaunes; les verts et graphiques se recalculent.",
         "6. Fichier frere (ancien): Volume_Retention_Ponceau_900.xlsx (avec Ø900).",

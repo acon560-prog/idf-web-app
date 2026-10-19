@@ -5,8 +5,10 @@
 `Volume_Retention_Sans_900.xlsx` — le client **élimine le Ø900** pour agrandir le bassin.
 
 ```
-Ø1500 (in) → bassin agrandi → Ø1200 (contrôle) [+ overflow optionnel sur crest]
+Ø1500 (in) → bassin unique (aires Zone1+Zone2) → Ø1200 (contrôle) [+ Q_overflow]
 ```
+
+Mis à jour: Stage_Storage = Z1+Z2, crest défaut **37.40 m**, interrupteur **B25** (0 = volume levé seul).
 
 | Feuille | Contenu |
 |---------|---------|
