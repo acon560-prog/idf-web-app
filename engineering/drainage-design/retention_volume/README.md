@@ -14,6 +14,15 @@ Deux classeurs distincts (ne pas écraser l'un par l'autre).
 python3 build_retention_excel.py
 ```
 
+
+## Also: scenario without Ø900
+
+`Volume_Retention_Sans_900.xlsx` (+ `build_retention_no_900_excel.py`)
+
+- Ø1500 → one pond (Zone1+Zone2 areas) → Ø1200
+- Crest default **37.40 m**, **B25=0** = volume levé seul
+- Full branch history: `cursor/retention-no-900-d87f`
+
 ## 2) Fichier deux zones (nouveau)
 
 `Volume_Retention_Deux_Zones_1500_900_1200.xlsx`
