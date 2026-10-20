@@ -75,6 +75,16 @@ QCAP_1200 = 4.93
 QPEAK_REF = 9.60  # original peak used to define dimensionless shape
 QPEAK_IN = QPEAK_REF
 
+# Ø1200 (Zone 2 outlet) — geometry from Parametres layout table
+D_1200_M = 1.20
+L_1200 = 31.30
+Z_US_1200 = 33.60
+Z_DS_1200 = 33.10
+N_MANNING_1200 = 0.013  # béton par défaut (changer si TOG)
+CROWN_1200 = Z_US_1200 + D_1200_M  # 34.80 m
+# Zone 2 Method C crest = banks / limite ville (not auto = crown). Editable in Excel.
+CREST_ZONE2 = 37.40
+
 # Method C — overflow ditch above Ø900 crown (user inputs)
 CROWN_900 = Z_US_900 + D_900_M  # 35.78 m = crest
 OVERFLOW_B = 2.0  # m bottom width at crown
@@ -523,7 +533,7 @@ def build() -> Path:
     ws["B52"].number_format = "0.00"
     ws["C52"] = "Comparer à 2.40 m (limite patron); overflow actif si WSE>crest"
 
-    ws["A54"] = "Résultats Zone 2 — Ø900 → Ø1200 (SS_Aval + Calcul_Aval_A)"
+    ws["A54"] = "Résultats Zone 2 — Ø900 → Ø1200 (SS_Aval + Aval_A/B/C)"
     ws["A54"].font = Font(bold=True)
     ws["A55"] = "V @ 37.28 m Zone 2 (m³) — SS_Aval"
     ws["B55"] = "=SS_Aval!B21"
@@ -534,27 +544,57 @@ def build() -> Path:
     ws["B56"] = "=Calcul_Aval_A!B6"
     ws["B56"].fill = GREEN
     ws["B56"].number_format = "0"
-    ws["C56"] = "Routage Aval: Qin≈Qcap Ø900; Qout=Q_plein Ø1200"
+    ws["C56"] = "Qin=Calcul_A Qout; Qout=Q_plein Ø1200"
     ws["A57"] = "WSEmax_Aval_A (m) — SS_Aval"
     ws["B57"] = "=Calcul_Aval_A!B7"
     ws["B57"].fill = GREEN
     ws["B57"].number_format = "0.00"
-    ws["C57"] = "Lecture volume→cote sur levé Zone 2"
+    ws["C57"] = "Souvent ≈ fond si Q_1200 ≫ Q_900"
+    ws["A58"] = "Vmax_Aval_B (m³)"
+    ws["B58"] = "=Calcul_Aval_B!B6"
+    ws["B58"].fill = GREEN
+    ws["B58"].number_format = "0"
+    ws["C58"] = "Qin=Calcul_B; Qout=f(HW) Courbe_QH_1200; WSE via SS_Aval (pas B24)"
+    ws["A59"] = "WSEmax_Aval_B (m)"
+    ws["B59"] = "=Calcul_Aval_B!B7"
+    ws["B59"].fill = GREEN
+    ws["B59"].number_format = "0.00"
+    ws["A60"] = "Vmax_Aval_C (m³)"
+    ws["B60"] = "=Calcul_Aval_C!B7"
+    ws["B60"].fill = GREEN
+    ws["B60"].number_format = "0"
+    ws["C60"] = "Qin=Calcul_C; Qout=Q_1200+Q_overflow; Compose_Aval"
+    ws["A61"] = "WSEmax_Aval_C (m)"
+    ws["B61"] = "=Calcul_Aval_C!B8"
+    ws["B61"].fill = GREEN
+    ws["B61"].number_format = "0.00"
+    ws["A62"] = "Crest Zone 2 Méthode C (m)"
+    ws["B62"] = CREST_ZONE2
+    ws["B62"].fill = YELLOW
+    ws["B62"].border = THIN
+    ws["B62"].number_format = "0.00"
+    ws["C62"] = (
+        f"Défaut {CREST_ZONE2:.2f} (berges/limite ville). Crown Ø1200={CROWN_1200:.2f}. "
+        "Jaune=éditable. Fossé Zone 2 réutilise b,n,z,S,L (B28–B32)."
+    )
 
-    ws["A59"] = "Comment lire WSEmax (zones + méthodes)"
-    ws["A59"].font = Font(bold=True)
+    ws["A64"] = "Comment lire WSEmax (zones + méthodes)"
+    ws["A64"].font = Font(bold=True)
     wse_help = [
-        "1) Zone 1 (Ø1500→Ø900): A/B → Vmax puis WSEmax sur SS_Amont. Zone 2: SS_Aval + Calcul_Aval_A (B55–B57).",
-        "2) C (Zone 1): Qout = Q_900+Q_overflow; V = SS_Amont (+V_ditch si B25=1); WSEmax_C = Calcul_C.",
-        "3) Crest = crown = 35.78 m → au-dessus, le fossé trapèze ajoute débit et volume (Zone 1).",
+        "1) Zone 1: A/B → Vmax puis WSEmax sur SS_Amont; C via Calcul_C. Zone 2: Aval_A/B/C → B56–B61 + SS_Aval.",
+        "2) Zone 2 Aval_B: WSE depuis levé SS_Aval (pas l'aire fixe B24). Aval_C: Compose_Aval + crest B62.",
+        "3) Crest Zone 1 = crown Ø900 (35.78). Crest Zone 2 = B62 (berges; pas auto=crown Ø1200).",
         "4) Ne pas additionner Zone 1+2 dans un seul routage. Éditer WSE/Surface jaunes dans SS_Amont et SS_Aval.",
+        "5) Fond SS_Aval = 34.88 aujourd'hui (même grille que Zone 1). Radier amont Ø1200 = 33.60 — si le lit "
+        "réel descend jusque-là, le levé devrait commencer à 33.60 (volume manquant entre 33.60 et 34.88). "
+        "Non modifié ici: à confirmer sur levé AutoCAD avant de changer.",
     ]
-    for i, line in enumerate(wse_help, start=60):
+    for i, line in enumerate(wse_help, start=65):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
-    ws["A65"] = "Inlet control vs outlet control — qu'est-ce que ça veut dire?"
-    ws["A65"].font = Font(bold=True)
+    ws["A71"] = "Inlet control vs outlet control — qu'est-ce que ça veut dire?"
+    ws["A71"].font = Font(bold=True)
     ic_oc = [
         "• Inlet control (contrôle à l'entrée): le débit est limité par l'entrée du ponceau (forme d'entrée, HW/D).",
         "  Le tuyau aval « n'aspire » pas assez pour influencer — Q dépend surtout de la charge amont H, pas de L ni de n.",
@@ -565,21 +605,21 @@ def build() -> Path:
         "  en général prudent (si la charge monte, le débit réel peut être un peu plus élevé → Vmax un peu plus bas).",
         "• On n'a pas besoin de trancher IC/OC pour utiliser ce classeur: garder Qout = Q_plein (ou 1.77) suffit pour une 1re estimation.",
     ]
-    for i, line in enumerate(ic_oc, start=66):
+    for i, line in enumerate(ic_oc, start=72):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
-    ws["A75"] = "Notes"
-    ws["A75"].font = Font(bold=True)
+    # Notes after velocity block (rows 82–91) — avoid overwriting C87/C88 A_plein
+    ws["A102"] = "Notes"
+    ws["A102"].font = Font(bold=True)
     notes = [
         "• Méthode A: Qout fixe = Q_plein Manning Ø900 (TOG n=0,022).",
-        "• Méthode B: Qout = f(H) pipe seul (Courbe_QH_900) — résultats B43–B46.",
-        "• Méthode C: Qout = Q_900 + Q_overflow; V_ditch via B25 (0=levé seul) — Compose_900 + Calcul_C (B49–B52).",
-        "• Zone 2: SS_Aval + Calcul_Aval_A — résultats B55–B57.",
-        "• SS_Amont / SS_Aval: WSE et Surface en jaune — corriger depuis AutoCAD; ΔWSE et V_pas se recalculent.",
-        "• Vérifier que le radier amont Ø900 (34.88) est bien le fond de Zone 1.",
+        "• Méthode B Zone 1: Q=f(H) + aire B24 (approx) — préférer C pour WSEmax.",
+        "• Méthode C Zone 1: Compose_900 + Calcul_C (B49–B52).",
+        "• Zone 2 Aval_A/B/C — B56–B61. Aval_B utilise SS_Aval (pas B24).",
+        "• Fond Zone 2: SS_Aval commence à 34.88; radier Ø1200=33.60 — voir aide §5 (pas changé).",
     ]
-    for i, line in enumerate(notes, start=76):
+    for i, line in enumerate(notes, start=103):
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
 
@@ -1479,30 +1519,433 @@ def build() -> Path:
     for col in range(1, 12):
         wav.column_dimensions[get_column_letter(col)].width = 14 if col > 1 else 12
 
+    # ---------- Courbe_QH_1200 (Zone 2) ----------
+    wq12 = wb.create_sheet("Courbe_QH_1200")
+    wq12["A1"] = "Courbe Q=f(H) Ø1200 — FHWA HDS-5 (inlet + outlet) LIVE — Zone 2"
+    wq12["A1"].font = Font(bold=True, size=12, color="0F5C5C")
+    wq12["A2"] = (
+        "Paramètres jaunes ci-dessous (n, D, L, radiers). "
+        "Q_gouvernant = MIN(Qinlet, Qoutlet). Utilisé par Calcul_Aval_B et Compose_Aval."
+    )
+    wq12.merge_cells("A2:G2")
+    q12_params = [
+        (4, "n Manning (-)", N_MANNING_1200, "0.000", "béton ~0.013; TOG ~0.022"),
+        (5, "D (m)", D_1200_M, "0.00", ""),
+        (6, "L (m)", L_1200, "0.00", ""),
+        (7, "Radier amont Zin (m)", Z_US_1200, "0.00", ""),
+        (8, "Radier aval Zout (m)", Z_DS_1200, "0.00", ""),
+        (9, "S0=(Zin-Zout)/L", "=(B7-B8)/B6", "0.00000", ""),
+        (10, "TW au-dessus Zout (m)", 0.0, "0.00", "0 = exutoire libre"),
+        (11, "Entrée", "square_edge", "@", "square_edge | beveled | groove_headwall"),
+    ]
+    for row, label, val, fmt, note in q12_params:
+        wq12.cell(row, 1, label)
+        cell = wq12.cell(row, 2, val)
+        cell.fill = YELLOW
+        cell.border = THIN
+        if fmt != "@":
+            cell.number_format = fmt
+        wq12.cell(row, 3, note)
+    for j, h in enumerate(["entrée", "K", "M", "c", "Y", "Ke"], start=5):
+        wq12.cell(4, j, h)
+        wq12.cell(4, j).font = HEADER
+        wq12.cell(4, j).fill = HEADER_FILL
+    for i, rowv in enumerate(
+        [
+            ("square_edge", 0.0098, 2.0, 0.0398, 0.67, 0.5),
+            ("beveled", 0.0018, 2.5, 0.0300, 0.74, 0.2),
+            ("groove_headwall", 0.0078, 2.0, 0.0292, 0.74, 0.2),
+        ]
+    ):
+        for j, v in enumerate(rowv):
+            wq12.cell(5 + i, 5 + j, v).border = THIN
+    wq12["A13"] = "K"
+    wq12["B13"] = '=IFERROR(VLOOKUP(B11,$E$5:$J$7,2,FALSE),0.0098)'
+    wq12["A14"] = "M"
+    wq12["B14"] = '=IFERROR(VLOOKUP(B11,$E$5:$J$7,3,FALSE),2)'
+    wq12["A15"] = "c"
+    wq12["B15"] = '=IFERROR(VLOOKUP(B11,$E$5:$J$7,4,FALSE),0.0398)'
+    wq12["A16"] = "Y"
+    wq12["B16"] = '=IFERROR(VLOOKUP(B11,$E$5:$J$7,5,FALSE),0.67)'
+    wq12["A17"] = "Ke"
+    wq12["B17"] = '=IFERROR(VLOOKUP(B11,$E$5:$J$7,6,FALSE),0.5)'
+    D12, L12, S012, TW12 = "$B$5", "$B$6", "$B$9", "$B$10"
+    n12, K12, M12, c12, Y12, Ke12 = "$B$4", "$B$13", "$B$14", "$B$15", "$B$16", "$B$17"
+    Zin12 = "$B$7"
+    KU12, G12 = "1.811", "9.81"
+
+    def f_qinlet12(hw: str) -> str:
+        A = f"(PI()*({D12}/2)^2)"
+        qun = f"{KU12}*{A}*SQRT({D12})*IF({K12}*{D12}<=0,0,({hw}/({K12}*{D12}))^(1/{M12}))"
+        qun_sw = f"{KU12}*{A}*SQRT({D12})*IF({K12}*{D12}<=0,0,((1.2*{D12})/({K12}*{D12}))^(1/{M12}))"
+        qsub = f"{KU12}*{A}*SQRT({D12})*SQRT(MAX(0,({hw}/{D12}-{Y12})/{c12}))"
+        return f"IF({hw}<=0,0,IF({hw}<=1.2*{D12},{qun},MAX({qun_sw},{qsub})))"
+
+    def f_qoutlet12(hw: str) -> str:
+        ratio = f"MIN(0.999,MAX(1E-6,{hw}/{D12}))"
+        theta = f"2*ACOS(1-2*({ratio}))"
+        aseg = f"(({D12}/2)^2/2)*(({theta})-SIN({theta}))"
+        pwet = f"({D12}/2)*({theta})"
+        rh_p = f"IF(({pwet})<=0,0,({aseg})/({pwet}))"
+        q_part = (
+            f"IF({n12}<=0,0,(1/{n12})*({aseg})"
+            f"*IF(({rh_p})<=0,0,({rh_p})^(2/3))*SQRT({S012}))"
+        )
+        a_full = f"(PI()*({D12}/2)^2)"
+        rh_f = f"{D12}/4"
+        hloss = f"{hw}-{TW12}+{S012}*{L12}"
+        denom = f"(1+{Ke12})/(2*{G12})+({n12}^2)*{L12}/(({rh_f})^(4/3))"
+        q_full = f"IF(({hloss})<=0,0,{a_full}*SQRT(({hloss})/({denom})))"
+        return f"IF({hw}<{D12},{q_part},{q_full})"
+
+    for j, h in enumerate(
+        ["HW (m)", "WSE (m)", "Qinlet", "Qoutlet", "Q gouvernant", "A_ecoul (m²)", "V_gouv (m/s)"], 1
+    ):
+        wq12.cell(19, j, h)
+    style_header(wq12, 19, 7)
+    first_q12, n_hw12 = 20, 61
+    for i in range(n_hw12):
+        r = first_q12 + i
+        hw_val = round(i * 0.05, 2)
+        wq12.cell(r, 1, hw_val).number_format = "0.00"
+        hw = f"A{r}"
+        wq12.cell(r, 2, f"={Zin12}+{hw}").number_format = "0.00"
+        wq12.cell(r, 3, f"={f_qinlet12(hw)}").number_format = "0.000"
+        wq12.cell(r, 4, f"={f_qoutlet12(hw)}").number_format = "0.000"
+        wq12.cell(r, 5, f"=MIN(C{r},D{r})").number_format = "0.000"
+        wq12.cell(r, 5).fill = GREEN
+        ratio = f"MIN(0.999,MAX(1E-6,A{r}/{D12}))"
+        theta = f"2*ACOS(1-2*({ratio}))"
+        aseg = f"(({D12}/2)^2/2)*(({theta})-SIN({theta}))"
+        a_full = f"(PI()*({D12}/2)^2)"
+        wq12.cell(r, 6, f"=IF(A{r}<=0,0,IF(A{r}<{D12},{aseg},{a_full}))").number_format = "0.000"
+        wq12.cell(r, 7, f"=IF(F{r}<=0,0,E{r}/F{r})").number_format = "0.00"
+        wq12.cell(r, 7).fill = GREEN
+        for c in range(1, 8):
+            wq12.cell(r, c).border = THIN
+    last_q12 = first_q12 + n_hw12 - 1
+    hw_rng12 = f"Courbe_QH_1200!$A${first_q12}:$A${last_q12}"
+    q_rng12 = f"Courbe_QH_1200!$E${first_q12}:$E${last_q12}"
+    wse_rng12 = f"Courbe_QH_1200!$B${first_q12}:$B${last_q12}"
+
+    def q1200_from_hw(hw_cell: str) -> str:
+        m = f"MATCH({hw_cell},{hw_rng12},1)"
+        return (
+            f'IF({hw_cell}<=0,0,'
+            f'IF({hw_cell}>=INDEX({hw_rng12},ROWS({hw_rng12})),INDEX({q_rng12},ROWS({q_rng12})),'
+            f'INDEX({q_rng12},{m})+'
+            f'({hw_cell}-INDEX({hw_rng12},{m}))/'
+            f'(INDEX({hw_rng12},{m}+1)-INDEX({hw_rng12},{m}))*'
+            f'(INDEX({q_rng12},{m}+1)-INDEX({q_rng12},{m}))))'
+        )
+
+    # ---------- Calcul_Aval_B : Qin=Calcul_B; Qout=f(HW) via SS_Aval (no B24) ----------
+    wavb = wb.create_sheet("Calcul_Aval_B")
+    wavb["A1"] = "Zone 2 — Méthode B: Qin = sortie Calcul_B; Qout = f(HW) Courbe_QH_1200"
+    wavb["A1"].font = Font(bold=True, size=12, color="0F5C5C")
+    wavb["A2"] = (
+        "Contrairement à Calcul_B Zone 1 (aire fixe B24), ici WSE vient du levé SS_Aval "
+        "puis HW = WSE − Zin Ø1200 (33.60). Qin = Calcul_B!Qout (col E)."
+    )
+    wavb.merge_cells("A2:H3")
+    wavb["A2"].alignment = Alignment(wrap_text=True)
+    wavb["A5"] = "Zin Ø1200 (m)"
+    wavb["B5"] = Z_US_1200
+    wavb["B5"].fill = YELLOW
+    wavb["B5"].number_format = "0.00"
+    wavb["A6"] = "Vmax_Aval_B (m³)"
+    first_avb = 10
+    last_avb = first_avb + n_h - 1
+    # Calcul_B data starts at row 12
+    first_b = 12
+    wavb["B6"] = f"=MAX(G{first_avb}:G{last_avb})"
+    wavb["B6"].fill = GREEN
+    wavb["B6"].number_format = "0.0"
+    wavb["A7"] = "WSEmax_Aval_B (m)"
+    wavb["B7"] = wse_from_v("B6", "SS_Aval")
+    wavb["B7"].fill = GREEN
+    wavb["B7"].number_format = "0.00"
+    for j, h in enumerate(
+        ["t (min)", "Qin_aval", "WSE (m)", "HW (m)", "Qout", "Δt (s)", "V stocké (m³)", "V_Ø1200 (m/s)"],
+        1,
+    ):
+        wavb.cell(9, j, h)
+    style_header(wavb, 9, 8)
+    A1200b = "Parametres!$C$88"
+    for i in range(n_h):
+        r = first_avb + i
+        cb = first_b + i
+        wavb.cell(r, 1, f"=Calcul_B!A{cb}").border = THIN
+        wavb.cell(r, 2, f"=Calcul_B!E{cb}").border = THIN  # Qout Zone 1 Method B
+        if i == 0:
+            wavb.cell(r, 3, f"={Z_US_1200}").border = THIN
+            wavb.cell(r, 4, 0).border = THIN
+            wavb.cell(r, 5, f"=MIN(B{r},{QCAP_1200})").border = THIN
+            wavb.cell(r, 6, 0).border = THIN
+            wavb.cell(r, 7, 0).border = THIN
+        else:
+            p = r - 1
+            wavb.cell(r, 3, wse_from_v(f"G{p}", "SS_Aval")).border = THIN
+            wavb.cell(r, 4, f"=MAX(0,C{r}-$B$5)").border = THIN
+            wavb.cell(
+                r,
+                5,
+                f"=IF(G{p}<=0.01,MIN(0.5*(B{p}+B{r}),{QCAP_1200}),{q1200_from_hw(f'D{r}')})",
+            ).border = THIN
+            wavb.cell(r, 6, f"=(A{r}-A{p})*60").border = THIN
+            wavb.cell(r, 7, f"=MAX(0,G{p}+(0.5*(B{p}+B{r})-E{r})*F{r})").border = THIN
+        wavb.cell(r, 8, f"=IF({A1200b}<=0,0,E{r}/{A1200b})").border = THIN
+        for c in range(1, 9):
+            if c in (2, 3, 4, 5):
+                wavb.cell(r, c).number_format = "0.000"
+            if c in (6, 7):
+                wavb.cell(r, c).number_format = "0.0"
+            if c == 8:
+                wavb.cell(r, c).number_format = "0.00"
+        wavb.cell(r, 7).fill = GREEN
+        wavb.cell(r, 8).fill = GREEN
+    for col in range(1, 9):
+        wavb.column_dimensions[get_column_letter(col)].width = 14
+
+    # ---------- Compose_Aval : Q_1200 + Q_overflow Zone 2 ----------
+    wca = wb.create_sheet("Compose_Aval")
+    wca["A1"] = "Zone 2 Méthode C — Q_1200 + Q_overflow (crest = Parametres B62)"
+    wca["A1"].font = Font(bold=True, size=12, color="0F5C5C")
+    wca["A2"] = (
+        "Qout = Q_1200(WSE) + Q_overflow. V_pond depuis SS_Aval. "
+        "V_ditch si Parametres!B25=1 (mêmes b,n,z,S,L que Zone 1). "
+        "Crest Zone 2 = B62 (berges; crown Ø1200 = 34.80)."
+    )
+    wca.merge_cells("A2:L3")
+    wca["A2"].alignment = Alignment(wrap_text=True)
+    for row, label, val, fmt in [
+        (6, "Crest Zone 2 (m)", "=Parametres!B62", "0.00"),
+        (7, "b (m)", "=Parametres!B28", "0.00"),
+        (8, "n fossé", "=Parametres!B29", "0.000"),
+        (9, "z (-)", "=Parametres!B30", "0.0"),
+        (10, "S fossé", "=Parametres!B31", "0.000"),
+        (11, "L fossé (m)", "=Parametres!B32", "0.0"),
+        (12, "Zin Ø1200 (m)", f"={Z_US_1200}", "0.00"),
+        (13, "Inclure V_ditch (0/1)", "=Parametres!B25", "0"),
+    ]:
+        wca.cell(row, 1, label)
+        cell = wca.cell(row, 2, val)
+        cell.fill = YELLOW
+        cell.border = THIN
+        cell.number_format = fmt
+    Crest2, b2, n2, z2, S2, L2 = "$B$6", "$B$7", "$B$8", "$B$9", "$B$10", "$B$11"
+    Zin_c2, v_ditch2 = "$B$12", "$B$13"
+    ss_wse2 = "SS_Aval!$A$11:$A$18"
+    ss_v2 = "SS_Aval!$E$11:$E$18"
+
+    def v_pond_aval(wse_cell: str) -> str:
+        m = f"MATCH({wse_cell},{ss_wse2},1)"
+        return (
+            f'IF({wse_cell}<=INDEX({ss_wse2},1),INDEX({ss_v2},1),'
+            f'IF({wse_cell}>=INDEX({ss_wse2},ROWS({ss_wse2})),INDEX({ss_v2},ROWS({ss_v2})),'
+            f'INDEX({ss_v2},{m})+'
+            f'({wse_cell}-INDEX({ss_wse2},{m}))/'
+            f'(INDEX({ss_wse2},{m}+1)-INDEX({ss_wse2},{m}))*'
+            f'(INDEX({ss_v2},{m}+1)-INDEX({ss_v2},{m}))))'
+        )
+
+    for j, h in enumerate(
+        [
+            "WSE (m)",
+            "HW (m)",
+            "y_ov (m)",
+            "A_ditch (m²)",
+            "V_ditch (m³)",
+            "V_pond (m³)",
+            "V_total (m³)",
+            "Q_1200",
+            "Q_overflow",
+            "Qout",
+            "Overflow?",
+            "V_Ø1200 (m/s)",
+            "V_overflow (m/s)",
+        ],
+        1,
+    ):
+        wca.cell(14, j, h)
+    style_header(wca, 14, 13)
+    A1200c = "Parametres!$C$88"
+    # WSE from Ø1200 invert (33.60) so table covers possible future SS_Aval floor change
+    wse0a, wse1a, stepa = Z_US_1200, 39.50, 0.05
+    n_comp_a = int(round((wse1a - wse0a) / stepa)) + 1
+    c0a = 15
+    for i in range(n_comp_a):
+        r = c0a + i
+        wse_val = round(wse0a + i * stepa, 2)
+        wca.cell(r, 1, wse_val).number_format = "0.00"
+        wca.cell(r, 1).border = THIN
+        wse = f"A{r}"
+        wca.cell(r, 2, f"={wse}-{Zin_c2}").number_format = "0.00"
+        wca.cell(r, 3, f"=MAX(0,{wse}-{Crest2})").number_format = "0.00"
+        y = f"C{r}"
+        wca.cell(r, 4, f"=IF({y}<=0,0,({b2}+{z2}*{y})*{y})").number_format = "0.000"
+        A = f"D{r}"
+        wca.cell(r, 5, f"=IF({v_ditch2}=1,{A}*{L2},0)").number_format = "0.0"
+        wca.cell(r, 6, f"={v_pond_aval(wse)}").number_format = "0.0"
+        wca.cell(r, 7, f"=F{r}+E{r}").number_format = "0.0"
+        wca.cell(r, 7).fill = GREEN
+        hw = f"B{r}"
+        wca.cell(r, 8, f"={q1200_from_hw(hw)}").number_format = "0.000"
+        wca.cell(
+            r,
+            9,
+            f"=IF({y}<=0,0,IF({n2}<=0,0,(1/{n2})*{A}*"
+            f"IF(({b2}+2*{y}*SQRT(1+{z2}^2))<=0,0,"
+            f"(({A}/({b2}+2*{y}*SQRT(1+{z2}^2)))^(2/3)))*SQRT({S2})))",
+        ).number_format = "0.000"
+        wca.cell(r, 10, f"=H{r}+I{r}").number_format = "0.000"
+        wca.cell(r, 10).fill = GREEN
+        wca.cell(r, 11, f'=IF({y}>0,"oui","non")')
+        wca.cell(r, 12, f"=IF({A1200c}<=0,0,H{r}/{A1200c})").number_format = "0.00"
+        wca.cell(r, 12).fill = GREEN
+        wca.cell(r, 13, f'=IF(OR({y}<0.05,{A}<0.05),"",I{r}/{A})').number_format = "0.00"
+        wca.cell(r, 13).fill = GREEN
+        for c in range(2, 14):
+            wca.cell(r, c).border = THIN
+        if abs(wse_val - CREST_ZONE2) < 1e-9:
+            for c in range(1, 14):
+                if c not in (7, 10, 12, 13):
+                    wca.cell(r, c).fill = ORANGE
+    c_last_a = c0a + n_comp_a - 1
+    for col, w in zip("ABCDEFGHIJKLM", [10, 10, 10, 12, 12, 12, 12, 10, 12, 10, 10, 12, 14]):
+        wca.column_dimensions[col].width = w
+
+    # ---------- Calcul_Aval_C ----------
+    wavc = wb.create_sheet("Calcul_Aval_C")
+    wavc["A1"] = "Zone 2 — Méthode C: Qin = Calcul_C Qout; Qout composé Compose_Aval"
+    wavc["A1"].font = Font(bold=True, size=12, color="0F5C5C")
+    wavc["A2"] = (
+        "WSE depuis V_total Compose_Aval (SS_Aval ± V_ditch via B25). "
+        "Qin = Calcul_C!D (sortie Zone 1 Méthode C)."
+    )
+    wavc.merge_cells("A2:H3")
+    wavc["A2"].alignment = Alignment(wrap_text=True)
+    wavc["A5"] = "Q_plein Ø1200 réf. (m³/s)"
+    wavc["B5"] = f"={QCAP_1200}"
+    wavc["B5"].fill = YELLOW
+    wavc["A6"] = "Crest Zone 2 (m)"
+    wavc["B6"] = "=Parametres!B62"
+    wavc["B6"].fill = YELLOW
+    vtot_a = f"Compose_Aval!$G${c0a}:$G${c_last_a}"
+    wse_a = f"Compose_Aval!$A${c0a}:$A${c_last_a}"
+    qout_a = f"Compose_Aval!$J${c0a}:$J${c_last_a}"
+
+    def wse_from_vtot_a(v_cell: str) -> str:
+        m = f"MATCH({v_cell},{vtot_a},1)"
+        return (
+            f'IF({v_cell}<=INDEX({vtot_a},1),INDEX({wse_a},1),'
+            f'IF({v_cell}>=INDEX({vtot_a},ROWS({vtot_a})),INDEX({wse_a},ROWS({wse_a})),'
+            f'INDEX({wse_a},{m})+'
+            f'({v_cell}-INDEX({vtot_a},{m}))/'
+            f'(INDEX({vtot_a},{m}+1)-INDEX({vtot_a},{m}))*'
+            f'(INDEX({wse_a},{m}+1)-INDEX({wse_a},{m}))))'
+        )
+
+    def qout_from_wse_a(wse_cell: str) -> str:
+        m = f"MATCH({wse_cell},{wse_a},1)"
+        return (
+            f'IF({wse_cell}<=INDEX({wse_a},1),INDEX({qout_a},1),'
+            f'IF({wse_cell}>=INDEX({wse_a},ROWS({wse_a})),INDEX({qout_a},ROWS({qout_a})),'
+            f'INDEX({qout_a},{m})+'
+            f'({wse_cell}-INDEX({wse_a},{m}))/'
+            f'(INDEX({wse_a},{m}+1)-INDEX({wse_a},{m}))*'
+            f'(INDEX({qout_a},{m}+1)-INDEX({qout_a},{m}))))'
+        )
+
+    r0c2 = 12
+    # Calcul_C data starts row 12, Qout col D
+    first_c = 12
+    wavc["A7"] = "Vmax_Aval_C (m³)"
+    wavc["B7"] = f"=MAX(F{r0c2}:F{r0c2+n_h-1})"
+    wavc["B7"].fill = GREEN
+    wavc["B7"].number_format = "0.0"
+    wavc["A8"] = "WSEmax_Aval_C (m)"
+    wavc["B8"] = f"=MAX(C{r0c2}:C{r0c2+n_h-1})"
+    wavc["B8"].fill = GREEN
+    wavc["B8"].number_format = "0.00"
+    wavc["A9"] = "Overflow Zone 2?"
+    wavc["B9"] = f'=IF(B8>$B$6,"oui — WSE > crest Zone 2","non — pipe seul")'
+    wavc["A10"] = (
+        "V_pipe_seul = Qout/A_Ø1200 seulement si WSE≤crest. Si overflow → Compose_Aval V_Ø1200 / V_overflow."
+    )
+    for j, h in enumerate(
+        ["t (min)", "Qin", "WSE (m)", "Qout", "Δt (s)", "V (m³)", "Overflow?", "V_pipe_seul (m/s)"], 1
+    ):
+        wavc.cell(11, j, h)
+    style_header(wavc, 11, 8)
+    for i in range(n_h):
+        r = r0c2 + i
+        cc = first_c + i
+        wavc.cell(r, 1, f"=Calcul_C!A{cc}")
+        wavc.cell(r, 2, f"=Calcul_C!D{cc}")  # Qout Zone 1 Method C
+        if i == 0:
+            wavc.cell(r, 3, f"={Z_US_1200}")
+            wavc.cell(r, 4, f"=MIN(B{r},$B$5)")
+            wavc.cell(r, 5, 0)
+            wavc.cell(r, 6, 0)
+            wavc.cell(r, 7, "non")
+        else:
+            p = r - 1
+            wavc.cell(r, 3, f"={wse_from_vtot_a(f'F{p}')}")
+            wavc.cell(r, 4, f"=IF(F{p}<=0.01,MIN(0.5*(B{p}+B{r}),$B$5),{qout_from_wse_a(f'C{r}')})")
+            wavc.cell(r, 5, f"=(A{r}-A{p})*60")
+            wavc.cell(r, 6, f"=MAX(0,F{p}+(0.5*(B{p}+B{r})-D{r})*E{r})")
+            wavc.cell(r, 7, f'=IF(C{r}>$B$6,"oui","non")')
+        wavc.cell(r, 8, f'=IF(OR({A1200c}<=0,C{r}>$B$6),"",D{r}/{A1200c})')
+        for c in range(1, 9):
+            wavc.cell(r, c).border = THIN
+            if c in (2, 3, 4):
+                wavc.cell(r, c).number_format = "0.000"
+            if c in (5, 6):
+                wavc.cell(r, c).number_format = "0.0"
+            if c == 8:
+                wavc.cell(r, c).number_format = "0.00"
+        wavc.cell(r, 6).fill = GREEN
+        wavc.cell(r, 8).fill = GREEN
+    for col, w in zip("ABCDEFGH", [10, 10, 10, 10, 10, 14, 12, 14]):
+        wavc.column_dimensions[col].width = w
+
+    # SS_Aval summary: also show B/C
+    wsv = wb["SS_Aval"]
+    wsv["A24"] = "Vmax/WSEmax Aval_A (Parametres)"
+    wsv["B24"] = "=Parametres!B56"
+    wsv["C24"] = "=Parametres!B57"
+    wsv["A25"] = "Vmax/WSEmax Aval_B"
+    wsv["B25"] = "=Parametres!B58"
+    wsv["C25"] = "=Parametres!B59"
+    wsv["A26"] = "Vmax/WSEmax Aval_C"
+    wsv["B26"] = "=Parametres!B60"
+    wsv["C26"] = "=Parametres!B61"
+    for r in (24, 25, 26):
+        wsv.cell(r, 2).fill = GREEN
+        wsv.cell(r, 2).number_format = "0"
+        wsv.cell(r, 3).number_format = "0.00"
+    wsv["A28"] = (
+        "Note fond: table SS_Aval commence à 34.88 m (grille partagée Zone 1). "
+        f"Radier amont Ø1200 = {Z_US_1200:.2f} m. Si le lit Zone 2 descend à {Z_US_1200:.2f}, "
+        "abaisser la 1re ligne du levé (AutoCAD) — non fait automatiquement."
+    )
+    wsv.merge_cells("A28:F29")
+    wsv["A28"].alignment = Alignment(wrap_text=True)
+
     # ---------- Fichiers liés ----------
     wf = wb.create_sheet("Fichiers_lies")
     wf["A1"] = "Où sont les fichiers HY-8 / capacité ?"
     wf["A1"].font = Font(bold=True, size=13, color="0F5C5C")
     files_txt = [
         "",
-        "Ce classeur (rétention Ø900) :",
-        "  engineering/drainage-design/retention_volume/Volume_Retention_Ponceau_900.xlsx",
+        "Ce classeur (rétention deux zones) :",
+        "  engineering/drainage-design/retention_volume/Volume_Retention_Deux_Zones_1500_900_1200.xlsx",
         "",
-        "Courbe Q=f(H) FHWA pour CE Ø900 : feuille Courbe_QH_900 (ci-dessus).",
+        "Courbes: Courbe_QH_900 (Zone 1) et Courbe_QH_1200 (Zone 2).",
+        "Compose: Compose_900 (Zone 1) et Compose_Aval (Zone 2).",
         "",
-        "Ancien Excel « type HY-8 / inlet-outlet » (autre projet / Ste-Thérèse) :",
-        "  engineering/drainage-design/Ponceau_Capacite_Inlet_Outlet.xlsx",
-        "  Branche git: cursor/culvert-excel-capacity-model-d87f",
-        "",
-        "Modèle composé ponceau Ø1050 + fossé (FHWA + remblai) — PAS le Ø900 de rétention :",
-        "  engineering/drainage-design/ponceau_fosse_model/Ponceau_Fosse_Modele_Hydraulique.xlsx",
-        "  Branche git: cursor/ponceau-fosse-hydraulic-model-d87f",
-        "",
-        "HEC-RAS : pas de projet .ras/.hdf pour ce Ø900. Un DEM Ste-Thérèse est dans",
-        "  engineering/hec-ras-data/ (données topo seulement).",
-        "",
-        "Donc: on n'avait pas perdu un HY-8 pour ce bassin Ø900 — on avait des outils",
-        "similaires pour d'autres sites. La courbe de CE classeur remplace ça pour le Ø900.",
+        "Fichier frère sans Ø900: Volume_Retention_Sans_900.xlsx",
     ]
     for i, line in enumerate(files_txt, start=2):
         wf.cell(i, 1, line)
@@ -1510,25 +1953,23 @@ def build() -> Path:
 
     # ---------- Methode ----------
     wm = wb.create_sheet("Methode")
-    wm["A1"] = "Méthode — volume de rétention"
+    wm["A1"] = "Méthode — volume de rétention (deux zones)"
     wm["A1"].font = Font(bold=True, size=13)
     lines = [
         "",
-        "1. Hydrogramme Qin(t) à l'entrée de la zone de rétention.",
-        "2. Débit sortant contrôlé par le Ø900 (en série avant le Ø1200).",
-        "3. Capacité Ø900 — trois niveaux:",
-        "   A) Q_plein Manning (TOG n=0.022) ≈ 0.986 m³/s → Méthode A (constant).",
-        "   B) Courbe Q=f(H) FHWA HDS-5 (inlet + outlet) → feuille Courbe_QH_900 + Calcul_B.",
-        "   C) Qout = Q_900 + Q_overflow; V = V_pond (+ V_ditch si B25=1) → Compose_900 + Calcul_C.",
-        "4. Méthode A: Qout = constante = Q_plein (jaune Parametres). Bon pour 1re estimation.",
-        "5. Méthode B: Qout lu sur la courbe selon H=V/Aire (charge amont), pipe seul.",
-        "6. Méthode C: crest = crown; fossé trapèze (b,n,z,S,L) au-dessus; stockage levé + fossé.",
-        "7. Sur ce Ø900 (L/D≈56), le calcul FHWA indique surtout un contrôle outlet.",
-        "8. Le Ø1200 est aval: n'augmente pas la sortie de la rétention.",
+        "ZONE 1 (Ø1500 → Ø900) — contrôle de rétention",
+        "  A) Q_plein Manning TOG n=0.022 → Calcul_A",
+        "  B) Courbe_QH_900 + aire B24 (approx) → Calcul_B — préférer C pour WSE",
+        "  C) Compose_900 + Calcul_C (levé SS_Amont ± fossé) — design",
         "",
-        "9. Niveau d'eau max Zone 1: A/B via SS_Amont; C via Calcul_C. Zone 2: SS_Aval + Calcul_Aval_A (B55–B57).",
+        "ZONE 2 (Ø900 → Ø1200)",
+        "  Aval_A) Qin=Calcul_A; Qout=Q_plein Ø1200 → Calcul_Aval_A",
+        "  Aval_B) Qin=Calcul_B; Qout=f(HW) Courbe_QH_1200; WSE via SS_Aval (pas B24)",
+        "  Aval_C) Qin=Calcul_C; Qout=Q_1200+Q_overflow; Compose_Aval + Calcul_Aval_C",
         "",
-        "Fichiers liés / anciens Excel: voir feuille Fichiers_lies.",
+        "Chaîner la même lettre: Aval_X lit la sortie de Calcul_X Zone 1.",
+        "Fond SS_Aval = 34.88 par défaut; radier Ø1200 amont = 33.60 — confirmer sur levé avant de changer.",
+        "Résultats Zone 2: Parametres B56–B61. Crest Zone 2: B62.",
     ]
     for i, line in enumerate(lines, start=2):
         wm.cell(i, 1, line)
