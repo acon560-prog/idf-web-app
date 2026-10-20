@@ -234,41 +234,6 @@ def build() -> Path:
             f'-INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell},Stage_Storage!$E$11:$E$18,1)))))'
         )
 
-    # Vitesses de reference
-    ws["A92"] = "Vitesses de reference — V = Q / A_plein"
-    ws["A92"].font = Font(bold=True, size=12, color="0F5C5C")
-    ws["A93"] = (
-        "Sans Ø900: control = Ø1200. V_eq = Q/A_plein. "
-        "Partiellement rempli: V reelle = Q/A(h) plus elevee — voir Courbe_QH_1200."
-    )
-    ws.merge_cells("A93:F93")
-    for j, h in enumerate(["Ouvrage", "D (m)", "A_plein (m2)", "Q ref", "V_eq (m/s)", "Note"], 1):
-        ws.cell(94, j, h)
-    style_header(ws, 94, 6)
-    ws["A95"] = "Ø1500 (entree)"
-    ws["B95"] = 1.50
-    ws["C95"] = "=PI()*B95^2/4"
-    ws["D95"] = "=Hydrogramme!B4"
-    ws["E95"] = "=IF(C95<=0,0,D95/C95)"
-    ws["F95"] = "Qpointe"
-    ws["A96"] = "Ø1200 (controle)"
-    ws["B96"] = "=B11"
-    ws["C96"] = "=B16"
-    ws["D96"] = "=B18"
-    ws["E96"] = "=IF(C96<=0,0,D96/C96)"
-    ws["F96"] = "Q_plein Manning"
-    for r in (95, 96):
-        for c in range(1, 7):
-            ws.cell(r, c).border = THIN
-        ws.cell(r, 5).fill = GREEN
-        ws.cell(r, 5).number_format = "0.00"
-        ws.cell(r, 3).number_format = "0.000"
-        ws.cell(r, 4).number_format = "0.000"
-    ws["A97"] = "V_Ø1200 @ Qout Calcul_A (m/s)"
-    ws["B97"] = "=IF(C96<=0,0,Calcul_A!B2/C96)"
-    ws["B97"].fill = GREEN
-    ws["B97"].number_format = "0.00"
-
     # Results A
     ws["A35"] = "Resultats Methode A — Qout constant Ø1200 (Calcul_A)"
     ws["A35"].font = Font(bold=True)
@@ -343,6 +308,41 @@ def build() -> Path:
         ws.cell(i, 1, line)
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=6)
 
+    # Vitesses — directly under notes (no blank gap; was wrongly parked at row 92)
+    ws["A60"] = "Vitesses de reference — V = Q / A_plein"
+    ws["A60"].font = Font(bold=True, size=12, color="0F5C5C")
+    ws["A61"] = (
+        "Sans Ø900: control = Ø1200. V_eq = Q/A_plein. "
+        "Partiellement rempli: V reelle = Q/A(h) plus elevee — voir Courbe_QH_1200."
+    )
+    ws.merge_cells("A61:F61")
+    for j, h in enumerate(["Ouvrage", "D (m)", "A_plein (m2)", "Q ref", "V_eq (m/s)", "Note"], 1):
+        ws.cell(62, j, h)
+    style_header(ws, 62, 6)
+    ws["A63"] = "Ø1500 (entree)"
+    ws["B63"] = 1.50
+    ws["C63"] = "=PI()*B63^2/4"
+    ws["D63"] = "=Hydrogramme!B4"
+    ws["E63"] = "=IF(C63<=0,0,D63/C63)"
+    ws["F63"] = "Qpointe"
+    ws["A64"] = "Ø1200 (controle)"
+    ws["B64"] = "=B11"
+    ws["C64"] = "=B16"
+    ws["D64"] = "=B18"
+    ws["E64"] = "=IF(C64<=0,0,D64/C64)"
+    ws["F64"] = "Q_plein Manning"
+    for r in (63, 64):
+        for c in range(1, 7):
+            ws.cell(r, c).border = THIN
+        ws.cell(r, 5).fill = GREEN
+        ws.cell(r, 5).number_format = "0.00"
+        ws.cell(r, 3).number_format = "0.000"
+        ws.cell(r, 4).number_format = "0.000"
+    ws["A65"] = "V_Ø1200 @ Qout Calcul_A (m/s)"
+    ws["B65"] = "=IF(C64<=0,0,Calcul_A!B2/C64)"
+    ws["B65"].fill = GREEN
+    ws["B65"].number_format = "0.00"
+
     for col, w in zip("ABCDEF", [42, 14, 55, 14, 14, 14]):
         ws.column_dimensions[col].width = w
 
@@ -402,7 +402,7 @@ def build() -> Path:
     for j, h in enumerate(["t (min)", "Qin", "Qout", "dt (s)", "V (m3)", "V_Ø1200 (m/s)"], 1):
         wa.cell(7, j, h)
     style_header(wa, 7, 6)
-    A1200 = "Parametres!$C$96"
+    A1200 = "Parametres!$C$64"
     for i in range(n):
         r = 8 + i
         wa.cell(r, 1, f"=Hydrogramme!A{7+i}")
@@ -597,7 +597,7 @@ def build() -> Path:
     for j, h in enumerate(["t (min)", "Qin", "H (m)", "Q_courbe", "Qout", "dt (s)", "V (m3)", "V_Ø1200 (m/s)"], 1):
         wb2.cell(9, j, h)
     style_header(wb2, 9, 8)
-    A1200b = "Parametres!$C$96"
+    A1200b = "Parametres!$C$64"
 
     for i in range(n):
         r = r0 + i
@@ -774,7 +774,7 @@ def build() -> Path:
     ):
         wc.cell(12, j, h)
     style_header(wc, 12, 12)
-    A1200c = "Parametres!$C$96"
+    A1200c = "Parametres!$C$64"
 
     wse0, wse1, step = Z_POND, 40.00, 0.10
     n_comp = int(round((wse1 - wse0) / step)) + 1
@@ -874,7 +874,7 @@ def build() -> Path:
     for j, h in enumerate(["t", "Qin", "WSE", "Qout", "dt", "V", "Overflow?", "V_pipe_seul (m/s)"], 1):
         wc2.cell(9, j, h)
     style_header(wc2, 9, 8)
-    A1200cc = "Parametres!$C$96"
+    A1200cc = "Parametres!$C$64"
 
     for i in range(n):
         r = r0c + i
