@@ -806,7 +806,7 @@ def build() -> Path:
         wc.cell(r, 10).fill = GREEN
         wc.cell(r, 11, f"=IF({A1200c}<=0,0,H{r}/{A1200c})").number_format = "0.00"
         wc.cell(r, 11).fill = GREEN
-        wc.cell(r, 12, f"=IF({A}<=0,0,I{r}/{A})").number_format = "0.00"
+        wc.cell(r, 12, f'=IF(OR({y}<0.05,{A}<0.05),"",I{r}/{A})').number_format = "0.00"
         wc.cell(r, 12).fill = GREEN
         for c in range(1, 13):
             wc.cell(r, c).border = THIN
@@ -871,7 +871,7 @@ def build() -> Path:
     wc2["A9"] = "Overflow?"
     wc2["B9"] = '=IF(B8>$B$5,"oui","non")'
 
-    for j, h in enumerate(["t", "Qin", "WSE", "Qout", "dt", "V", "Overflow?", "V_eq_Ø1200 (m/s)"], 1):
+    for j, h in enumerate(["t", "Qin", "WSE", "Qout", "dt", "V", "Overflow?", "V_pipe_seul (m/s)"], 1):
         wc2.cell(9, j, h)
     style_header(wc2, 9, 8)
     A1200cc = "Parametres!$C$96"
@@ -893,7 +893,7 @@ def build() -> Path:
             wc2.cell(r, 5, f"=(A{r}-A{p})*60")
             wc2.cell(r, 6, f"=MAX(0,F{p}+(0.5*(B{p}+B{r})-D{r})*E{r})")
             wc2.cell(r, 7, f'=IF(C{r}>$B$5,"oui","non")')
-        wc2.cell(r, 8, f"=IF({A1200cc}<=0,0,D{r}/{A1200cc})")
+        wc2.cell(r, 8, f'=IF(OR({A1200cc}<=0,C{r}>$B$5),"",D{r}/{A1200cc})')
         for c in range(1, 9):
             wc2.cell(r, c).border = THIN
             if c <= 4:

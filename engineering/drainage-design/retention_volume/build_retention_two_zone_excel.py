@@ -301,15 +301,19 @@ def build() -> Path:
         ws.cell(r, 4).number_format = "0.000"
         ws.cell(r, 5).number_format = "0.00"
         ws.cell(r, 5).fill = GREEN
-    ws["A89"] = "Vmax_C → V_Ø900 @ Qout moyen pointe (approx)"
-    ws["B89"] = "=IF(C87<=0,0,Calcul_C!B7)"  # placeholder wrong - skip, use note only
-    # Better summary from Calcul sheets:
     ws["A89"] = "V_Ø900 @ Qout Calcul_A (m/s)"
     ws["B89"] = "=IF(C87<=0,"",Calcul_A!C8/C87)"  # wait Calcul_A Qout is B2 constant - use that
     ws["B89"] = "=IF(C87<=0,0,Calcul_A!B2/C87)"
     ws["B89"].fill = GREEN
     ws["B89"].number_format = "0.00"
     ws["C89"] = "Qout constant Méthode A / A_plein Ø900"
+    ws["A91"] = (
+        "ATTENTION: des V >> 5–6 m/s ne sont PAS physiques. "
+        "Souvent Q_overflow+Q_pipe divisé par A_tuyau, ou Q/A_fossé trop petit. "
+        "Vitesses tuyau réalistes typ. ~1–4 m/s; lire Compose_900 (V_Ø900) et Courbe_QH_900."
+    )
+    ws.merge_cells("A91:H92")
+    ws["A91"].alignment = Alignment(wrap_text=True)
     ws["A90"] = "V_Ø1200 @ Qout Calcul_Aval_A (m/s)"
     ws["B90"] = "=IF(C88<=0,0,Calcul_Aval_A!B5/C88)"
     ws["B90"].fill = GREEN
@@ -1162,9 +1166,15 @@ def build() -> Path:
         wc.cell(r, 10).fill = GREEN
         wc.cell(r, 11, f'=IF({y}>0,"oui","non")')
         # Velocities: pipe ~ Q_900/A_plein; overflow = Q_ov/A_ditch
+        # V_pipe = Q_900 only / A_plein (NOT Qout total)
         wc.cell(r, 12, f"=IF({A900c}<=0,0,H{r}/{A900c})").number_format = "0.00"
         wc.cell(r, 12).fill = GREEN
-        wc.cell(r, 13, f"=IF({A}<=0,0,I{r}/{A})").number_format = "0.00"
+        # V_overflow only if depth/area meaningful (avoid /tiny A → absurd m/s)
+        wc.cell(
+            r,
+            13,
+            f'=IF(OR({y}<0.05,{A}<0.05),"",I{r}/{A})',
+        ).number_format = "0.00"
         wc.cell(r, 13).fill = GREEN
         for c in range(2, 14):
             wc.cell(r, c).border = THIN
@@ -1245,7 +1255,7 @@ def build() -> Path:
     wc2["A9"] = "Overflow atteint?"
     wc2["B9"] = f'=IF(B8>$B$6,"oui — WSE > crest","non — pipe seul")'
 
-    hdr_cc = ["t (min)", "Qin", "WSE (m)", "Qout", "Δt (s)", "V (m³)", "Overflow?", "V_eq_Ø900 (m/s)"]
+    hdr_cc = ["t (min)", "Qin", "WSE (m)", "Qout", "Δt (s)", "V (m³)", "Overflow?", "V_pipe_seul (m/s)"]
     for j, h in enumerate(hdr_cc, start=1):
         wc2.cell(11, j, h)
     style_header(wc2, 11, 8)
@@ -1268,8 +1278,12 @@ def build() -> Path:
             wc2.cell(r, 5, f"=(A{r}-A{p})*60")
             wc2.cell(r, 6, f"=MAX(0,F{p}+(0.5*(B{p}+B{r})-D{r})*E{r})")
             wc2.cell(r, 7, f'=IF(C{r}>$B$6,"oui","non")')
-        # Equivalent full-pipe velocity for total Qout (pipe+overflow share not split here)
-        wc2.cell(r, 8, f"=IF({A900cc}<=0,0,D{r}/{A900cc})")
+        # Only meaningful when NO overflow (otherwise Qout includes fossé — use Compose_900)
+        wc2.cell(
+            r,
+            8,
+            f'=IF(OR({A900cc}<=0,C{r}>$B$6),"",D{r}/{A900cc})',
+        )
         for c in range(1, 9):
             wc2.cell(r, c).border = THIN
             if c in (2, 3, 4):
@@ -1281,7 +1295,10 @@ def build() -> Path:
         wc2.cell(r, 6).fill = GREEN
         wc2.cell(r, 8).fill = GREEN
 
-    wc2["A10"] = "V_eq_Ø900 = Qout_total/A_plein Ø900 (indicatif; si overflow, une partie du débit n'est pas dans le tuyau)"
+    wc2["A10"] = (
+        "V_pipe_seul = Qout/A_plein Ø900 seulement si WSE≤crest (pas d'overflow). "
+        "Si Overflow=oui → cellule vide: lire V_Ø900 et V_overflow sur Compose_900 (ne pas diviser Qout total par A_tuyau)."
+    )
     for col, w in zip("ABCDEFGH", [10, 10, 10, 10, 10, 14, 12, 14]):
         wc2.column_dimensions[col].width = w
 
