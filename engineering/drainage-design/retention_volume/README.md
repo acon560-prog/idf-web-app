@@ -48,3 +48,10 @@ Optionnel: exporter des polygones d'eau depuis AutoCAD/Civil 3D/GIS par cote.
 ## Guide pédagogique
 
 `Stage_Storage_Discharge_Guide_900.xlsx` — `python3 build_stage_storage_guide.py`
+
+## Velocities
+
+Both workbooks include **V = Q/A** results:
+- Parametres: V_eq at Qpointe / Q_plein (full-pipe area)
+- Courbe_QH_*: A_ecoul + V_gouv vs HW
+- Calcul_* / Compose_*: V along the routing

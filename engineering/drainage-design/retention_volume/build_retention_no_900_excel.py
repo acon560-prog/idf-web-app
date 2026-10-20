@@ -234,6 +234,41 @@ def build() -> Path:
             f'-INDEX(Stage_Storage!$A$11:$A$18,MATCH({cell},Stage_Storage!$E$11:$E$18,1)))))'
         )
 
+    # Vitesses de reference
+    ws["A92"] = "Vitesses de reference — V = Q / A_plein"
+    ws["A92"].font = Font(bold=True, size=12, color="0F5C5C")
+    ws["A93"] = (
+        "Sans Ø900: control = Ø1200. V_eq = Q/A_plein. "
+        "Partiellement rempli: V reelle = Q/A(h) plus elevee — voir Courbe_QH_1200."
+    )
+    ws.merge_cells("A93:F93")
+    for j, h in enumerate(["Ouvrage", "D (m)", "A_plein (m2)", "Q ref", "V_eq (m/s)", "Note"], 1):
+        ws.cell(94, j, h)
+    style_header(ws, 94, 6)
+    ws["A95"] = "Ø1500 (entree)"
+    ws["B95"] = 1.50
+    ws["C95"] = "=PI()*B95^2/4"
+    ws["D95"] = "=Hydrogramme!B4"
+    ws["E95"] = "=IF(C95<=0,0,D95/C95)"
+    ws["F95"] = "Qpointe"
+    ws["A96"] = "Ø1200 (controle)"
+    ws["B96"] = "=B11"
+    ws["C96"] = "=B16"
+    ws["D96"] = "=B18"
+    ws["E96"] = "=IF(C96<=0,0,D96/C96)"
+    ws["F96"] = "Q_plein Manning"
+    for r in (95, 96):
+        for c in range(1, 7):
+            ws.cell(r, c).border = THIN
+        ws.cell(r, 5).fill = GREEN
+        ws.cell(r, 5).number_format = "0.00"
+        ws.cell(r, 3).number_format = "0.000"
+        ws.cell(r, 4).number_format = "0.000"
+    ws["A97"] = "V_Ø1200 @ Qout Calcul_A (m/s)"
+    ws["B97"] = "=IF(C96<=0,0,Calcul_A!B2/C96)"
+    ws["B97"].fill = GREEN
+    ws["B97"].number_format = "0.00"
+
     # Results A
     ws["A35"] = "Resultats Methode A — Qout constant Ø1200 (Calcul_A)"
     ws["A35"].font = Font(bold=True)
@@ -364,9 +399,10 @@ def build() -> Path:
     wa["B3"].fill = GREEN
     wa["B3"].number_format = "0.0"
 
-    for j, h in enumerate(["t (min)", "Qin", "Qout", "dt (s)", "V (m3)"], 1):
+    for j, h in enumerate(["t (min)", "Qin", "Qout", "dt (s)", "V (m3)", "V_Ø1200 (m/s)"], 1):
         wa.cell(7, j, h)
-    style_header(wa, 7, 5)
+    style_header(wa, 7, 6)
+    A1200 = "Parametres!$C$96"
     for i in range(n):
         r = 8 + i
         wa.cell(r, 1, f"=Hydrogramme!A{7+i}")
@@ -379,10 +415,12 @@ def build() -> Path:
             p = r - 1
             wa.cell(r, 4, f"=(A{r}-A{p})*60")
             wa.cell(r, 5, f"=MAX(0,E{p}+(0.5*(B{p}+B{r})-C{r})*D{r})")
-        for c in range(1, 6):
+        wa.cell(r, 6, f"=IF({A1200}<=0,0,C{r}/{A1200})")
+        for c in range(1, 7):
             wa.cell(r, c).border = THIN
-            wa.cell(r, c).number_format = "0.000" if c < 4 else "0.0"
+            wa.cell(r, c).number_format = "0.000" if c < 4 else ("0.00" if c == 6 else "0.0")
         wa.cell(r, 5).fill = GREEN
+        wa.cell(r, 6).fill = GREEN
 
     ch_a = LineChart()
     ch_a.title = "Methode A — V(t) et Qin"
@@ -483,9 +521,9 @@ def build() -> Path:
         q_full = f"IF(({hloss})<=0,0,{a_full}*SQRT(({hloss})/({denom})))"
         return f"IF({hw}<{D},{q_part},{q_full})"
 
-    for j, h in enumerate(["HW (m)", "WSE (m)", "Qinlet", "Qoutlet", "Q gouvernant"], 1):
+    for j, h in enumerate(["HW (m)", "WSE (m)", "Qinlet", "Qoutlet", "Q gouvernant", "A_ecoul (m2)", "V_gouv (m/s)"], 1):
         wq.cell(19, j, h)
-    style_header(wq, 19, 5)
+    style_header(wq, 19, 7)
 
     first_q, n_hw = 20, 61
     for i in range(n_hw):
@@ -498,7 +536,14 @@ def build() -> Path:
         wq.cell(r, 4, f"={f_qoutlet(hw)}").number_format = "0.000"
         wq.cell(r, 5, f"=MIN(C{r},D{r})").number_format = "0.000"
         wq.cell(r, 5).fill = GREEN
-        for c in range(1, 6):
+        ratio = f"MIN(0.999,MAX(1E-6,A{r}/{D}))"
+        theta = f"2*ACOS(1-2*({ratio}))"
+        aseg = f"(({D}/2)^2/2)*(({theta})-SIN({theta}))"
+        a_full = f"(PI()*({D}/2)^2)"
+        wq.cell(r, 6, f"=IF(A{r}<=0,0,IF(A{r}<{D},{aseg},{a_full}))").number_format = "0.000"
+        wq.cell(r, 7, f"=IF(F{r}<=0,0,E{r}/F{r})").number_format = "0.00"
+        wq.cell(r, 7).fill = GREEN
+        for c in range(1, 8):
             wq.cell(r, c).border = THIN
     last_q = first_q + n_hw - 1
 
@@ -549,9 +594,10 @@ def build() -> Path:
     wb2["B8"].fill = BLUE
     wb2["B8"].number_format = "0.00"
 
-    for j, h in enumerate(["t (min)", "Qin", "H (m)", "Q_courbe", "Qout", "dt (s)", "V (m3)"], 1):
+    for j, h in enumerate(["t (min)", "Qin", "H (m)", "Q_courbe", "Qout", "dt (s)", "V (m3)", "V_Ø1200 (m/s)"], 1):
         wb2.cell(9, j, h)
-    style_header(wb2, 9, 7)
+    style_header(wb2, 9, 8)
+    A1200b = "Parametres!$C$96"
 
     for i in range(n):
         r = r0 + i
@@ -570,10 +616,12 @@ def build() -> Path:
             wb2.cell(r, 5, f"=IF(G{p}<=0.01,MIN(0.5*(B{p}+B{r}),$B$5),D{r})")
             wb2.cell(r, 6, f"=(A{r}-A{p})*60")
             wb2.cell(r, 7, f"=MAX(0,G{p}+(0.5*(B{p}+B{r})-E{r})*F{r})")
-        for c in range(1, 8):
+        wb2.cell(r, 8, f"=IF({A1200b}<=0,0,E{r}/{A1200b})")
+        for c in range(1, 9):
             wb2.cell(r, c).border = THIN
-            wb2.cell(r, c).number_format = "0.000" if c < 6 else "0.0"
+            wb2.cell(r, c).number_format = "0.000" if c < 6 else ("0.00" if c == 8 else "0.0")
         wb2.cell(r, 7).fill = GREEN
+        wb2.cell(r, 8).fill = GREEN
 
     ch_b = LineChart()
     ch_b.title = "Methode B — V(t)"
@@ -719,11 +767,14 @@ def build() -> Path:
             "Q_1200",
             "Q_overflow",
             "Qout",
+            "V_Ø1200 (m/s)",
+            "V_overflow (m/s)",
         ],
         1,
     ):
         wc.cell(12, j, h)
-    style_header(wc, 12, 10)
+    style_header(wc, 12, 12)
+    A1200c = "Parametres!$C$96"
 
     wse0, wse1, step = Z_POND, 40.00, 0.10
     n_comp = int(round((wse1 - wse0) / step)) + 1
@@ -753,7 +804,11 @@ def build() -> Path:
         ).number_format = "0.000"
         wc.cell(r, 10, f"=H{r}+I{r}").number_format = "0.000"
         wc.cell(r, 10).fill = GREEN
-        for c in range(1, 11):
+        wc.cell(r, 11, f"=IF({A1200c}<=0,0,H{r}/{A1200c})").number_format = "0.00"
+        wc.cell(r, 11).fill = GREEN
+        wc.cell(r, 12, f"=IF({A}<=0,0,I{r}/{A})").number_format = "0.00"
+        wc.cell(r, 12).fill = GREEN
+        for c in range(1, 13):
             wc.cell(r, c).border = THIN
     c_last = c0 + n_comp - 1
 
@@ -816,9 +871,10 @@ def build() -> Path:
     wc2["A9"] = "Overflow?"
     wc2["B9"] = '=IF(B8>$B$5,"oui","non")'
 
-    for j, h in enumerate(["t", "Qin", "WSE", "Qout", "dt", "V", "Overflow?"], 1):
+    for j, h in enumerate(["t", "Qin", "WSE", "Qout", "dt", "V", "Overflow?", "V_eq_Ø1200 (m/s)"], 1):
         wc2.cell(9, j, h)
-    style_header(wc2, 9, 7)
+    style_header(wc2, 9, 8)
+    A1200cc = "Parametres!$C$96"
 
     for i in range(n):
         r = r0c + i
@@ -837,13 +893,17 @@ def build() -> Path:
             wc2.cell(r, 5, f"=(A{r}-A{p})*60")
             wc2.cell(r, 6, f"=MAX(0,F{p}+(0.5*(B{p}+B{r})-D{r})*E{r})")
             wc2.cell(r, 7, f'=IF(C{r}>$B$5,"oui","non")')
-        for c in range(1, 8):
+        wc2.cell(r, 8, f"=IF({A1200cc}<=0,0,D{r}/{A1200cc})")
+        for c in range(1, 9):
             wc2.cell(r, c).border = THIN
             if c <= 4:
                 wc2.cell(r, c).number_format = "0.000"
             elif c <= 6:
                 wc2.cell(r, c).number_format = "0.0"
+            elif c == 8:
+                wc2.cell(r, c).number_format = "0.00"
         wc2.cell(r, 6).fill = GREEN
+        wc2.cell(r, 8).fill = GREEN
 
     ch_cc = LineChart()
     ch_cc.title = "Methode C — WSE(t) et V(t)"

@@ -255,6 +255,67 @@ def build() -> Path:
     ws.merge_cells("A9:H10")
     ws["A9"].alignment = Alignment(wrap_text=True, vertical="top")
 
+    # --- Vitesses de référence (V = Q / A_plein) ---
+    ws["A82"] = "Vitesses de référence — V = Q / A_plein (pleine section)"
+    ws["A82"].font = Font(bold=True, size=12, color="0F5C5C")
+    ws["A83"] = (
+        "A_plein = π D²/4. V_eq = Q/A_plein. Si le tuyau est partiellement rempli, "
+        "la vitesse réelle Q/A(h) est plus élevée pour le même Q — voir Courbe_QH_900 col. V. "
+        "Critères typiques fossé/tuyau: souvent 0.6–3 ou 4 m/s selon municipalité (à confirmer)."
+    )
+    ws.merge_cells("A83:H84")
+    ws["A83"].alignment = Alignment(wrap_text=True)
+    for j, h in enumerate(
+        ["Ouvrage", "D (m)", "A_plein (m²)", "Q ref (m³/s)", "V_eq (m/s)", "Source Q"],
+        start=1,
+    ):
+        ws.cell(85, j, h)
+    style_header(ws, 85, 6)
+    # Ø1500 @ Qpointe
+    ws["A86"] = "Ø1500 (entrée)"
+    ws["B86"] = 1.50
+    ws["C86"] = "=PI()*B86^2/4"
+    ws["D86"] = "=Hydrogramme!B4"
+    ws["E86"] = "=IF(C86<=0,0,D86/C86)"
+    ws["F86"] = "Qpointe hydrogramme"
+    # Ø900 @ Q_plein Parametres
+    ws["A87"] = "Ø900 (contrôle)"
+    ws["B87"] = 0.90
+    ws["C87"] = "=PI()*B87^2/4"
+    ws["D87"] = "=B18"
+    ws["E87"] = "=IF(C87<=0,0,D87/C87)"
+    ws["F87"] = "Q_plein Manning (B18)"
+    # Ø1200 @ Q_plein
+    ws["A88"] = "Ø1200 (aval)"
+    ws["B88"] = 1.20
+    ws["C88"] = "=PI()*B88^2/4"
+    ws["D88"] = 4.93
+    ws["E88"] = "=IF(C88<=0,0,D88/C88)"
+    ws["F88"] = "Q_plein Ø1200 (édit. si besoin)"
+    ws["D88"].fill = YELLOW
+    for r in (86, 87, 88):
+        for c in range(1, 7):
+            ws.cell(r, c).border = THIN
+        ws.cell(r, 2).number_format = "0.00"
+        ws.cell(r, 3).number_format = "0.000"
+        ws.cell(r, 4).number_format = "0.000"
+        ws.cell(r, 5).number_format = "0.00"
+        ws.cell(r, 5).fill = GREEN
+    ws["A89"] = "Vmax_C → V_Ø900 @ Qout moyen pointe (approx)"
+    ws["B89"] = "=IF(C87<=0,0,Calcul_C!B7)"  # placeholder wrong - skip, use note only
+    # Better summary from Calcul sheets:
+    ws["A89"] = "V_Ø900 @ Qout Calcul_A (m/s)"
+    ws["B89"] = "=IF(C87<=0,"",Calcul_A!C8/C87)"  # wait Calcul_A Qout is B2 constant - use that
+    ws["B89"] = "=IF(C87<=0,0,Calcul_A!B2/C87)"
+    ws["B89"].fill = GREEN
+    ws["B89"].number_format = "0.00"
+    ws["C89"] = "Qout constant Méthode A / A_plein Ø900"
+    ws["A90"] = "V_Ø1200 @ Qout Calcul_Aval_A (m/s)"
+    ws["B90"] = "=IF(C88<=0,0,Calcul_Aval_A!B5/C88)"
+    ws["B90"].fill = GREEN
+    ws["B90"].number_format = "0.00"
+    ws["C90"] = "Qout Aval / A_plein Ø1200"
+
     # --- Manning full-pipe capacity check ---
     ws["A12"] = "Capacité Ø900 — Manning pleine section (n = 0,013)"
     ws["A12"].font = Font(bold=True)
@@ -616,10 +677,12 @@ def build() -> Path:
         "ΔVout (m³)",
         "V stocké (m³)",
         "Stockage?",
+        "V_Ø900 (m/s)",
     ]
     for j, h in enumerate(cols, start=1):
         wa.cell(7, j, h)
     style_header(wa, 7, len(cols))
+    A900 = "Parametres!$C$87"  # A_plein Ø900
 
     for i, (t, q) in enumerate(HYDRO):
         r = first + i
@@ -649,6 +712,9 @@ def build() -> Path:
             wa.cell(r, 8).number_format = "0.0"
         wa.cell(r, 8).fill = GREEN
         wa.cell(r, 9, f'=IF(H{r}>0.5,"oui","non")').border = THIN
+        wa.cell(r, 10, f'=IF({A900}<=0,0,C{r}/{A900})').border = THIN
+        wa.cell(r, 10).number_format = "0.00"
+        wa.cell(r, 10).fill = GREEN
 
     wa["A5"] = "t début stockage approx (min)"
     wa["B5"] = "quand Qin dépasse Qout (dépend de Qpointe et Qcap)"
@@ -672,11 +738,13 @@ def build() -> Path:
     ch3.set_categories(Reference(wa, min_col=1, min_row=first, max_row=last))
     wa.add_chart(ch3, "K22")
 
-    for col in range(1, 10):
+    for col in range(1, 11):
         wa.column_dimensions[get_column_letter(col)].width = 14 if col > 1 else 12
     wa.column_dimensions["D"].width = 20
     wa.column_dimensions["H"].width = 18
     wa.column_dimensions["I"].width = 14
+    wa.column_dimensions["J"].width = 14
+    wa["A4"] = "V_Ø900 = Qout / A_plein Ø900 (Parametres C87)"
 
     # ---------- Courbe Q=f(H) FHWA HDS-5 (Ø900) — FORMULES LIVE ----------
     wq = wb.create_sheet("Courbe_QH_900")
@@ -803,10 +871,10 @@ def build() -> Path:
         q_full = f"IF(({hloss})<=0,0,{a_full}*SQRT(({hloss})/({denom})))"
         return f"IF({hw}<{D},{q_part},{q_full})"
 
-    hdr_q = ["HW (m)", "WSE (m)", "Qinlet", "Qoutlet", "Q gouvernant", "Contrôle"]
+    hdr_q = ["HW (m)", "WSE (m)", "Qinlet", "Qoutlet", "Q gouvernant", "Contrôle", "A_ecoul (m²)", "V_gouv (m/s)"]
     for j, h in enumerate(hdr_q, start=1):
         wq.cell(23, j, h)
-    style_header(wq, 23, 6)
+    style_header(wq, 23, 8)
 
     first_q = 24
     n_hw = 61  # 0.00 → 3.00 step 0.05
@@ -826,12 +894,26 @@ def build() -> Path:
         wq.cell(r, 5).border = THIN
         wq.cell(r, 5).fill = GREEN
         wq.cell(r, 6, f'=IF(A{r}<=0,"—",IF(C{r}<=D{r},"inlet","outlet"))').border = THIN
+        # Flow area: circular segment if HW < D else A_full; V = Q_gouv / A
+        ratio = f"MIN(0.999,MAX(1E-6,A{r}/{D}))"
+        theta = f"2*ACOS(1-2*({ratio}))"
+        aseg = f"(({D}/2)^2/2)*(({theta})-SIN({theta}))"
+        a_full = f"(PI()*({D}/2)^2)"
+        wq.cell(
+            r,
+            7,
+            f'=IF(A{r}<=0,0,IF(A{r}<{D},{aseg},{a_full}))',
+        ).number_format = "0.000"
+        wq.cell(r, 7).border = THIN
+        wq.cell(r, 8, f"=IF(G{r}<=0,0,E{r}/G{r})").number_format = "0.00"
+        wq.cell(r, 8).border = THIN
+        wq.cell(r, 8).fill = GREEN
     last_q = first_q + n_hw - 1
 
     # Highlight boss stage HW = 2.40 (1.5 above crown) if present: row 24+48 = 72
     boss_row = first_q + int(round(2.40 / 0.05))
     if first_q <= boss_row <= last_q:
-        for c in range(1, 7):
+        for c in range(1, 9):
             if c != 5:
                 wq.cell(boss_row, c).fill = ORANGE
         wq.cell(boss_row, 5).fill = ORANGE
@@ -846,9 +928,10 @@ def build() -> Path:
     ch_q.set_categories(Reference(wq, min_col=1, min_row=first_q, max_row=last_q))
     wq.add_chart(ch_q, "L5")
 
-    for col, w in zip("ABCDEF", [28, 14, 42, 12, 12, 12]):
+    for col, w in zip("ABCDEFGH", [12, 12, 12, 12, 14, 12, 12, 12]):
         wq.column_dimensions[col].width = w
-    wq.column_dimensions["E"].width = 14
+    wq.column_dimensions["A"].width = 10
+    wq["A22"] = "V_gouv = Q_gouvernant / A_ecoul (segment circulaire si HW<D, sinon A_plein)"
     wq.column_dimensions["J"].width = 8
 
     first_q, last_q = 24, 84  # live Courbe_QH_900 table rows
@@ -910,10 +993,11 @@ def build() -> Path:
             f'(INDEX({q_rng},{m}+1)-INDEX({q_rng},{m}))))'
         )
 
-    hdr_b = ["t (min)", "Qin", "H (m)", "Q_courbe", "Qout", "Δt (s)", "V (m³)"]
+    hdr_b = ["t (min)", "Qin", "H (m)", "Q_courbe", "Qout", "Δt (s)", "V (m³)", "V_Ø900 (m/s)"]
     for j, h in enumerate(hdr_b, start=1):
         wb2.cell(11, j, h)
-    style_header(wb2, 11, 7)
+    style_header(wb2, 11, 8)
+    A900b = "Parametres!$C$87"
 
     for i in range(n):
         r = r0 + i
@@ -932,15 +1016,19 @@ def build() -> Path:
             wb2.cell(r, 5, f"=IF(G{p}<=0.01,MIN(0.5*(B{p}+B{r}),$B$6),D{r})")
             wb2.cell(r, 6, f"=(A{r}-A{p})*60")
             wb2.cell(r, 7, f"=MAX(0,G{p}+(0.5*(B{p}+B{r})-E{r})*F{r})")
-        for c in range(1, 8):
+        wb2.cell(r, 8, f"=IF({A900b}<=0,0,E{r}/{A900b})")
+        for c in range(1, 9):
             wb2.cell(r, c).border = THIN
             if c in (2, 3, 4, 5):
                 wb2.cell(r, c).number_format = "0.000"
             if c in (6, 7):
                 wb2.cell(r, c).number_format = "0.0"
+            if c == 8:
+                wb2.cell(r, c).number_format = "0.00"
         wb2.cell(r, 7).fill = GREEN
+        wb2.cell(r, 8).fill = GREEN
 
-    for col, w in zip("ABCDEFG", [10, 10, 10, 12, 10, 10, 12]):
+    for col, w in zip("ABCDEFGH", [10, 10, 10, 12, 10, 10, 12, 12]):
         wb2.column_dimensions[col].width = w
 
     # ---------- Compose_900 : Q_900 + Q_overflow, V_pond + V_ditch ----------
@@ -1025,10 +1113,13 @@ def build() -> Path:
         "Q_overflow",
         "Qout",
         "Overflow?",
+        "V_Ø900 (m/s)",
+        "V_overflow (m/s)",
     ]
     for j, h in enumerate(hdr_c, start=1):
         wc.cell(14, j, h)
-    style_header(wc, 14, 11)
+    style_header(wc, 14, 13)
+    A900c = "Parametres!$C$87"
 
     # WSE from invert to 39.50 step 0.05
     wse0 = Z_US_900
@@ -1070,12 +1161,17 @@ def build() -> Path:
         wc.cell(r, 10, f"=H{r}+I{r}").number_format = "0.000"
         wc.cell(r, 10).fill = GREEN
         wc.cell(r, 11, f'=IF({y}>0,"oui","non")')
-        for c in range(2, 12):
+        # Velocities: pipe ~ Q_900/A_plein; overflow = Q_ov/A_ditch
+        wc.cell(r, 12, f"=IF({A900c}<=0,0,H{r}/{A900c})").number_format = "0.00"
+        wc.cell(r, 12).fill = GREEN
+        wc.cell(r, 13, f"=IF({A}<=0,0,I{r}/{A})").number_format = "0.00"
+        wc.cell(r, 13).fill = GREEN
+        for c in range(2, 14):
             wc.cell(r, c).border = THIN
         # highlight crest row
         if abs(wse_val - CROWN_900) < 1e-9:
-            for c in range(1, 12):
-                if c not in (7, 10):
+            for c in range(1, 14):
+                if c not in (7, 10, 12, 13):
                     wc.cell(r, c).fill = ORANGE
     c_last = c0 + n_comp - 1
 
@@ -1089,7 +1185,7 @@ def build() -> Path:
     ch_c.set_categories(Reference(wc, min_col=1, min_row=c0, max_row=c_last))
     wc.add_chart(ch_c, "M5")
 
-    for col, w in zip("ABCDEFGHIJK", [10, 10, 10, 12, 12, 12, 12, 10, 12, 10, 10]):
+    for col, w in zip("ABCDEFGHIJKLM", [10, 10, 10, 12, 12, 12, 12, 10, 12, 10, 10, 12, 14]):
         wc.column_dimensions[col].width = w
 
     # ---------- Calcul_C : routage V_total + Qout composé ----------
@@ -1149,10 +1245,11 @@ def build() -> Path:
     wc2["A9"] = "Overflow atteint?"
     wc2["B9"] = f'=IF(B8>$B$6,"oui — WSE > crest","non — pipe seul")'
 
-    hdr_cc = ["t (min)", "Qin", "WSE (m)", "Qout", "Δt (s)", "V (m³)", "Overflow?"]
+    hdr_cc = ["t (min)", "Qin", "WSE (m)", "Qout", "Δt (s)", "V (m³)", "Overflow?", "V_eq_Ø900 (m/s)"]
     for j, h in enumerate(hdr_cc, start=1):
         wc2.cell(11, j, h)
-    style_header(wc2, 11, 7)
+    style_header(wc2, 11, 8)
+    A900cc = "Parametres!$C$87"
 
     for i in range(n):
         r = r0c + i
@@ -1171,15 +1268,21 @@ def build() -> Path:
             wc2.cell(r, 5, f"=(A{r}-A{p})*60")
             wc2.cell(r, 6, f"=MAX(0,F{p}+(0.5*(B{p}+B{r})-D{r})*E{r})")
             wc2.cell(r, 7, f'=IF(C{r}>$B$6,"oui","non")')
-        for c in range(1, 8):
+        # Equivalent full-pipe velocity for total Qout (pipe+overflow share not split here)
+        wc2.cell(r, 8, f"=IF({A900cc}<=0,0,D{r}/{A900cc})")
+        for c in range(1, 9):
             wc2.cell(r, c).border = THIN
             if c in (2, 3, 4):
                 wc2.cell(r, c).number_format = "0.000"
             if c in (5, 6):
                 wc2.cell(r, c).number_format = "0.0"
+            if c == 8:
+                wc2.cell(r, c).number_format = "0.00"
         wc2.cell(r, 6).fill = GREEN
+        wc2.cell(r, 8).fill = GREEN
 
-    for col, w in zip("ABCDEFG", [10, 10, 10, 10, 10, 14, 12]):
+    wc2["A10"] = "V_eq_Ø900 = Qout_total/A_plein Ø900 (indicatif; si overflow, une partie du débit n'est pas dans le tuyau)"
+    for col, w in zip("ABCDEFGH", [10, 10, 10, 10, 10, 14, 12, 14]):
         wc2.column_dimensions[col].width = w
 
     # ---------- Stage-storage Zone 1 / Zone 2 (WSE + A editables) ----------
@@ -1313,10 +1416,14 @@ def build() -> Path:
         "ΔVout (m³)",
         "V stocké (m³)",
         "Stockage?",
+        "V_livré_Ø900 (m/s)",
+        "V_Ø1200 (m/s)",
     ]
     for j, h in enumerate(cols_av, start=1):
         wav.cell(9, j, h)
     style_header(wav, 9, len(cols_av))
+    A900av = "Parametres!$C$87"
+    A1200av = "Parametres!$C$88"
 
     for i in range(n_h):
         r = first_av + i
@@ -1345,8 +1452,14 @@ def build() -> Path:
             wav.cell(r, 8).number_format = "0.0"
         wav.cell(r, 8).fill = GREEN
         wav.cell(r, 9, f'=IF(H{r}>0.5,"oui","non")').border = THIN
+        wav.cell(r, 10, f'=IF({A900av}<=0,0,B{r}/{A900av})').border = THIN
+        wav.cell(r, 10).number_format = "0.00"
+        wav.cell(r, 10).fill = GREEN
+        wav.cell(r, 11, f'=IF({A1200av}<=0,0,C{r}/{A1200av})').border = THIN
+        wav.cell(r, 11).number_format = "0.00"
+        wav.cell(r, 11).fill = GREEN
 
-    for col in range(1, 10):
+    for col in range(1, 12):
         wav.column_dimensions[get_column_letter(col)].width = 14 if col > 1 else 12
 
     # ---------- Fichiers liés ----------
