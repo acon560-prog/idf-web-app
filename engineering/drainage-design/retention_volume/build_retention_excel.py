@@ -47,8 +47,8 @@ HYDRO_RAW = [
     (57.5, 0.875),
 ]
 
-# Ø900 geometry + Manning (full pipe) — user: n=0.013, Q = capacité pleine section
-N_MANNING = 0.013
+# Ø900 geometry + Manning (full pipe) — TOG (tuyau ondulé galvanisé) n=0.022
+N_MANNING = 0.022
 D_900_M = 0.9
 L_900 = 50.65
 Z_US_900 = 34.88
@@ -62,8 +62,8 @@ def q_full_manning(D: float, S0: float, n: float) -> float:
     return (1.0 / n) * A * (R ** (2.0 / 3.0)) * (S0**0.5)
 
 
-Q_FULL_900 = q_full_manning(D_900_M, S0_900, N_MANNING)  # ≈ 1.668 m³/s
-# Prior office value (~1.77) was same method, slight rounding / S0 difference
+Q_FULL_900 = q_full_manning(D_900_M, S0_900, N_MANNING)  # ≈ 0.986 m³/s with n=0.022
+# Prior béton n=0.013 gave ≈1.668 m³/s; office ~1.77 was that method
 QCAP_900_PRIOR = 1.77
 QCAP_900 = round(Q_FULL_900, 3)  # default used in routing
 QCAP_1200 = 4.93
@@ -144,14 +144,14 @@ def build() -> Path:
     ws["A9"].alignment = Alignment(wrap_text=True, vertical="top")
 
     # --- Manning full-pipe capacity check ---
-    ws["A12"] = "Capacité Ø900 — Manning pleine section (n = 0,013)"
+    ws["A12"] = "Capacité Ø900 — Manning pleine section (TOG n = 0,022)"
     ws["A12"].font = Font(bold=True)
     ws["A13"] = "n Manning (-)"
     ws["B13"] = N_MANNING
     ws["B13"].fill = YELLOW
     ws["B13"].border = THIN
     ws["B13"].number_format = "0.000"
-    ws["C13"] = "Fourni (béton typique ~0,012–0,015)"
+    ws["C13"] = "TOG (tuyau ondulé galvanisé) n=0,022 — pas béton"
     ws["A14"] = "D (m)"
     ws["B14"] = D_900_M
     ws["B14"].fill = YELLOW
@@ -368,7 +368,7 @@ def build() -> Path:
     ws["A70"] = "Notes"
     ws["A70"].font = Font(bold=True)
     notes = [
-        "• Méthode A: Qout fixe = Q_plein Manning Ø900 (n=0,013).",
+        "• Méthode A: Qout fixe = Q_plein Manning Ø900 (TOG n=0,022).",
         "• Méthode B: Qout = f(H) pipe seul (Courbe_QH_900) — résultats B43–B46.",
         "• Méthode C: Qout = Q_900 + Q_overflow; V = V_pond + V_ditch — Compose_900 + Calcul_C (B49–B52).",
         "• Le stockage commence quand Qin dépasse Qout; Vmax = max du volume stocké.",
@@ -553,7 +553,7 @@ def build() -> Path:
     wq["A5"] = "Paramètres Ø900 (jaune = éditable)"
     wq["A5"].font = Font(bold=True)
     params_q = [
-        (6, "n Manning (-)", N_MANNING, "0.000", "béton typ. 0.012–0.015"),
+        (6, "n Manning (-)", N_MANNING, "0.000", "TOG n=0,022 (ondulé galvanisé)"),
         (7, "D (m)", D_900_M, "0.00", ""),
         (8, "L (m)", L_900, "0.00", ""),
         (9, "Radier amont Zin (m)", Z_US_900, "0.00", ""),
@@ -1194,7 +1194,7 @@ def build() -> Path:
         "1. Hydrogramme Qin(t) à l'entrée de la zone de rétention.",
         "2. Débit sortant contrôlé par le Ø900 (en série avant le Ø1200).",
         "3. Capacité Ø900 — trois niveaux:",
-        "   A) Q_plein Manning (n=0.013) ≈ 1.668 m³/s → Méthode A (constant).",
+        "   A) Q_plein Manning (TOG n=0.022) ≈ 0.986 m³/s → Méthode A (constant).",
         "   B) Courbe Q=f(H) FHWA HDS-5 (inlet + outlet) → feuille Courbe_QH_900 + Calcul_B.",
         "   C) Qout = Q_900(WSE) + Q_overflow(WSE); V = V_pond + V_ditch → Compose_900 + Calcul_C.",
         "4. Méthode A: Qout = constante = Q_plein (jaune Parametres). Bon pour 1re estimation.",
