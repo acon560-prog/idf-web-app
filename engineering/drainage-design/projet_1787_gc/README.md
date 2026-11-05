@@ -1,29 +1,29 @@
-# 1787 GC — Réseau pluvial hybride
+# 1787 GC — Réseau pluvial hybride (optimisé)
 
-Excel: `Reseau_pluvial_1787_GC_hybride.xlsx`  
-Croquis: `1787-GC-00_Croquis_des_reseaux.pdf`  
-Builder: `python3 build_1787_hybrid_excel.py`
+Fichier: `Reseau_pluvial_1787_GC_hybride.xlsx`
 
-## Structure
+## Changements (optimisation)
 
-| Onglet | Rôle |
-|--------|------|
-| **Guide** | Mode d'emploi |
-| **Inputs** | IDF, Manning, porosité, critères V |
-| **Zones_tributaires** | SUP croquis (m²) → destination pipe/tranchée |
-| **Tranchees** | Bloc B — gazon / tranchée drainante → puisard |
-| **Calcul_reseau** | Bloc A — même structure que le modèle ADAPTE (pipes + radiers + couverture + volumes) |
-| **Temps_concentration** | tc d'entrée |
-| **Resume** | Totaux + checks |
+| Avant | Maintenant |
+|-------|------------|
+| RT saisi (jaune) | **RT calculé** = DART/DA |
+| DA_t sur pipes + Qin_tr | **DA_t retiré** — gazon tranchée seulement dans `Tranchees` (plus de double comptage) |
+| DA_g / DA_p | Conservés (jaune) → DA, DART dérivés avec C_g / C_p |
+| Qp tranchée = underdrain seul | **Qp_ud + Qp_trench (Manning b×y) = Qp_total** |
+| Dia_bouch répété | Ø / H regard dans **Inputs** → Vol_bouch auto |
 
-## Lien hydraulique
+## Colonnes gardées (pas redondantes)
 
-`Tranchees!Noeud_aval` = `Calcul_reseau!Amont`  
-→ `Qin_tranchées` (col AC) ajouté à `Qmax`.
+`DART`, `A`, `AR`, `R` restent : chaîne rationnelle pour revue / municipal.
 
-## À faire sur le dossier
+## Lien
 
-1. Remplacer IDs placeholders (`RP-N1`, `RP-S1`, `RP-E1`) par les puisards du plan.
-2. Mesurer L, b, H, pente des « tranchées drainantes avec sur-pente ».
-3. Brancher IDF locale 1787 dans **Inputs**.
-4. Ajuster radiers / couvertures / Ø jusqu'à Check = OK.
+`Tranchees!Noeud_aval` = `Calcul_reseau!Amont` → `Qin_tr` ajouté à `Qmax`.
+
+## Pull
+
+```bash
+git pull origin cursor/drainage-1787-trench-hybrid-d87f
+```
+
+LibreOffice: **Ctrl+Shift+F9** après ouverture.
