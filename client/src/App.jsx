@@ -13,6 +13,8 @@ import MVPIDFViewerV2 from "./pages/MVPIDFViewerV2.jsx";
 import TestAutocomplete from "./pages/TestAutocomplete.jsx";
 import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
 import Disclaimer from "./pages/Disclaimer.jsx";
 import NormalDepth from "./pages/NormalDepth.jsx";
@@ -39,6 +41,8 @@ function App() {
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             path="/start"
             element={
