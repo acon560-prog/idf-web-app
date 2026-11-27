@@ -379,11 +379,55 @@
     },
     "links": {
       "needAccount": "Need an account?",
-      "signUp": "Sign up"
+      "signUp": "Sign up",
+      "forgotPassword": "Forgot password?"
     },
     "errors": {
       "invalidCredentials": "Unable to sign in. Please verify your credentials.",
       "unexpectedResponse": "Unexpected login response from server.",
+      "unexpected": "Unexpected error. Please try again."
+    }
+  },
+  "forgotPassword": {
+    "title": "Forgot password",
+    "subtitle": "Enter the email for your account and we will send a reset link.",
+    "fields": {
+      "email": "Email"
+    },
+    "buttons": {
+      "sendLink": "Send reset link",
+      "sending": "Sending..."
+    },
+    "links": {
+      "backToSignIn": "Back to sign in"
+    },
+    "success": "If an account exists for that email, a password reset link has been sent.",
+    "errors": {
+      "requestFailed": "Unable to send a reset link right now.",
+      "unexpected": "Unexpected error. Please try again."
+    }
+  },
+  "resetPassword": {
+    "title": "Choose a new password",
+    "subtitle": "Enter a new password for your Civispec account.",
+    "fields": {
+      "password": "New password",
+      "confirmPassword": "Confirm new password"
+    },
+    "buttons": {
+      "save": "Update password",
+      "saving": "Updating..."
+    },
+    "links": {
+      "backToSignIn": "Back to sign in",
+      "requestNew": "Request a new reset link"
+    },
+    "success": "Password updated. Redirecting to sign in...",
+    "errors": {
+      "missingToken": "This reset link is missing or incomplete. Request a new one.",
+      "tooShort": "Password must be at least 8 characters.",
+      "mismatch": "Passwords do not match.",
+      "resetFailed": "Unable to reset password. The link may be invalid or expired.",
       "unexpected": "Unexpected error. Please try again."
     }
   },

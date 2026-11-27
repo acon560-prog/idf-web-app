@@ -4,6 +4,8 @@ import re
 import json
 import os
 import math
+import hashlib
+import secrets
 import smtplib
 import statistics
 from functools import lru_cache
@@ -555,8 +557,68 @@ def ensure_user_indexes():
         users_collection.create_index('email', unique=True, sparse=True)
     except Exception as exc:
         print(f"Failed to ensure user indexes: {exc}")
+    try:
+        users_collection.create_index('passwordResetTokenHash', sparse=True)
+    except Exception as exc:
+        print(f"Failed to ensure password reset index: {exc}")
 
 ensure_user_indexes()
+
+
+PASSWORD_RESET_TOKEN_TTL = timedelta(hours=1)
+PASSWORD_RESET_GENERIC_MESSAGE = (
+    "If an account exists for that email, a password reset link has been sent."
+)
+
+
+def hash_password_reset_token(token: str) -> str:
+    return hashlib.sha256(token.encode('utf-8')).hexdigest()
+
+
+def clear_password_reset_fields(user_id):
+    users_collection.update_one(
+        {'_id': user_id},
+        {
+            '$unset': {
+                'passwordResetTokenHash': '',
+                'passwordResetExpiresAt': '',
+                'passwordResetRequestedAt': '',
+            },
+            '$set': {'updatedAt': datetime.utcnow()},
+        },
+    )
+
+
+def send_password_reset_email(to_email: str, reset_url: str, name: str = '') -> bool:
+    email_user = os.environ.get('EMAIL_USER')
+    email_pass = os.environ.get('EMAIL_PASS')
+    if not email_user or not email_pass:
+        print("Email credentials not configured; cannot send password reset email.")
+        return False
+
+    display_name = (name or '').strip() or 'there'
+    msg = EmailMessage()
+    msg['Subject'] = 'Reset your Civispec password'
+    msg['From'] = email_user
+    msg['To'] = to_email
+    msg.set_content(
+        f"Hi {display_name},\n\n"
+        "We received a request to reset your Civispec password.\n\n"
+        f"Open this link to choose a new password (valid for 1 hour):\n{reset_url}\n\n"
+        "If you did not request this, you can ignore this email. "
+        "Your password will stay the same.\n\n"
+        "- Civispec Team"
+    )
+
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(email_user, email_pass)
+            smtp.send_message(msg)
+    except Exception as exc:
+        print(f"Failed to send password reset email: {exc}")
+        return False
+
+    return True
 
 
 def log_submission_to_file(name, email, message):
@@ -1353,6 +1415,96 @@ def refresh_token():
     access_token = create_access_token(identity=str(user_doc['_id']), additional_claims=additional_claims)
 
     return jsonify({'accessToken': access_token})
+
+
+@app.route('/api/auth/forgot-password', methods=['POST'])
+def forgot_password():
+    payload = request.get_json() or {}
+    email = normalize_email(payload.get('email'))
+
+    if not email or '@' not in email:
+        return jsonify({'error': 'A valid email is required.'}), 400
+
+    # Always return a generic success response to avoid account enumeration.
+    response_body = {'success': True, 'message': PASSWORD_RESET_GENERIC_MESSAGE}
+
+    user_doc = users_collection.find_one({'email': email})
+    if not user_doc or 'passwordHash' not in user_doc:
+        return jsonify(response_body)
+
+    raw_token = secrets.token_urlsafe(32)
+    token_hash = hash_password_reset_token(raw_token)
+    now = datetime.utcnow()
+    expires_at = now + PASSWORD_RESET_TOKEN_TTL
+
+    users_collection.update_one(
+        {'_id': user_doc['_id']},
+        {
+            '$set': {
+                'passwordResetTokenHash': token_hash,
+                'passwordResetExpiresAt': expires_at,
+                'passwordResetRequestedAt': now,
+                'updatedAt': now,
+            }
+        },
+    )
+
+    reset_url = f"{FRONTEND_URL}/reset-password?token={raw_token}"
+    email_ok = send_password_reset_email(
+        to_email=email,
+        reset_url=reset_url,
+        name=user_doc.get('name') or '',
+    )
+    if not email_ok:
+        clear_password_reset_fields(user_doc['_id'])
+        return jsonify({
+            'error': 'Unable to send reset email right now. Please try again later.',
+        }), 503
+
+    return jsonify(response_body)
+
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    payload = request.get_json() or {}
+    token = (payload.get('token') or '').strip()
+    new_password = payload.get('password') or ''
+
+    if not token:
+        return jsonify({'error': 'Reset token is required.'}), 400
+    if not isinstance(new_password, str) or len(new_password) < 8:
+        return jsonify({'error': 'Password must be at least 8 characters.'}), 400
+
+    token_hash = hash_password_reset_token(token)
+    now = datetime.utcnow()
+    user_doc = users_collection.find_one({
+        'passwordResetTokenHash': token_hash,
+        'passwordResetExpiresAt': {'$gt': now},
+    })
+
+    if not user_doc:
+        return jsonify({'error': 'This reset link is invalid or has expired.'}), 400
+
+    password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    users_collection.update_one(
+        {'_id': user_doc['_id']},
+        {
+            '$set': {
+                'passwordHash': password_hash,
+                'updatedAt': now,
+            },
+            '$unset': {
+                'passwordResetTokenHash': '',
+                'passwordResetExpiresAt': '',
+                'passwordResetRequestedAt': '',
+            },
+        },
+    )
+
+    return jsonify({
+        'success': True,
+        'message': 'Password updated. You can sign in with your new password.',
+    })
 
 
 @app.route('/api/contact', methods=['POST'])

@@ -379,11 +379,55 @@
     },
     "links": {
       "needAccount": "Besoin d'un compte?",
-      "signUp": "S'inscrire"
+      "signUp": "S'inscrire",
+      "forgotPassword": "Mot de passe oublié?"
     },
     "errors": {
       "invalidCredentials": "Impossible de se connecter. Veuillez vérifier vos identifiants.",
       "unexpectedResponse": "Réponse inattendue du serveur de connexion.",
+      "unexpected": "Erreur inattendue. Veuillez réessayer."
+    }
+  },
+  "forgotPassword": {
+    "title": "Mot de passe oublié",
+    "subtitle": "Entrez le courriel de votre compte et nous vous enverrons un lien de réinitialisation.",
+    "fields": {
+      "email": "Courriel"
+    },
+    "buttons": {
+      "sendLink": "Envoyer le lien",
+      "sending": "Envoi..."
+    },
+    "links": {
+      "backToSignIn": "Retour à la connexion"
+    },
+    "success": "Si un compte existe pour ce courriel, un lien de réinitialisation a été envoyé.",
+    "errors": {
+      "requestFailed": "Impossible d'envoyer un lien de réinitialisation pour le moment.",
+      "unexpected": "Erreur inattendue. Veuillez réessayer."
+    }
+  },
+  "resetPassword": {
+    "title": "Choisir un nouveau mot de passe",
+    "subtitle": "Entrez un nouveau mot de passe pour votre compte Civispec.",
+    "fields": {
+      "password": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le nouveau mot de passe"
+    },
+    "buttons": {
+      "save": "Mettre à jour le mot de passe",
+      "saving": "Mise à jour..."
+    },
+    "links": {
+      "backToSignIn": "Retour à la connexion",
+      "requestNew": "Demander un nouveau lien"
+    },
+    "success": "Mot de passe mis à jour. Redirection vers la connexion...",
+    "errors": {
+      "missingToken": "Ce lien de réinitialisation est incomplet. Demandez-en un nouveau.",
+      "tooShort": "Le mot de passe doit comporter au moins 8 caractères.",
+      "mismatch": "Les mots de passe ne correspondent pas.",
+      "resetFailed": "Impossible de réinitialiser le mot de passe. Le lien est peut-être invalide ou expiré.",
       "unexpected": "Erreur inattendue. Veuillez réessayer."
     }
   },

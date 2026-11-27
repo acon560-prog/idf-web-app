@@ -99,6 +99,14 @@ function Login() {
                 {showPassword ? t("login.buttons.hide") : t("login.buttons.show")}
               </button>
             </div>
+            <div className="mt-2 text-right">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-indigo-600 hover:text-indigo-700"
+              >
+                {t("login.links.forgotPassword")}
+              </Link>
+            </div>
           </div>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
