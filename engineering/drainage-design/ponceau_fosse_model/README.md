@@ -1,0 +1,86 @@
+# Modèle hydraulique composé — Ponceau + fossé (remblai poreux)
+
+## Données site (mises à jour)
+
+| Paramètre | Valeur |
+|-----------|--------|
+| `D` | 1,05 m |
+| `L` | 50,9 m |
+| Invert amont | **35,36 m** |
+| Invert aval | **34,47 m** |
+| `S0 = Δz/L` | **0,0175** (≈ 0,017) |
+| `b`, `z` | 2,0 m ; 2H:1V |
+| Max WSE | 37,4 m |
+| Entrée | **biseautée (beveled)** → Ke≈0,2 |
+| Débordement | Au-dessus de la clé jusqu’à 37,4 m — **mode `surface`** (fossé enrochement / macropores). Mode `porous` (Wilkins) disponible mais **insuffisant pour ~9 m³/s**. |
+| Tailwater | **inconnu** → hypothèse exutoire libre (TW=0) |
+
+## Comportement
+
+```
+Q_total = Q_ponceau(HW) + Q_remblai_poreux(HW)
+```
+
+1. Tant que WSE < clé du tuyau → ponceau seul  
+2. Au-delà → écoulement **turbulent dans le granulaire** (formule type Wilkins)  
+3. Option `--mode both` : poreux + surface libre au-dessus du remblai  
+
+## Lancer
+
+```bash
+cd engineering/drainage-design/ponceau_fosse_model
+python3 run_model.py --Q 9 --csv rating.csv
+python3 run_model.py --Q 9.5 --Cd-rock 1.0 --d50 0.06
+python3 run_model.py --Q 9 --TW 0.5   # si niveau aval connu
+```
+
+## Calage du remblai (important)
+
+`d50` (défaut 0,05 m) et `Cd_rock` (défaut 0,85) contrôlent le débit poreux.  
+Fourchette utile à explorer : `d50=0.03–0.10 m`, `Cd_rock=0.5–1.5`.
+
+## Excel — usage sans Python (bureau)
+
+Le fichier `Ponceau_Fosse_Modele_Hydraulique.xlsx` calcule la **courbe de tarage en formules Excel**.
+
+| Besoin | Où éditer |
+|--------|-----------|
+| Géométrie D, n, L, inverts, mode… | **Parametres** (jaunes) |
+| Q permanent | **Resultat_Q9!B4** |
+| Orage (pointe, montée, pond…) | **Hydrogramme_entree!B4–B8** |
+| Niveau d'eau max | **Routing_stockage** → WSE max |
+| Mode débordement | **Parametres!C17** (`surface` / `porous` / `both`) |
+
+Voir aussi la feuille **Guide_Sans_Python**.
+
+## Python conservé (optionnel)
+
+```bash
+cd engineering/drainage-design/ponceau_fosse_model
+python3 build_excel.py          # régénère le .xlsx
+python3 run_model.py --Q 9      # validation terminal
+```
+
+Fichiers: `hydraulics.py`, `build_excel.py`, `excel_rating_formulas.py`, `run_model.py`.
+
+## Hydrogramme Chicago (défaut)
+
+Feuille **Hydrogramme_entree** :
+- `B3` = `Chicago` (ou `Triangle`)
+- `B5` = Q pointe (ex. **10** m³/s)
+- `B9` = Td = **60 min** (adéquat pour ce ponceau/fossé ; Tc typ. 10–20 min)
+- `B10` = r ≈ 0.375 (position du pic)
+- `B11–B13` = coeffs IDF a, b, c — **caler sur votre station**
+
+Construction: hyétogramme Keifer–Chu i(t) puis `Q(t) = Qpointe * i(t) / max(i)`.
+
+Voir **Hydrogramme_notes** et **Formules_explications**.
+
+## Hydrogramme + stockage
+
+Ouvre `Ponceau_Fosse_Modele_Hydraulique.xlsx` :
+- **Courbe_de_tarage** — Q(HW) en formules depuis Parametres
+- **Hydrogramme_entree** — Chicago (défaut) ou triangle live
+- **Routing_stockage** — Puls live → **WSE max**
+
+Comparer le WSE max transitoire au **Resultat_Q9** (régime permanent).
